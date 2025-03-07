@@ -5,7 +5,8 @@
  *      Author: andre
  */
 
-#include "tcpconnection.hpp"
+#include "tcpConnection.hpp"
+
 #include "network.hpp"
 
 #include <cstring>
@@ -49,9 +50,9 @@ void TcpConnection::send(std::string data) {
     } else {
         LOG_ERROR("Sent %d of %d bytes", sent_bytes, data.length());
     }
-}
 
-void TcpConnection::process(void) {}
+    sent_bytes = ::send(m_socket, "\r\n", 2, 0);
+}
 
 void TcpConnection::receiveThreadFunc(TcpConnection *self) {
     LOG_INFO("Starting Receive Thread");
@@ -87,9 +88,9 @@ void TcpConnection::receiveThreadFunc(TcpConnection *self) {
             LOG_INFO("Received %d bytes ", bytes_received);
 
             // Please note: we want a copy of the data so the receive buffer is available for the next message
-            std::vector<uint8_t> received_data(recv_buffer, recv_buffer + bytes_received);
+            std::vector<char> received_data(recv_buffer, recv_buffer + bytes_received);
 
-            // parse(received_data, self); // TODO
+            self->process(received_data);
         }
     }
 }

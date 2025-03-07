@@ -13,15 +13,14 @@
 
 namespace network {
 
-class TcpConnection : public iConnection {
+class TcpConnection : public Connection {
   public:
-    ~TcpConnection();
+    ~TcpConnection() ;
 
-    void connect(std::string ip_address, uint16_t port);
+    void connect(std::string ip_address, uint16_t port=6667);
 
     void send(std::vector<char> data) override;
     void send(std::string data) override;
-    void process(void) override;
 
   private:
     struct sockaddr_in6 m_sin6 = {0};

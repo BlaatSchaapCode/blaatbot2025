@@ -13,11 +13,18 @@
 
 namespace network {
 
-class iConnection {
+
+
+class Connection {
   public:
     virtual void send(std::vector<char> data) = 0;
     virtual void send(std::string) = 0;
-    virtual void process(void) = 0;
+    void process(std::vector<char> data);
+    virtual ~Connection( );
+
+  private:
+    bool mLineMode = true;
+    std::vector<char> mBuffer;
 };
 
 } // namespace network

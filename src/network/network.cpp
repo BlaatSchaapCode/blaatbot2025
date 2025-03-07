@@ -12,10 +12,9 @@
 #include <thread>
 #include <vector>
 
-#include "connection.hpp"
-#include "tcpconnection.hpp"
-
 #include "../utils/logger.hpp"
+#include "connection.hpp"
+#include "tcpConnection.hpp"
 
 namespace network {
 

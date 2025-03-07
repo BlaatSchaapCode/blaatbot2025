@@ -10,8 +10,8 @@
 
 // Game includes
 #include "network/network.hpp"
-#include "network/tcpconnection.hpp"
-
+#include "network/tcpConnection.hpp"
+#include "network/tlsConnection.hpp"
 #include "utils/logger.hpp"
 #include "utils/version.hpp"
 
@@ -50,8 +50,9 @@ int main(int argc, char *argv[]) {
 
     network::init();
 
-    network::TcpConnection test;
-    test.connect("irc.blaatschaap.be", 6667);
+    network::TlsConnection test;
+    // test.connect("irc.blaatschaap.be", 6667);
+    test.connect("irc.blaatschaap.be", 6697);
 
     result = parse_options(argc, argv);
     if (result)
