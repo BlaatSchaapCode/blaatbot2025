@@ -14,17 +14,25 @@
 
 #include "cProtocol.hpp"
 
+namespace protocol {
+class cProtocol;
+}
+
 namespace network {
 
-class cConnection {
+class cConnection : public std::enable_shared_from_this<cConnection> {
+
   public:
-    cConnection(std::shared_ptr<protocol::cProtocol> protocol) { mProtocol = protocol; }
+    cConnection(std::shared_ptr<::protocol::cProtocol> protocol);
     virtual ~cConnection();
     virtual void send(std::vector<char> data) = 0;
-    virtual void send(std::string) = 0;
+    void send(std::string s) {
+        std::vector<char> v(s.begin(), s.end());
+        send(v);
+    }
 
   protected:
-    std::shared_ptr<protocol::cProtocol> mProtocol;
+    std::shared_ptr<::protocol::cProtocol> mProtocol;
 };
 
 } // namespace network

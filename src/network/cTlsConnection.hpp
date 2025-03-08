@@ -30,7 +30,6 @@ class cTlsConnection : public cConnection {
     void connect(std::string ip_address, uint16_t port = 6697, bool ignoreServerName = false, bool allowDeprecatedServer = false);
 
     void send(std::vector<char> data) override;
-    void send(std::string data) override;
 
   private:
     bool m_connected = false;

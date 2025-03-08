@@ -63,6 +63,7 @@ void cTlsConnection::connect(std::string ip_address, uint16_t port, bool ignoreB
 
     m_receiveThreadActive = true;
     m_receiveThread = new std::thread(cTlsConnection::receiveThreadFunc, this);
+    this->mProtocol->onConnected();
 }
 
 void cTlsConnection::receiveThreadFunc(cTlsConnection *self) {
@@ -83,7 +84,7 @@ void cTlsConnection::receiveThreadFunc(cTlsConnection *self) {
             continue;
         } else if (bytes_received == 0) {
             LOG_ERROR("Remote disconnected");
-            // on_disconnect(self);  // TODO
+            self->mProtocol->onDisconnected();
             break;
         } else {
             // Todo: pass data to parser
@@ -103,17 +104,6 @@ void cTlsConnection::send(std::vector<char> data) {
     } else {
         LOG_ERROR("Sent %d of %d bytes", sent_bytes, data.size());
     }
-}
-
-void cTlsConnection::send(std::string data) {
-    size_t sent_bytes = ::tls_write(m_tls_socket, (const char *)data.data(), (int)data.size());
-    if (sent_bytes == data.length()) {
-        LOG_INFO("Sent %d bytes", sent_bytes);
-    } else {
-        LOG_ERROR("Sent %d of %d bytes", sent_bytes, data.length());
-    }
-
-    sent_bytes = tls_write(m_tls_socket, "\r\n", 2);
 }
 
 cTlsConnection::~cTlsConnection() {}

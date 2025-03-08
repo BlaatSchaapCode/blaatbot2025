@@ -42,17 +42,6 @@ void cTcpConnection::send(std::vector<char> data) {
     }
 }
 
-void cTcpConnection::send(std::string data) {
-    size_t sent_bytes = ::send(m_socket, (const char *)data.data(), (int)data.length(), 0);
-    if (sent_bytes == data.length()) {
-        LOG_INFO("Sent %d bytes", sent_bytes);
-    } else {
-        LOG_ERROR("Sent %d of %d bytes", sent_bytes, data.length());
-    }
-
-    sent_bytes = ::send(m_socket, "\r\n", 2, 0);
-}
-
 void cTcpConnection::receiveThreadFunc(cTcpConnection *self) {
     LOG_INFO("Starting Receive Thread");
     char recv_buffer[1024] = {0};
@@ -81,6 +70,7 @@ void cTcpConnection::receiveThreadFunc(cTcpConnection *self) {
         } else if (bytes_received == 0) {
             LOG_ERROR("Remote disconnected");
             // on_disconnect(self);  // TODO
+            self->mProtocol->onDisconnected();
             break;
         } else {
             // Todo: pass data to parser
@@ -190,6 +180,7 @@ void cTcpConnection::connect(std::string host, uint16_t port) {
 
     m_receiveThreadActive = true;
     m_receiveThread = new std::thread(cTcpConnection::receiveThreadFunc, this);
+    this->mProtocol->onConnected();
 }
 
 } // namespace network

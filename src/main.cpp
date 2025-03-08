@@ -52,10 +52,13 @@ int main(int argc, char *argv[]) {
     network::init();
 
     // auto irc = std::make_shared<protocol::cIRC>;
-    auto irc = std::make_shared<protocol::cIRC>();
-    network::cTlsConnection test(irc);
+    auto irc = std::make_shared<protocol::cIRC>("bb25");
+    auto tls = std::make_shared<network::cTlsConnection>(irc);
+    irc->setConnection(tls);
+
+    // irc->setConnection(test);
     // test.connect("irc.blaatschaap.be", 6667);
-    test.connect("irc.blaatschaap.be", 6697);
+    tls->connect("irc.blaatschaap.be", 6697);
 
     result = parse_options(argc, argv);
     if (result)

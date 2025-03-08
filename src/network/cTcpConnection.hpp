@@ -20,7 +20,6 @@ class cTcpConnection : public cConnection {
     void connect(std::string ip_address, uint16_t port = 6667);
 
     void send(std::vector<char> data) override;
-    void send(std::string data) override;
 
   private:
     struct sockaddr_in6 m_sin6 = {0};

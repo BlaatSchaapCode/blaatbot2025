@@ -8,6 +8,7 @@ LDFLAGS += -ltls
 
 CXX_INCLUDES += network
 CXX_INCLUDES += protocol
+CXX_INCLUDES += utils
 
 CXX_SRC += ./network/network.cpp
 CXX_SRC += ./network/connection.cpp
@@ -17,6 +18,7 @@ CXX_SRC += ./protocol/cProtocol.cpp
 CXX_SRC += ./protocol/cIRC.cpp
 CXX_SRC += ./utils/compat.cpp
 CXX_SRC += ./utils/logger.cpp
+CXX_SRC += ./utils/splitString.cpp
 CXX_SRC += ./main.cpp
 
 
