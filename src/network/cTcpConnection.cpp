@@ -5,8 +5,6 @@
  *      Author: andre
  */
 
-#include "tcpConnection.hpp"
-
 #include "network.hpp"
 
 #include <cstring>
@@ -16,10 +14,11 @@
 #include <vector>
 
 #include "../utils/logger.hpp"
+#include "cTcpConnection.hpp"
 
 namespace network {
 
-TcpConnection::~TcpConnection() {
+cTcpConnection::~cTcpConnection() {
     m_receiveThreadActive = false;
     LOG_INFO("Stopping receive thread ", 0);
     if (m_receiveThread->joinable()) {
@@ -34,7 +33,7 @@ TcpConnection::~TcpConnection() {
     closesocket(m_socket);
 }
 
-void TcpConnection::send(std::vector<char> data) {
+void cTcpConnection::send(std::vector<char> data) {
     size_t sent_bytes = ::send(m_socket, (const char *)data.data(), (int)data.size(), 0);
     if (sent_bytes == data.size()) {
         LOG_INFO("Sent %d bytes", sent_bytes);
@@ -43,7 +42,7 @@ void TcpConnection::send(std::vector<char> data) {
     }
 }
 
-void TcpConnection::send(std::string data) {
+void cTcpConnection::send(std::string data) {
     size_t sent_bytes = ::send(m_socket, (const char *)data.data(), (int)data.length(), 0);
     if (sent_bytes == data.length()) {
         LOG_INFO("Sent %d bytes", sent_bytes);
@@ -54,7 +53,7 @@ void TcpConnection::send(std::string data) {
     sent_bytes = ::send(m_socket, "\r\n", 2, 0);
 }
 
-void TcpConnection::receiveThreadFunc(TcpConnection *self) {
+void cTcpConnection::receiveThreadFunc(cTcpConnection *self) {
     LOG_INFO("Starting Receive Thread");
     char recv_buffer[1024] = {0};
     // TODO: exit conditions
@@ -89,13 +88,12 @@ void TcpConnection::receiveThreadFunc(TcpConnection *self) {
 
             // Please note: we want a copy of the data so the receive buffer is available for the next message
             std::vector<char> received_data(recv_buffer, recv_buffer + bytes_received);
-
-            self->process(received_data);
+            self->mProtocol->onData(received_data);
         }
     }
 }
 
-void TcpConnection::connect(std::string host, uint16_t port) {
+void cTcpConnection::connect(std::string host, uint16_t port) {
     LOG_INFO("Requested to connect to %s:%d", host.c_str(), port);
 
     m_socket = 0;
@@ -191,7 +189,7 @@ void TcpConnection::connect(std::string host, uint16_t port) {
     setsockopt(m_socket, SOL_SOCKET, SO_KEEPALIVE, (const char *)&yes, sizeof(yes));
 
     m_receiveThreadActive = true;
-    m_receiveThread = new std::thread(TcpConnection::receiveThreadFunc, this);
+    m_receiveThread = new std::thread(cTcpConnection::receiveThreadFunc, this);
 }
 
 } // namespace network

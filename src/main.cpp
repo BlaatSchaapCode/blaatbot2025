@@ -8,10 +8,11 @@
 // Library Includes
 #include <cxxopts.hpp>
 
+#include "network/cTcpConnection.hpp"
+#include "network/cTlsConnection.hpp"
 // Game includes
 #include "network/network.hpp"
-#include "network/tcpConnection.hpp"
-#include "network/tlsConnection.hpp"
+#include "protocol/cIRC.hpp"
 #include "utils/logger.hpp"
 #include "utils/version.hpp"
 
@@ -50,7 +51,9 @@ int main(int argc, char *argv[]) {
 
     network::init();
 
-    network::TlsConnection test;
+    // auto irc = std::make_shared<protocol::cIRC>;
+    auto irc = std::make_shared<protocol::cIRC>();
+    network::cTlsConnection test(irc);
     // test.connect("irc.blaatschaap.be", 6667);
     test.connect("irc.blaatschaap.be", 6697);
 

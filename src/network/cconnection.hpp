@@ -8,23 +8,23 @@
 #pragma once
 
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <vector>
 
+#include "cProtocol.hpp"
+
 namespace network {
 
-
-
-class Connection {
+class cConnection {
   public:
+    cConnection(std::shared_ptr<protocol::cProtocol> protocol) { mProtocol = protocol; }
+    virtual ~cConnection();
     virtual void send(std::vector<char> data) = 0;
     virtual void send(std::string) = 0;
-    void process(std::vector<char> data);
-    virtual ~Connection( );
 
   private:
-    bool mLineMode = true;
-    std::vector<char> mBuffer;
+    std::shared_ptr<protocol::cProtocol> mProtocol;
 };
 
 } // namespace network

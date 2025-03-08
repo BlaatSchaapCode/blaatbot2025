@@ -7,17 +7,17 @@
 
 #include "network.hpp"
 
-#include "connection.hpp"
+#include "cconnection.hpp"
 #include <atomic>
 #include <thread>
 
 namespace network {
 
-class TcpConnection : public Connection {
+class cTcpConnection : public cConnection {
   public:
-    ~TcpConnection() ;
+    ~cTcpConnection();
 
-    void connect(std::string ip_address, uint16_t port=6667);
+    void connect(std::string ip_address, uint16_t port = 6667);
 
     void send(std::vector<char> data) override;
     void send(std::string data) override;
@@ -30,7 +30,7 @@ class TcpConnection : public Connection {
     std::atomic<bool> m_receiveThreadActive = false;
     std::thread *m_receiveThread = nullptr;
 
-    static void receiveThreadFunc(TcpConnection *self);
+    static void receiveThreadFunc(cTcpConnection *self);
 };
 
 } // namespace network

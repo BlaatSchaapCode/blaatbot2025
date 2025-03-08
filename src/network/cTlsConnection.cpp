@@ -5,12 +5,12 @@
  *      Author: andre
  */
 
-#include "tlsConnection.hpp"
-
 #include <cstring>
 
+#include "cTlsConnection.hpp"
+
 namespace network {
-void TlsConnection::connect(std::string ip_address, uint16_t port, bool ignoreBadCertificate, bool ignoreLegacyServer) {
+void cTlsConnection::connect(std::string ip_address, uint16_t port, bool ignoreBadCertificate, bool ignoreLegacyServer) {
     int rc;
     rc = tls_init();
     m_tls_config = tls_config_new();
@@ -62,10 +62,10 @@ void TlsConnection::connect(std::string ip_address, uint16_t port, bool ignoreBa
     printf("tls_conn_version = %s\n", tls_conn_version(m_tls_socket));
 
     m_receiveThreadActive = true;
-    m_receiveThread = new std::thread(TlsConnection::receiveThreadFunc, this);
+    m_receiveThread = new std::thread(cTlsConnection::receiveThreadFunc, this);
 }
 
-void TlsConnection::receiveThreadFunc(TlsConnection *self) {
+void cTlsConnection::receiveThreadFunc(cTlsConnection *self) {
     LOG_INFO("Starting Receive Thread");
     char recv_buffer[1024] = {0};
     // TODO: exit conditions
@@ -91,13 +91,12 @@ void TlsConnection::receiveThreadFunc(TlsConnection *self) {
 
             // Please note: we want a copy of the data so the receive buffer is available for the next message
             std::vector<char> received_data(recv_buffer, recv_buffer + bytes_received);
-
-            self->process(received_data);
+            self->mProtocol->onData(received_data);
         }
     }
 }
 
-void TlsConnection::send(std::vector<char> data) {
+void cTlsConnection::send(std::vector<char> data) {
     size_t sent_bytes = ::tls_write(m_tls_socket, (const char *)data.data(), (int)data.size());
     if (sent_bytes == data.size()) {
         LOG_INFO("Sent %d bytes", sent_bytes);
@@ -106,7 +105,7 @@ void TlsConnection::send(std::vector<char> data) {
     }
 }
 
-void TlsConnection::send(std::string data) {
+void cTlsConnection::send(std::string data) {
     size_t sent_bytes = ::tls_write(m_tls_socket, (const char *)data.data(), (int)data.size());
     if (sent_bytes == data.length()) {
         LOG_INFO("Sent %d bytes", sent_bytes);
@@ -117,5 +116,5 @@ void TlsConnection::send(std::string data) {
     sent_bytes = tls_write(m_tls_socket, "\r\n", 2);
 }
 
-TlsConnection::~TlsConnection() {}
+cTlsConnection::~cTlsConnection() {}
 } // namespace network
