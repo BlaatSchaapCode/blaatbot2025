@@ -11,8 +11,8 @@ CXX_INCLUDES += protocol
 
 CXX_SRC += ./network/network.cpp
 CXX_SRC += ./network/connection.cpp
-CXX_SRC += ./network/tlsConnection.cpp
-CXX_SRC += ./network/tcpConnection.cpp
+CXX_SRC += ./network/cTlsConnection.cpp
+CXX_SRC += ./network/cTcpConnection.cpp
 CXX_SRC += ./protocol/cProtocol.cpp
 CXX_SRC += ./protocol/cIRC.cpp
 CXX_SRC += ./utils/compat.cpp

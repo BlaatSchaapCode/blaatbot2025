@@ -23,7 +23,7 @@ class cConnection {
     virtual void send(std::vector<char> data) = 0;
     virtual void send(std::string) = 0;
 
-  private:
+  protected:
     std::shared_ptr<protocol::cProtocol> mProtocol;
 };
 
