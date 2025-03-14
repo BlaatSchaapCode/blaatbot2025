@@ -44,7 +44,7 @@ void cTcpConnection::send(std::vector<char> data) {
 
 void cTcpConnection::receiveThreadFunc(cTcpConnection *self) {
     LOG_INFO("Starting Receive Thread");
-    char recv_buffer[1024] = {0};
+    char recv_buffer[8191] = {0};
     // TODO: exit conditions
     // Depends on:
     //	* setting  timeouts on sockets

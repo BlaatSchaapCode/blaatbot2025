@@ -68,7 +68,7 @@ void cTlsConnection::connect(std::string ip_address, uint16_t port, bool ignoreB
 
 void cTlsConnection::receiveThreadFunc(cTlsConnection *self) {
     LOG_INFO("Starting Receive Thread");
-    char recv_buffer[1024] = {0};
+    char recv_buffer[8191] = {0};
     // TODO: exit conditions
     // Depends on:
     //	* setting  timeouts on sockets
