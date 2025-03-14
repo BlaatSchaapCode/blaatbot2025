@@ -1,0 +1,1789 @@
+<!DOCTYPE html>
+<html data-bs-theme="dark" lang="en" style="--doc-ptsize-max: 12pt;"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>
+            
+                RFC 7194 - Default Port for Internet Relay Chat (IRC) via TLS/SSL
+            
+        </title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style cssr-id="n-global">body {
+
+ margin: 0;
+ font-size: 14px;
+ font-family: v-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+ line-height: 1.6;
+ -webkit-text-size-adjust: 100%;
+ -webkit-tap-highlight-color: transparent;
+
+}
+
+body input {
+
+ font-family: inherit;
+ font-size: inherit;
+ 
+}</style><style cssr-id="n-notification">.n-notification-container {
+
+ z-index: 4000;
+ position: fixed;
+ overflow: visible;
+ display: flex;
+ flex-direction: column;
+ align-items: flex-end;
+ 
+}
+
+.n-notification-container > .n-scrollbar {
+
+ width: initial;
+ overflow: visible;
+ height: -moz-fit-content !important;
+ height: fit-content !important;
+ max-height: 100vh !important;
+ 
+}
+
+.n-notification-container > .n-scrollbar > .n-scrollbar-container {
+
+ height: -moz-fit-content !important;
+ height: fit-content !important;
+ max-height: 100vh !important;
+ 
+}
+
+.n-notification-container > .n-scrollbar > .n-scrollbar-container .n-scrollbar-content {
+
+ padding-top: 12px;
+ padding-bottom: 33px;
+ 
+}
+
+.n-notification-container.n-notification-container--top, .n-notification-container.n-notification-container--top-right, .n-notification-container.n-notification-container--top-left {
+
+ top: 12px;
+ 
+}
+
+.n-notification-container.n-notification-container--top.transitioning > .n-scrollbar > .n-scrollbar-container, .n-notification-container.n-notification-container--top-right.transitioning > .n-scrollbar > .n-scrollbar-container, .n-notification-container.n-notification-container--top-left.transitioning > .n-scrollbar > .n-scrollbar-container {
+
+ min-height: 100vh !important;
+ 
+}
+
+.n-notification-container.n-notification-container--bottom, .n-notification-container.n-notification-container--bottom-right, .n-notification-container.n-notification-container--bottom-left {
+
+ bottom: 12px;
+ 
+}
+
+.n-notification-container.n-notification-container--bottom > .n-scrollbar > .n-scrollbar-container .n-scrollbar-content, .n-notification-container.n-notification-container--bottom-right > .n-scrollbar > .n-scrollbar-container .n-scrollbar-content, .n-notification-container.n-notification-container--bottom-left > .n-scrollbar > .n-scrollbar-container .n-scrollbar-content {
+
+ padding-bottom: 12px;
+ 
+}
+
+.n-notification-container.n-notification-container--bottom .n-notification-wrapper, .n-notification-container.n-notification-container--bottom-right .n-notification-wrapper, .n-notification-container.n-notification-container--bottom-left .n-notification-wrapper {
+
+ display: flex;
+ align-items: flex-end;
+ margin-bottom: 0;
+ margin-top: 12px;
+ 
+}
+
+.n-notification-container.n-notification-container--top, .n-notification-container.n-notification-container--bottom {
+
+ left: 50%;
+ transform: translateX(-50%);
+ 
+}
+
+.n-notification-container.n-notification-container--top .n-notification-wrapper.notification-transition-enter-from, .n-notification-container.n-notification-container--bottom .n-notification-wrapper.notification-transition-enter-from, .n-notification-container.n-notification-container--top .n-notification-wrapper.notification-transition-leave-to, .n-notification-container.n-notification-container--bottom .n-notification-wrapper.notification-transition-leave-to {
+
+ transform: scale(0.85);
+ 
+}
+
+.n-notification-container.n-notification-container--top .n-notification-wrapper.notification-transition-leave-from, .n-notification-container.n-notification-container--bottom .n-notification-wrapper.notification-transition-leave-from, .n-notification-container.n-notification-container--top .n-notification-wrapper.notification-transition-enter-to, .n-notification-container.n-notification-container--bottom .n-notification-wrapper.notification-transition-enter-to {
+
+ transform: scale(1);
+ 
+}
+
+.n-notification-container.n-notification-container--top .n-notification-wrapper {
+
+ transform-origin: top center;
+ 
+}
+
+.n-notification-container.n-notification-container--bottom .n-notification-wrapper {
+
+ transform-origin: bottom center;
+ 
+}
+
+.n-notification-container.n-notification-container--top-right .n-notification, .n-notification-container.n-notification-container--bottom-right .n-notification {
+
+ margin-left: 28px;
+ margin-right: 16px;
+ 
+}
+
+.n-notification-container.n-notification-container--top-left .n-notification, .n-notification-container.n-notification-container--bottom-left .n-notification {
+
+ margin-left: 16px;
+ margin-right: 28px;
+ 
+}
+
+.n-notification-container.n-notification-container--top-right {
+
+ right: 0;
+ 
+}
+
+.n-notification-container.n-notification-container--top-right .n-notification-wrapper.notification-transition-enter-from, .n-notification-container.n-notification-container--top-right .n-notification-wrapper.notification-transition-leave-to {
+
+ transform: translate(calc(100%), 0);
+ 
+}
+
+.n-notification-container.n-notification-container--top-right .n-notification-wrapper.notification-transition-leave-from, .n-notification-container.n-notification-container--top-right .n-notification-wrapper.notification-transition-enter-to {
+
+ transform: translate(0, 0);
+ 
+}
+
+.n-notification-container.n-notification-container--top-left {
+
+ left: 0;
+ 
+}
+
+.n-notification-container.n-notification-container--top-left .n-notification-wrapper.notification-transition-enter-from, .n-notification-container.n-notification-container--top-left .n-notification-wrapper.notification-transition-leave-to {
+
+ transform: translate(calc(-100%), 0);
+ 
+}
+
+.n-notification-container.n-notification-container--top-left .n-notification-wrapper.notification-transition-leave-from, .n-notification-container.n-notification-container--top-left .n-notification-wrapper.notification-transition-enter-to {
+
+ transform: translate(0, 0);
+ 
+}
+
+.n-notification-container.n-notification-container--bottom-right {
+
+ right: 0;
+ 
+}
+
+.n-notification-container.n-notification-container--bottom-right .n-notification-wrapper.notification-transition-enter-from, .n-notification-container.n-notification-container--bottom-right .n-notification-wrapper.notification-transition-leave-to {
+
+ transform: translate(calc(100%), 0);
+ 
+}
+
+.n-notification-container.n-notification-container--bottom-right .n-notification-wrapper.notification-transition-leave-from, .n-notification-container.n-notification-container--bottom-right .n-notification-wrapper.notification-transition-enter-to {
+
+ transform: translate(0, 0);
+ 
+}
+
+.n-notification-container.n-notification-container--bottom-left {
+
+ left: 0;
+ 
+}
+
+.n-notification-container.n-notification-container--bottom-left .n-notification-wrapper.notification-transition-enter-from, .n-notification-container.n-notification-container--bottom-left .n-notification-wrapper.notification-transition-leave-to {
+
+ transform: translate(calc(-100%), 0);
+ 
+}
+
+.n-notification-container.n-notification-container--bottom-left .n-notification-wrapper.notification-transition-leave-from, .n-notification-container.n-notification-container--bottom-left .n-notification-wrapper.notification-transition-enter-to {
+
+ transform: translate(0, 0);
+ 
+}
+
+.n-notification-container.n-notification-container--scrollable.n-notification-container--top-right {
+
+ top: 0;
+ 
+}
+
+.n-notification-container.n-notification-container--scrollable.n-notification-container--top-left {
+
+ top: 0;
+ 
+}
+
+.n-notification-container.n-notification-container--scrollable.n-notification-container--bottom-right {
+
+ bottom: 0;
+ 
+}
+
+.n-notification-container.n-notification-container--scrollable.n-notification-container--bottom-left {
+
+ bottom: 0;
+ 
+}
+
+.n-notification-container .n-notification-wrapper {
+
+ margin-bottom: 12px;
+ 
+}
+
+.n-notification-container .n-notification-wrapper.notification-transition-enter-from, .n-notification-container .n-notification-wrapper.notification-transition-leave-to {
+
+ opacity: 0;
+ margin-top: 0 !important;
+ margin-bottom: 0 !important;
+ 
+}
+
+.n-notification-container .n-notification-wrapper.notification-transition-leave-from, .n-notification-container .n-notification-wrapper.notification-transition-enter-to {
+
+ opacity: 1;
+ 
+}
+
+.n-notification-container .n-notification-wrapper.notification-transition-leave-active {
+
+ transition:
+ background-color .3s var(--n-bezier),
+ color .3s var(--n-bezier),
+ opacity .3s var(--n-bezier),
+ transform .3s var(--n-bezier-ease-in),
+ max-height .3s var(--n-bezier),
+ margin-top .3s linear,
+ margin-bottom .3s linear,
+ box-shadow .3s var(--n-bezier);
+ 
+}
+
+.n-notification-container .n-notification-wrapper.notification-transition-enter-active {
+
+ transition:
+ background-color .3s var(--n-bezier),
+ color .3s var(--n-bezier),
+ opacity .3s var(--n-bezier),
+ transform .3s var(--n-bezier-ease-out),
+ max-height .3s var(--n-bezier),
+ margin-top .3s linear,
+ margin-bottom .3s linear,
+ box-shadow .3s var(--n-bezier);
+ 
+}
+
+.n-notification-container .n-notification {
+
+ background-color: var(--n-color);
+ color: var(--n-text-color);
+ transition:
+ background-color .3s var(--n-bezier),
+ color .3s var(--n-bezier),
+ opacity .3s var(--n-bezier),
+ box-shadow .3s var(--n-bezier);
+ font-family: inherit;
+ font-size: var(--n-font-size);
+ font-weight: 400;
+ position: relative;
+ display: flex;
+ overflow: hidden;
+ flex-shrink: 0;
+ padding-left: var(--n-padding-left);
+ padding-right: var(--n-padding-right);
+ width: var(--n-width);
+ max-width: calc(100vw - 16px - 16px);
+ border-radius: var(--n-border-radius);
+ box-shadow: var(--n-box-shadow);
+ box-sizing: border-box;
+ opacity: 1;
+ 
+}
+
+.n-notification-container .n-notification .n-notification__avatar .n-icon {
+
+ color: var(--n-icon-color);
+ 
+}
+
+.n-notification-container .n-notification .n-notification__avatar .n-base-icon {
+
+ color: var(--n-icon-color);
+ 
+}
+
+.n-notification-container .n-notification.n-notification--show-avatar .n-notification-main {
+
+ margin-left: 40px;
+ width: calc(100% - 40px); 
+ 
+}
+
+.n-notification-container .n-notification.n-notification--closable .n-notification-main > *:first-child {
+
+ padding-right: 20px;
+ 
+}
+
+.n-notification-container .n-notification.n-notification--closable .n-notification__close {
+
+ position: absolute;
+ top: 0;
+ right: 0;
+ margin: var(--n-close-margin);
+ transition:
+ background-color .3s var(--n-bezier),
+ color .3s var(--n-bezier);
+ 
+}
+
+.n-notification-container .n-notification .n-notification__avatar {
+
+ position: absolute;
+ top: var(--n-padding-top);
+ left: var(--n-padding-left);
+ width: 28px;
+ height: 28px;
+ font-size: 28px;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ 
+}
+
+.n-notification-container .n-notification .n-notification__avatar .n-icon {
+transition: color .3s var(--n-bezier);
+}
+
+.n-notification-container .n-notification .n-notification-main {
+
+ padding-top: var(--n-padding-top);
+ padding-bottom: var(--n-padding-bottom);
+ box-sizing: border-box;
+ display: flex;
+ flex-direction: column;
+ margin-left: 8px;
+ width: calc(100% - 8px);
+ 
+}
+
+.n-notification-container .n-notification .n-notification-main .n-notification-main-footer {
+
+ display: flex;
+ align-items: center;
+ justify-content: space-between;
+ margin-top: 12px;
+ 
+}
+
+.n-notification-container .n-notification .n-notification-main .n-notification-main-footer .n-notification-main-footer__meta {
+
+ font-size: var(--n-meta-font-size);
+ transition: color .3s var(--n-bezier-ease-out);
+ color: var(--n-description-text-color);
+ 
+}
+
+.n-notification-container .n-notification .n-notification-main .n-notification-main-footer .n-notification-main-footer__action {
+
+ cursor: pointer;
+ transition: color .3s var(--n-bezier-ease-out);
+ color: var(--n-action-text-color);
+ 
+}
+
+.n-notification-container .n-notification .n-notification-main .n-notification-main__header {
+
+ font-weight: var(--n-title-font-weight);
+ font-size: var(--n-title-font-size);
+ transition: color .3s var(--n-bezier-ease-out);
+ color: var(--n-title-text-color);
+ 
+}
+
+.n-notification-container .n-notification .n-notification-main .n-notification-main__description {
+
+ margin-top: 8px;
+ font-size: var(--n-description-font-size);
+ white-space: pre-wrap;
+ word-wrap: break-word;
+ transition: color .3s var(--n-bezier-ease-out);
+ color: var(--n-description-text-color);
+ 
+}
+
+.n-notification-container .n-notification .n-notification-main .n-notification-main__content {
+
+ line-height: var(--n-line-height);
+ margin: 12px 0 0 0;
+ font-family: inherit;
+ white-space: pre-wrap;
+ word-wrap: break-word;
+ transition: color .3s var(--n-bezier-ease-out);
+ color: var(--n-text-color);
+ 
+}
+
+.n-notification-container .n-notification .n-notification-main .n-notification-main__content:first-child {
+margin: 0;
+}</style><link href="RFC%207194%20-%20Default%20Port%20for%20Internet%20Relay%20Chat%20(IRC)%20via%20TLS_SSL_bestanden/import_002.css" rel="stylesheet">
+        <link href="RFC%207194%20-%20Default%20Port%20for%20Internet%20Relay%20Chat%20(IRC)%20via%20TLS_SSL_bestanden/import.css" rel="stylesheet">
+        
+            <link rel="stylesheet" href="RFC%207194%20-%20Default%20Port%20for%20Internet%20Relay%20Chat%20(IRC)%20via%20TLS_SSL_bestanden/document_html_referenced.css">
+            
+            <script type="text/javascript" async="" defer="defer" src="RFC%207194%20-%20Default%20Port%20for%20Internet%20Relay%20Chat%20(IRC)%20via%20TLS_SSL_bestanden/matomo.js"></script><script type="module" crossorigin="" src="RFC%207194%20-%20Default%20Port%20for%20Internet%20Relay%20Chat%20(IRC)%20via%20TLS_SSL_bestanden/embedded-408116f0.js"></script>
+<link href="https://static.ietf.org/dt/12.37.0/assets/create-pinia-singleton-400c8f5f.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script">
+<link href="https://static.ietf.org/dt/12.37.0/assets/Scrollbar-dcf5a4d3.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script">
+            <script src="RFC%207194%20-%20Default%20Port%20for%20Internet%20Relay%20Chat%20(IRC)%20via%20TLS_SSL_bestanden/document_html.js"></script>
+            <script src="RFC%207194%20-%20Default%20Port%20for%20Internet%20Relay%20Chat%20(IRC)%20via%20TLS_SSL_bestanden/theme.js"></script>
+        
+        <link rel="alternate" type="application/atom+xml" href="https://datatracker.ietf.org/feed/document-changes/rfc7194/" aria-label="Document changes" data-bs-original-title="Document changes">
+        <meta name="description" content="Default Port for Internet Relay Chat (IRC) via TLS/SSL (RFC 7194, )">
+        
+
+<link rel="apple-touch-icon" sizes="180x180" href="https://static.ietf.org/dt/12.37.0/ietf/images/ietf-logo-nor-180.png">
+<link rel="icon" sizes="32x32" href="https://static.ietf.org/dt/12.37.0/ietf/images/ietf-logo-nor-32.png">
+<link rel="icon" sizes="16x16" href="https://static.ietf.org/dt/12.37.0/ietf/images/ietf-logo-nor-16.png">
+<link rel="manifest" href="https://datatracker.ietf.org/site.webmanifest">
+<link rel="mask-icon" href="https://static.ietf.org/dt/12.37.0/ietf/images/ietf-logo-nor-mask.svg" color="#ffffff">
+<meta name="msapplication-TileColor" content="#ffffff">
+<meta name="theme-color" content="#ffffff">
+        
+
+
+
+
+<meta property="og:title" content="RFC 7194: Default Port for Internet Relay Chat (IRC) via TLS/SSL">
+<meta property="og:url" content="https://datatracker.ietf.org/doc/html/rfc7194">
+<link rel="canonical" href="https://datatracker.ietf.org/doc/html/rfc7194">
+<meta property="og:site_name" content="IETF Datatracker">
+<meta property="og:description" content="This document describes the commonly accepted practice of listening on TCP port 6697 for incoming Internet Relay Chat (IRC) connections encrypted via TLS/SSL.">
+<meta property="og:type" content="article">
+
+<meta property="article:section" content="Individual Internet-Draft">
+
+<meta property="article:author" content="Richard Michael Hartmann">
+
+
+
+        
+        <style>
+            
+            .diff-form .select2-selection__rendered {
+                direction: rtl;
+                text-align: left;
+            }
+        </style>
+    <link rel="modulepreload" as="script" crossorigin="" href="https://static.ietf.org/dt/12.37.0/assets/Status-3f2625bf.js"><style>:is([id*='google_ads_iframe'],[id*='taboola-'],.taboolaHeight,.taboola-placeholder,#top-ad,#credential_picker_container,#credentials-picker-container,#credential_picker_iframe,[id*='google-one-tap-iframe'],#google-one-tap-popup-container,.google-one-tap__module,.google-one-tap-modal-div,#amp_floatingAdDiv,#ez-content-blocker-container) {display:none!important;min-height:0!important;height:0!important;}</style></head>
+    <body>
+        
+        <noscript><iframe class="status" title="Site status" src="/status/latest"></iframe></noscript>
+<div class="vue-embed" data-component="Status" data-v-app=""><div class="n-config-provider"><!----><!----><!----></div></div>
+        <div class="btn-toolbar sidebar-toolbar position-fixed top-0 end-0 m-2 m-lg-3 d-print-none">
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary btn-sm me-1 dropdown-toggle d-flex align-items-center" id="bd-theme" type="button" aria-expanded="false" data-bs-toggle="dropdown" aria-label="Toggle theme">
+                        <i class="theme-icon-active bi bi-circle-half"></i>
+                </button>
+
+                <ul class="dropdown-menu" aria-labelledby="bd-theme">
+                    <li>
+                        <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="light" aria-pressed="false">
+                            <i class="me-2 opacity-50 theme-icon bi bi-sun-fill"></i>
+                            Light<i class="bi bi-check2 ms-auto d-none"></i>
+                        </button>
+                    </li>
+                    <li>
+                        <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="dark" aria-pressed="false">
+                            <i class="me-2 opacity-50 theme-icon bi bi-moon-stars-fill"></i>
+                            Dark<i class="bi bi-check2 ms-auto d-none"></i>
+                        </button>
+                    </li>
+                    <li>
+                        <button type="button" class="dropdown-item d-flex align-items-center active" data-bs-theme-value="auto" aria-pressed="true">
+                            <i class="me-2 opacity-50 theme-icon bi bi-circle-half"></i>
+                            Auto<i class="bi bi-check2 ms-auto d-none"></i>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            <button class="btn btn-outline-secondary btn-sm sidebar-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar" aria-expanded="true" aria-controls="sidebar" aria-label="Toggle metadata sidebar" data-bs-original-title="Toggle metadata sidebar">
+            <i class="bi bi-arrow-bar-left sidebar-shown"></i>
+            <i class="bi bi-arrow-bar-right sidebar-collapsed"></i>
+            </button>
+        </div>
+        <nav class="navbar bg-light-subtle px-1 fixed-top d-print-none d-md-none">
+            <a class="nav-link ps-1" href="https://datatracker.ietf.org/doc/rfc7194/">
+                
+                    RFC 7194
+                
+                <br class="d-sm-none">
+
+                <span class="ms-sm-3 badge rounded-pill badge-inf">
+                    
+                        Informational
+                    
+                </span>
+            </a>
+            <button class="navbar-toggler p-1" type="button" data-bs-toggle="collapse" data-bs-target="#docinfo-collapse" aria-controls="docinfo-collapse" aria-expanded="false" aria-label="Show document information">
+                <span class="navbar-toggler-icon small"></span>
+            </button>
+            <div class="navbar-nav navbar-nav-scroll overscroll-none collapse pt-1" id="docinfo-collapse">
+                <div class="bg-light-subtle p-0">
+                    <table class="table table-sm table-borderless small">
+                        <tbody class="meta align-top">
+                            <tr>
+                                <th scope="row"></th>
+                                <th scope="row">Title</th>
+                                <td class="edit"></td>
+                                <td>Default Port for Internet Relay Chat (IRC) via TLS/SSL</td>
+                            </tr>
+                        </tbody>
+                        
+
+
+
+
+
+
+
+<tbody class="meta align-top ">
+    <tr>
+        <th scope="row">Document</th>
+        <th scope="row">Document type</th>
+        <td class="edit"></td>
+        <td>
+            
+
+
+
+
+
+<span class="text-success">RFC
+    
+    - Informational
+    
+</span>
+
+            
+                
+                    <br>August 2014
+                
+                <br>
+                
+                
+                    <a class="btn btn-sm btn-warning" href="https://www.rfc-editor.org/errata.php#reportnew" target="_blank" data-bs-original-title="Click to report an error in the document.">
+                        Report errata
+                    </a>
+                
+                
+                
+                
+                
+                <div>Updates <a href="https://datatracker.ietf.org/doc/html/rfc1459" data-bs-original-title="Internet Relay Chat Protocol">RFC 1459</a></div>
+                
+                
+                
+                    <div>
+                        Was
+                        <a href="https://datatracker.ietf.org/doc/draft-hartmann-default-port-for-irc-via-tls-ssl/09/">draft-hartmann-default-port-for-irc-via-tls-ssl</a>
+                        (individual)
+                    </div>
+                
+            
+            
+            
+                
+
+
+
+
+    
+        <div class="alert alert-warning small p-2 mt-2" role="alert">
+            This RFC was published on the Independent Submission stream.
+            This RFC is <strong>not endorsed by the IETF</strong> and has <strong>no formal standing</strong> in the
+            <a href="https://datatracker.ietf.org/doc/rfc2026/">IETF standards process</a>.
+        </div>
+    
+
+            
+        </td>
+    </tr>
+    
+        <tr>
+            <td></td>
+            <th scope="row">Select version</th>
+            <td class="edit"></td>
+            <td>
+                
+
+
+
+    <ul class="revision-list pagination pagination-sm text-center flex-wrap my-0">
+        
+            
+            
+                
+                    <li class="page-item">
+                        <a class="page-link" href="https://datatracker.ietf.org/doc/html/draft-hartmann-default-port-for-irc-via-tls-ssl-07" rel="nofollow">
+                            07
+                        </a>
+                    </li>
+                
+                    <li class="page-item">
+                        <a class="page-link" href="https://datatracker.ietf.org/doc/html/draft-hartmann-default-port-for-irc-via-tls-ssl-08" rel="nofollow">
+                            08
+                        </a>
+                    </li>
+                
+                    <li class="page-item">
+                        <a class="page-link" href="https://datatracker.ietf.org/doc/html/draft-hartmann-default-port-for-irc-via-tls-ssl-09" rel="nofollow">
+                            09
+                        </a>
+                    </li>
+                
+            
+            
+            <li class="page-item rfc active">
+                <a class="page-link" href="https://datatracker.ietf.org/doc/html/rfc7194">
+                    RFC 7194
+                </a>
+            </li>
+        
+    </ul>
+
+            </td>
+        </tr>
+        
+            <tr>
+                <td></td>
+                <th scope="row">Compare versions</th>
+                <td class="edit"></td>
+                <td>
+                    
+
+
+
+<form class="form-horizontal diff-form" action="https://author-tools.ietf.org/iddiff" method="get" target="_blank">
+
+            <select class="form-select form-select-sm mb-1 select2-field select2-hidden-accessible" data-max-entries="1" data-width="resolve" data-allow-clear="false" data-minimum-input-length="0" aria-label="From revision" name="url1" data-select2-id="select2-data-1-qbr1" tabindex="-1" aria-hidden="true">
+                
+                    <option value="rfc7194">
+                        RFC 7194
+                        
+                    </option>
+                
+                    <option value="draft-hartmann-default-port-for-irc-via-tls-ssl-09" selected="selected" data-select2-id="select2-data-3-i9jc">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-09
+                        
+                    </option>
+                
+                    <option value="draft-hartmann-default-port-for-irc-via-tls-ssl-08">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-08
+                        
+                    </option>
+                
+                    <option value="draft-hartmann-default-port-for-irc-via-tls-ssl-07">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-07
+                        
+                    </option>
+                
+                    <option value="draft-hartmann-default-port-for-irc-via-tls-ssl-06">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-06
+                        
+                    </option>
+                
+                    <option value="draft-hartmann-default-port-for-irc-via-tls-ssl-05">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-05
+                        
+                    </option>
+                
+                    <option value="draft-hartmann-default-port-for-irc-via-tls-ssl-04">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-04
+                        
+                    </option>
+                
+                    <option value="draft-hartmann-default-port-for-irc-via-tls-ssl-03">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-03
+                        
+                    </option>
+                
+                    <option value="draft-hartmann-default-port-for-irc-via-tls-ssl-02">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-02
+                        
+                    </option>
+                
+                    <option value="draft-hartmann-default-port-for-irc-via-tls-ssl-01">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-01
+                        
+                    </option>
+                
+                    <option value="draft-hartmann-default-port-for-irc-via-tls-ssl-00">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-00
+                        
+                    </option>
+                
+                
+            </select><span class="select2 select2-container select2-container--bootstrap-5" dir="ltr" data-select2-id="select2-data-2-ym69" style="width: auto;"><span class="selection"><span class="select2-selection select2-selection--single form-select form-select-sm mb-1" role="combobox" aria-haspopup="true" aria-expanded="false" tabindex="0" aria-disabled="false" aria-labelledby="select2-url1-5d-container" aria-controls="select2-url1-5d-container"><span class="select2-selection__rendered" id="select2-url1-5d-container" role="textbox" aria-readonly="true" title="
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-09
+                        
+                    ">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-09
+                        
+                    </span><span class="select2-selection__arrow" role="presentation"><b role="presentation"></b></span></span></span><span class="dropdown-wrapper" aria-hidden="true"></span></span>
+
+            <select class="form-select form-select-sm mb-1 select2-field select2-hidden-accessible" data-max-entries="1" data-width="resolve" data-allow-clear="false" data-minimum-input-length="0" aria-label="To revision" name="url2" data-select2-id="select2-data-4-fp6f" tabindex="-1" aria-hidden="true">
+                
+                    <option value="rfc7194" selected="selected" data-select2-id="select2-data-6-joww">
+                        RFC 7194
+                        
+                    </option>
+                
+                    <option value="draft-hartmann-default-port-for-irc-via-tls-ssl-09">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-09
+                        
+                    </option>
+                
+                    <option value="draft-hartmann-default-port-for-irc-via-tls-ssl-08">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-08
+                        
+                    </option>
+                
+                    <option value="draft-hartmann-default-port-for-irc-via-tls-ssl-07">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-07
+                        
+                    </option>
+                
+                    <option value="draft-hartmann-default-port-for-irc-via-tls-ssl-06">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-06
+                        
+                    </option>
+                
+                    <option value="draft-hartmann-default-port-for-irc-via-tls-ssl-05">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-05
+                        
+                    </option>
+                
+                    <option value="draft-hartmann-default-port-for-irc-via-tls-ssl-04">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-04
+                        
+                    </option>
+                
+                    <option value="draft-hartmann-default-port-for-irc-via-tls-ssl-03">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-03
+                        
+                    </option>
+                
+                    <option value="draft-hartmann-default-port-for-irc-via-tls-ssl-02">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-02
+                        
+                    </option>
+                
+                    <option value="draft-hartmann-default-port-for-irc-via-tls-ssl-01">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-01
+                        
+                    </option>
+                
+                    <option value="draft-hartmann-default-port-for-irc-via-tls-ssl-00">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-00
+                        
+                    </option>
+                
+                
+            </select><span class="select2 select2-container select2-container--bootstrap-5" dir="ltr" data-select2-id="select2-data-5-kgfh" style="width: auto;"><span class="selection"><span class="select2-selection select2-selection--single form-select form-select-sm mb-1" role="combobox" aria-haspopup="true" aria-expanded="false" tabindex="0" aria-disabled="false" aria-labelledby="select2-url2-vb-container" aria-controls="select2-url2-vb-container"><span class="select2-selection__rendered" id="select2-url2-vb-container" role="textbox" aria-readonly="true" title="
+                        RFC 7194
+                        
+                    ">
+                        RFC 7194
+                        
+                    </span><span class="select2-selection__arrow" role="presentation"><b role="presentation"></b></span></span></span><span class="dropdown-wrapper" aria-hidden="true"></span></span>
+
+            <button type="submit" class="btn btn-primary btn-sm" value="--html" name="difftype">
+                Side-by-side
+            </button>
+            
+            <button type="submit" class="btn btn-primary btn-sm" value="--hwdiff" name="difftype">
+                Inline
+            </button>
+
+</form>
+                </td>
+            </tr>
+        
+    
+    <tr>
+        <td></td>
+        <th scope="row">Author</th>
+        <td class="edit">
+            
+        </td>
+        <td>
+            
+            
+                <span><a href="https://datatracker.ietf.org/person/richih+ietf.org@richih.org" data-bs-original-title="Datatracker profile of Richard Michael Hartmann">Richard Michael Hartmann</a> <a href="mailto:richih%2Bietf.org%40richih.org" aria-label="Compose email to richih+ietf.org@richih.org" data-bs-original-title="Compose email to richih+ietf.org@richih.org">
+                <i class="bi bi-envelope"></i></a></span>
+            
+            
+                <br>
+                <a class="btn btn-primary btn-sm mt-1" href="mailto:rfc7194@ietf.org?subject=rfc7194" data-bs-original-title="Send email to the document authors">Email authors</a>
+            
+        </td>
+    </tr>
+    
+    
+    <tr>
+        <td></td>
+        <th scope="row">
+            RFC stream
+        </th>
+        <td class="edit">
+            
+        </td>
+        <td>
+            
+                
+                    <a href="https://datatracker.ietf.org/stream/ise/">
+                
+                
+                    
+                        Independent Submission
+                    
+                
+                
+                    </a>
+                
+            
+        </td>
+    </tr>
+    
+    <tr>
+        <td></td>
+        <th scope="row">
+            Other formats
+        </th>
+        <td class="edit">
+        </td>
+        <td>
+            
+                
+    <div class="buttonlist">
+    
+        
+        <a class="btn btn-primary btn-sm" target="_blank" href="https://www.rfc-editor.org/rfc/rfc7194.txt">
+            
+                <i class="bi bi-file-text"></i> txt
+            
+        </a>
+        
+    
+        
+        <a class="btn btn-primary btn-sm" target="_blank" href="https://www.rfc-editor.org/rfc/rfc7194.html">
+            
+                <i class="bi bi-file-code"></i> html
+            
+        </a>
+        
+    
+        
+        <a class="btn btn-primary btn-sm" download="rfc7194.pdf" target="_blank" href="https://www.rfc-editor.org/rfc/pdfrfc/rfc7194.txt.pdf">
+            
+                <i class="bi bi-file-pdf"></i> pdf
+            
+        </a>
+        
+    
+        
+    
+        
+        <a class="btn btn-primary btn-sm" target="_blank" href="https://datatracker.ietf.org/doc/rfc7194/bibtex/">
+            
+                <i class="bi bi-file-ruled"></i> bibtex
+            
+        </a>
+        
+    
+</div>
+
+            
+        </td>
+    </tr>
+    
+    
+        
+    
+</tbody>
+                        <tbody><tr>
+                            <th scope="row"></th>
+                            <th scope="row"></th>
+                            <td class="edit"></td>
+                            <td>
+                                <a class="btn btn-sm btn-warning mb-3" target="_blank" href="https://github.com/ietf-tools/datatracker/issues/new/choose">
+                                    Report a bug
+                                    <i class="bi bi-bug"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody></table>
+                </div>
+            </div>
+        </nav>
+        <div class="row g-0">
+            <div class="col-md-9 d-flex justify-content-center lh-sm" data-bs-spy="scroll" data-bs-target="#toc-nav" data-bs-smooth-scroll="true" tabindex="0" id="content">
+                
+                    <div class="rfcmarkup">
+                        <br class="noprint">
+                        <!-- [html-validate-disable-block attr-quotes, void-style, element-permitted-content, heading-level -- FIXME: rfcmarkup/rfc2html generates HTML with issues] -->
+                        <div class="rfcmarkup"><pre>Independent Submission                                       R. Hartmann
+Request for Comments: 7194                                   August 2014
+Updates: <a href="https://datatracker.ietf.org/doc/html/rfc1459">1459</a>
+Category: Informational
+ISSN: 2070-1721
+
+
+         <span class="h1">Default Port for Internet Relay Chat (IRC) via TLS/SSL</span>
+
+Abstract
+
+   This document describes the commonly accepted practice of listening
+   on TCP port 6697 for incoming Internet Relay Chat (IRC) connections
+   encrypted via TLS/SSL.
+
+Status of This Memo
+
+   This document is not an Internet Standards Track specification; it is
+   published for informational purposes.
+
+   This is a contribution to the RFC Series, independently of any other
+   RFC stream.  The RFC Editor has chosen to publish this document at
+   its discretion and makes no statement about its value for
+   implementation or deployment.  Documents approved for publication by
+   the RFC Editor are not a candidate for any level of Internet
+   Standard; see <a href="https://datatracker.ietf.org/doc/html/rfc5741#section-2">Section&nbsp;2 of RFC 5741</a>.
+
+   Information about the current status of this document, any errata,
+   and how to provide feedback on it may be obtained at
+   <a href="http://www.rfc-editor.org/info/rfc7194">http://www.rfc-editor.org/info/rfc7194</a>.
+
+Copyright Notice
+
+   Copyright (c) 2014 IETF Trust and the persons identified as the
+   document authors.  All rights reserved.
+
+   This document is subject to <a href="https://datatracker.ietf.org/doc/html/bcp78">BCP 78</a> and the IETF Trust's Legal
+   Provisions Relating to IETF Documents
+   (<a href="http://trustee.ietf.org/license-info">http://trustee.ietf.org/license-info</a>) in effect on the date of
+   publication of this document.  Please review these documents
+   carefully, as they describe your rights and restrictions with respect
+   to this document.
+
+
+
+
+
+
+
+
+
+<span class="grey">Hartmann                      Informational                     [Page 1]</span></pre>
+<hr class="noprint"><!--NewPage--><pre class="newpage"><span id="page-2"></span>
+<span class="grey"><a href="https://datatracker.ietf.org/doc/html/rfc7194">RFC 7194</a>            Default Port for IRC via TLS/SSL         August 2014</span>
+
+
+Table of Contents
+
+   <a href="#section-1">1</a>. Rationale .......................................................<a href="#page-2">2</a>
+   <a href="#section-2">2</a>. Technical Details ...............................................<a href="#page-2">2</a>
+      <a href="#section-2.1">2.1</a>. Connection Establishment ...................................<a href="#page-2">2</a>
+      <a href="#section-2.2">2.2</a>. Certificate Details ........................................<a href="#page-3">3</a>
+           <a href="#section-2.2.1">2.2.1</a>. Server Certificate ..................................<a href="#page-3">3</a>
+           <a href="#section-2.2.2">2.2.2</a>. Client Certificate ..................................<a href="#page-3">3</a>
+   <a href="#section-3">3</a>. Security Considerations .........................................<a href="#page-3">3</a>
+   <a href="#section-4">4</a>. IANA Considerations .............................................<a href="#page-4">4</a>
+   <a href="#section-5">5</a>. Normative References ............................................<a href="#page-4">4</a>
+   <a href="#section-6">6</a>. Informative References ..........................................<a href="#page-4">4</a>
+   <a href="#section-7">7</a>. Acknowledgements ................................................<a href="#page-5">5</a>
+   <a href="#appendix-A">Appendix A</a>. Supporting Data ........................................<a href="#page-6">6</a>
+
+<span class="h2" id="autoid-1"><a class="selflink" id="section-1" href="#section-1">1</a>.  Rationale</span>
+
+   Although system port assignments exist for IRC traffic that is plain
+   text (TCP/UDP port 194) or TLS/SSL encrypted (TCP/UDP port 994)
+   [<a href="#ref-IANALIST" data-bs-original-title="&quot;Service Name and Transport Protocol Port Number Registry&quot;">IANALIST</a>], it is common practice amongst IRC networks not to use
+   them for reasons of convenience and general availability on systems
+   where no root access is granted or desired.
+
+   IRC networks have defaulted to listening on TCP port 6667 for plain
+   text connections for a considerable time now.  This is covered by the
+   IRCU assignment of TCP/UDP ports 6665-6669.
+
+   Similar consensus has been reached within the IRC community about
+   listening on TCP port 6697 for incoming IRC connections encrypted via
+   TLS/SSL [<a href="https://datatracker.ietf.org/doc/html/rfc5246" data-bs-original-title="&quot;The Transport Layer Security (TLS) Protocol Version 1.2&quot;">RFC5246</a>].
+
+<span class="h2" id="autoid-2"><a class="selflink" id="section-2" href="#section-2">2</a>.  Technical Details</span>
+
+<span class="h3" id="autoid-3"><a class="selflink" id="section-2.1" href="#section-2.1">2.1</a>.  Connection Establishment</span>
+
+   An IRC client connects to an IRC server.  Immediately after that, a
+   normal TLS/SSL handshake takes place.  Once the TLS/SSL connection
+   has been established, a normal IRC connection is established via the
+   tunnel.  Optionally, the IRC server may set a specific user mode
+   (umode) for the client, marking it as using TLS/SSL.  Again,
+   optionally, an IRC server might offer the option to create channels
+   in such a way that only clients connected via TLS/SSL may join.
+
+   For details on how IRC works, see [<a href="https://datatracker.ietf.org/doc/html/rfc1459" data-bs-original-title="&quot;Internet Relay Chat Protocol&quot;">RFC1459</a>], [<a href="https://datatracker.ietf.org/doc/html/rfc2810" data-bs-original-title="&quot;Internet Relay Chat: Architecture&quot;">RFC2810</a>], [<a href="https://datatracker.ietf.org/doc/html/rfc2811" data-bs-original-title="&quot;Internet Relay Chat: Channel Management&quot;">RFC2811</a>],
+   [<a href="https://datatracker.ietf.org/doc/html/rfc2812" data-bs-original-title="&quot;Internet Relay Chat: Client Protocol&quot;">RFC2812</a>], and [<a href="https://datatracker.ietf.org/doc/html/rfc2813" data-bs-original-title="&quot;Internet Relay Chat: Server Protocol&quot;">RFC2813</a>].  Please note that IRC is extremely
+   fragmented, and implementation details can vary wildly.  Most
+   implementations regard the latter RFCs as suggestions, not as
+   binding.
+
+
+
+<span class="grey">Hartmann                      Informational                     [Page 2]</span></pre>
+<hr class="noprint"><!--NewPage--><pre class="newpage"><span id="page-3"></span>
+<span class="grey"><a href="https://datatracker.ietf.org/doc/html/rfc7194">RFC 7194</a>            Default Port for IRC via TLS/SSL         August 2014</span>
+
+
+<span class="h3" id="autoid-4"><a class="selflink" id="section-2.2" href="#section-2.2">2.2</a>.  Certificate Details</span>
+
+<span class="h4" id="autoid-5"><a class="selflink" id="section-2.2.1" href="#section-2.2.1">2.2.1</a>.  Server Certificate</span>
+
+   The IRC server's certificate should be issued by a commonly trusted
+   certification authority (CA).
+
+   The Common Name should match the Fully Qualified Domain Name (FQDN)
+   of the IRC server or have appropriate wildcards, if applicable.
+
+   The IRC client should verify the certificate.
+
+<span class="h4" id="autoid-6"><a class="selflink" id="section-2.2.2" href="#section-2.2.2">2.2.2</a>.  Client Certificate</span>
+
+   If the client is using a certificate as well, it should be issued by
+   a commonly trusted CA or a CA designated by the IRC network.
+
+   The certificate's Common Name should match the main IRC nickname.
+
+   If the network offers nick registration, this nick should be used.
+
+   If the network offers grouped nicks, the main nick or account name
+   should be used.
+
+   If the network offers nick registration, the client certificate
+   should be used to identify the user against the nick database.  See
+   [<a href="#ref-CERTFP" data-bs-original-title="&quot;OFTC - NickServ/CertFP&quot;">CERTFP</a>] for a possible implementation.
+
+<span class="h2" id="autoid-7"><a class="selflink" id="section-3" href="#section-3">3</a>.  Security Considerations</span>
+
+   The lack of a common, well-established listening port for IRC via
+   TLS/SSL could lead to end users being unaware of their IRC network of
+   choice supporting TLS/SSL.  Thus, they might not use encryption even
+   if they wanted to.
+
+   It should be noted that this document merely describes client-to-
+   server encryption.  There are still other attack vectors like
+   malicious administrators, compromised servers, insecure server-to-
+   server communication, channels that do not enforce encryption for all
+   channel members, malicious clients, or comprised client machines on
+   which logs are stored.
+
+   Those attacks can by their very nature not be addressed by client-to-
+   server encryption.  Additional safeguards are needed if a user fears
+   any of the threats above.
+
+
+
+
+
+
+<span class="grey">Hartmann                      Informational                     [Page 3]</span></pre>
+<hr class="noprint"><!--NewPage--><pre class="newpage"><span id="page-4"></span>
+<span class="grey"><a href="https://datatracker.ietf.org/doc/html/rfc7194">RFC 7194</a>            Default Port for IRC via TLS/SSL         August 2014</span>
+
+
+   This document does not address server links as there are no commonly
+   accepted ports or even back-end protocols.  Ports and back-end
+   protocols are normally established in a bilateral agreement.  All
+   operators are encouraged to use strong encryption for back-end
+   traffic, no matter if they offer IRC via TLS/SSL to end users.
+
+<span class="h2" id="autoid-8"><a class="selflink" id="section-4" href="#section-4">4</a>.  IANA Considerations</span>
+
+   An assignment of TCP port 6697 for IRC via TLS/SSL has been made.
+   The service name is "ircs-u" and the description "Internet Relay Chat
+   via TLS/SSL":
+
+   ircs-u  6697/tcp       Internet Relay Chat via TLS/SSL
+
+<span class="h2" id="autoid-9"><a class="selflink" id="section-5" href="#section-5">5</a>.  Normative References</span>
+
+   [<a id="ref-RFC1459">RFC1459</a>]  Oikarinen, J. and D. Reed, "Internet Relay Chat Protocol",
+              <a href="https://datatracker.ietf.org/doc/html/rfc1459">RFC 1459</a>, May 1993.
+
+   [<a id="ref-RFC2810">RFC2810</a>]  Kalt, C., "Internet Relay Chat: Architecture", <a href="https://datatracker.ietf.org/doc/html/rfc2810">RFC 2810</a>,
+              April 2000.
+
+   [<a id="ref-RFC2811">RFC2811</a>]  Kalt, C., "Internet Relay Chat: Channel Management", <a href="https://datatracker.ietf.org/doc/html/rfc2811">RFC</a>
+              <a href="https://datatracker.ietf.org/doc/html/rfc2811">2811</a>, April 2000.
+
+   [<a id="ref-RFC2812">RFC2812</a>]  Kalt, C., "Internet Relay Chat: Client Protocol", <a href="https://datatracker.ietf.org/doc/html/rfc2812">RFC</a>
+              <a href="https://datatracker.ietf.org/doc/html/rfc2812">2812</a>, April 2000.
+
+   [<a id="ref-RFC2813">RFC2813</a>]  Kalt, C., "Internet Relay Chat: Server Protocol", <a href="https://datatracker.ietf.org/doc/html/rfc2813">RFC</a>
+              <a href="https://datatracker.ietf.org/doc/html/rfc2813">2813</a>, April 2000.
+
+   [<a id="ref-RFC5246">RFC5246</a>]  Dierks, T. and E. Rescorla, "The Transport Layer Security
+              (TLS) Protocol Version 1.2", <a href="https://datatracker.ietf.org/doc/html/rfc5246">RFC 5246</a>, August 2008.
+
+<span class="h2" id="autoid-10"><a class="selflink" id="section-6" href="#section-6">6</a>.  Informative References</span>
+
+   [<a id="ref-IANALIST">IANALIST</a>] IANA, "Service Name and Transport Protocol Port Number
+              Registry", &lt;<a href="http://www.iana.org/assignments/service-names-port-numbers">http://www.iana.org/assignments/</a>
+              <a href="http://www.iana.org/assignments/service-names-port-numbers">service-names-port-numbers</a>&gt;.
+
+   [<a id="ref-TOP100">TOP100</a>]   netsplit.de, "IRC Networks - Top 100",
+              &lt;<a href="http://irc.netsplit.de/networks/top100.php">http://irc.netsplit.de/networks/top100.php</a>&gt;.
+
+   [<a id="ref-MAVERICK">MAVERICK</a>] netsplit.de, "IRC Networks - in alphabetical order",
+              &lt;<a href="http://irc.netsplit.de/networks/lists.php?query=maverick">http://irc.netsplit.de/networks/</a>
+              <a href="http://irc.netsplit.de/networks/lists.php?query=maverick">lists.php?query=maverick</a>&gt;.
+
+
+
+
+
+<span class="grey">Hartmann                      Informational                     [Page 4]</span></pre>
+<hr class="noprint"><!--NewPage--><pre class="newpage"><span id="page-5"></span>
+<span class="grey"><a href="https://datatracker.ietf.org/doc/html/rfc7194">RFC 7194</a>            Default Port for IRC via TLS/SSL         August 2014</span>
+
+
+   [<a id="ref-CERTFP">CERTFP</a>]   The Open and Free Technology Community, "OFTC -
+              NickServ/CertFP",
+              &lt;<a href="http://www.oftc.net/oftc/NickServ/CertFP">http://www.oftc.net/oftc/NickServ/CertFP</a>&gt;.
+
+<span class="h2" id="autoid-11"><a class="selflink" id="section-7" href="#section-7">7</a>.  Acknowledgements</span>
+
+   Thanks go to the IRC community at large for reaching a consensus.
+
+   Special thanks go to the IRC operators who were eager to support port
+   6697 on their respective networks.
+
+   Special thanks also go to Nevil Brownlee and James Schaad for working
+   on this document in their capacities as Independent Submissions
+   Editor and Reviewer, respectively.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<span class="grey">Hartmann                      Informational                     [Page 5]</span></pre>
+<hr class="noprint"><!--NewPage--><pre class="newpage"><span id="page-6"></span>
+<span class="grey"><a href="https://datatracker.ietf.org/doc/html/rfc7194">RFC 7194</a>            Default Port for IRC via TLS/SSL         August 2014</span>
+
+
+<span class="h2" id="autoid-12"><a class="selflink" id="appendix-A" href="#appendix-A">Appendix A</a>.  Supporting Data</span>
+
+   As of October 2010, out of the top twenty IRC networks [<a href="#ref-TOP100" data-bs-original-title="&quot;IRC Networks - Top 100&quot;">TOP100</a>]
+   [<a href="#ref-MAVERICK" data-bs-original-title="&quot;IRC Networks - in alphabetical order&quot;">MAVERICK</a>], ten support TLS/SSL.  Only one of those networks does not
+   support TLS/SSL via port 6697 and has no plans to support it.  All
+   others supported it already or are supporting it since being
+   contacted by the author.  A more detailed analysis is available but
+   does not fit within the scope of this document.
+
+Authors' Address
+
+   Richard Hartmann
+   Munich
+   Germany
+
+   EMail: richih.mailinglist@gmail.com
+   URI:   <a href="http://richardhartmann.de/">http://richardhartmann.de</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Hartmann                      Informational                     [Page 6]
+</pre></div>
+                    </div>
+                
+            </div>
+            <div class="d-print-none col-md-3 bg-light-subtle collapse show" id="sidebar">
+                <div class="position-fixed border-start sidebar overflow-scroll overscroll-none no-scrollbar">
+                    <div class="d-flex flex-column vh-100 pt-2 pt-lg-3 ps-3 pl-md-2 pl-lg-3">
+                        <div>
+                            <a class="btn btn-primary btn-sm" href="https://datatracker.ietf.org/doc/rfc7194/">Datatracker</a>
+                            <p class="fw-bold pt-2">
+                                
+                                    RFC 7194
+                                
+                                <br>
+                                
+
+
+
+
+
+<span class="text-success">RFC
+    
+    - Informational
+    
+</span>
+
+                            </p>
+                        </div>
+                        
+                        <ul class="nav nav-tabs nav-fill small me-2" role="tablist">
+                            <li class="nav-item" role="presentation" data-bs-original-title="Document information">
+                                <button class="nav-link px-2 active" id="docinfo-tab" data-bs-toggle="tab" data-bs-target="#docinfo-tab-pane" type="button" role="tab" aria-controls="docinfo-tab-pane" aria-selected="true">
+                                    <i class="bi bi-info-circle"></i><span class="d-none d-md-block d-xl-inline ms-xl-1">Info</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation" data-bs-original-title="Table of contents">
+                                <button class="nav-link px-2" id="toc-tab" data-bs-toggle="tab" data-bs-target="#toc-tab-pane" type="button" role="tab" aria-controls="toc-tab-pane" aria-selected="false" tabindex="-1">
+                                    <i class="bi bi-list-ol"></i><span class="d-none d-md-block d-xl-inline ms-xl-1">Contents</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation" data-bs-original-title="Preferences">
+                                <button class="nav-link px-2" id="pref-tab" data-bs-toggle="tab" data-bs-target="#pref-tab-pane" type="button" role="tab" aria-controls="pref-tab-pane" aria-selected="false" tabindex="-1">
+                                    <i class="bi bi-gear"></i><span class="d-none d-md-block d-xl-inline ms-xl-1">Prefs</span>
+                                </button>
+                            </li>
+                        </ul>
+                        <div class="overflow-auto tab-content pt-2 me-2">
+                            <div class="tab-pane active show" id="docinfo-tab-pane" role="tabpanel" aria-labelledby="docinfo-tab" tabindex="0">
+                                <table class="table table-sm table-borderless">
+                                    
+
+
+
+
+
+
+
+<tbody class="meta align-top ">
+    <tr>
+        <th scope="row">Document</th>
+        <th scope="row">Document type</th>
+        <td class="edit"></td>
+        <td>
+            
+
+
+
+
+
+<span class="text-success">RFC
+    
+    - Informational
+    
+</span>
+
+            
+                
+                    <br>August 2014
+                
+                <br>
+                
+                
+                    <a class="btn btn-sm btn-warning" href="https://www.rfc-editor.org/errata.php#reportnew" target="_blank" data-bs-original-title="Click to report an error in the document.">
+                        Report errata
+                    </a>
+                
+                
+                
+                
+                
+                <div>Updates <a href="https://datatracker.ietf.org/doc/html/rfc1459" data-bs-original-title="Internet Relay Chat Protocol">RFC 1459</a></div>
+                
+                
+                
+                    <div>
+                        Was
+                        <a href="https://datatracker.ietf.org/doc/draft-hartmann-default-port-for-irc-via-tls-ssl/09/">draft-hartmann-default-port-for-irc-via-tls-ssl</a>
+                        (individual)
+                    </div>
+                
+            
+            
+            
+                
+
+
+
+
+    
+        <div class="alert alert-warning small p-2 mt-2" role="alert">
+            This RFC was published on the Independent Submission stream.
+            This RFC is <strong>not endorsed by the IETF</strong> and has <strong>no formal standing</strong> in the
+            <a href="https://datatracker.ietf.org/doc/rfc2026/">IETF standards process</a>.
+        </div>
+    
+
+            
+        </td>
+    </tr>
+    
+        <tr>
+            <td></td>
+            <th scope="row">Select version</th>
+            <td class="edit"></td>
+            <td>
+                
+
+
+
+    <ul class="revision-list pagination pagination-sm text-center flex-wrap my-0">
+        
+            
+            
+                
+                    <li class="page-item">
+                        <a class="page-link" href="https://datatracker.ietf.org/doc/html/draft-hartmann-default-port-for-irc-via-tls-ssl-07" rel="nofollow">
+                            07
+                        </a>
+                    </li>
+                
+                    <li class="page-item">
+                        <a class="page-link" href="https://datatracker.ietf.org/doc/html/draft-hartmann-default-port-for-irc-via-tls-ssl-08" rel="nofollow">
+                            08
+                        </a>
+                    </li>
+                
+                    <li class="page-item">
+                        <a class="page-link" href="https://datatracker.ietf.org/doc/html/draft-hartmann-default-port-for-irc-via-tls-ssl-09" rel="nofollow">
+                            09
+                        </a>
+                    </li>
+                
+            
+            
+            <li class="page-item rfc active">
+                <a class="page-link" href="https://datatracker.ietf.org/doc/html/rfc7194">
+                    RFC 7194
+                </a>
+            </li>
+        
+    </ul>
+
+            </td>
+        </tr>
+        
+            <tr>
+                <td></td>
+                <th scope="row">Compare versions</th>
+                <td class="edit"></td>
+                <td>
+                    
+
+
+
+<form class="form-horizontal diff-form" action="https://author-tools.ietf.org/iddiff" method="get" target="_blank">
+
+            <select class="form-select form-select-sm mb-1 select2-field select2-hidden-accessible" data-max-entries="1" data-width="resolve" data-allow-clear="false" data-minimum-input-length="0" aria-label="From revision" name="url1" data-select2-id="select2-data-7-hoy3" tabindex="-1" aria-hidden="true">
+                
+                    <option value="rfc7194">
+                        RFC 7194
+                        
+                    </option>
+                
+                    <option value="draft-hartmann-default-port-for-irc-via-tls-ssl-09" selected="selected" data-select2-id="select2-data-9-3opz">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-09
+                        
+                    </option>
+                
+                    <option value="draft-hartmann-default-port-for-irc-via-tls-ssl-08">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-08
+                        
+                    </option>
+                
+                    <option value="draft-hartmann-default-port-for-irc-via-tls-ssl-07">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-07
+                        
+                    </option>
+                
+                    <option value="draft-hartmann-default-port-for-irc-via-tls-ssl-06">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-06
+                        
+                    </option>
+                
+                    <option value="draft-hartmann-default-port-for-irc-via-tls-ssl-05">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-05
+                        
+                    </option>
+                
+                    <option value="draft-hartmann-default-port-for-irc-via-tls-ssl-04">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-04
+                        
+                    </option>
+                
+                    <option value="draft-hartmann-default-port-for-irc-via-tls-ssl-03">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-03
+                        
+                    </option>
+                
+                    <option value="draft-hartmann-default-port-for-irc-via-tls-ssl-02">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-02
+                        
+                    </option>
+                
+                    <option value="draft-hartmann-default-port-for-irc-via-tls-ssl-01">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-01
+                        
+                    </option>
+                
+                    <option value="draft-hartmann-default-port-for-irc-via-tls-ssl-00">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-00
+                        
+                    </option>
+                
+                
+            </select><span class="select2 select2-container select2-container--bootstrap-5" dir="ltr" data-select2-id="select2-data-8-zeky" style="width: 279.367px;"><span class="selection"><span class="select2-selection select2-selection--single form-select form-select-sm mb-1" role="combobox" aria-haspopup="true" aria-expanded="false" tabindex="0" aria-disabled="false" aria-labelledby="select2-url1-x0-container" aria-controls="select2-url1-x0-container"><span class="select2-selection__rendered" id="select2-url1-x0-container" role="textbox" aria-readonly="true" title="
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-09
+                        
+                    ">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-09
+                        
+                    </span><span class="select2-selection__arrow" role="presentation"><b role="presentation"></b></span></span></span><span class="dropdown-wrapper" aria-hidden="true"></span></span>
+
+            <select class="form-select form-select-sm mb-1 select2-field select2-hidden-accessible" data-max-entries="1" data-width="resolve" data-allow-clear="false" data-minimum-input-length="0" aria-label="To revision" name="url2" data-select2-id="select2-data-10-br5r" tabindex="-1" aria-hidden="true">
+                
+                    <option value="rfc7194" selected="selected" data-select2-id="select2-data-12-nwfh">
+                        RFC 7194
+                        
+                    </option>
+                
+                    <option value="draft-hartmann-default-port-for-irc-via-tls-ssl-09">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-09
+                        
+                    </option>
+                
+                    <option value="draft-hartmann-default-port-for-irc-via-tls-ssl-08">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-08
+                        
+                    </option>
+                
+                    <option value="draft-hartmann-default-port-for-irc-via-tls-ssl-07">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-07
+                        
+                    </option>
+                
+                    <option value="draft-hartmann-default-port-for-irc-via-tls-ssl-06">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-06
+                        
+                    </option>
+                
+                    <option value="draft-hartmann-default-port-for-irc-via-tls-ssl-05">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-05
+                        
+                    </option>
+                
+                    <option value="draft-hartmann-default-port-for-irc-via-tls-ssl-04">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-04
+                        
+                    </option>
+                
+                    <option value="draft-hartmann-default-port-for-irc-via-tls-ssl-03">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-03
+                        
+                    </option>
+                
+                    <option value="draft-hartmann-default-port-for-irc-via-tls-ssl-02">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-02
+                        
+                    </option>
+                
+                    <option value="draft-hartmann-default-port-for-irc-via-tls-ssl-01">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-01
+                        
+                    </option>
+                
+                    <option value="draft-hartmann-default-port-for-irc-via-tls-ssl-00">
+                        draft-hartmann-default-port-for-irc-via-tls-ssl-00
+                        
+                    </option>
+                
+                
+            </select><span class="select2 select2-container select2-container--bootstrap-5" dir="ltr" data-select2-id="select2-data-11-hixt" style="width: 279.367px;"><span class="selection"><span class="select2-selection select2-selection--single form-select form-select-sm mb-1" role="combobox" aria-haspopup="true" aria-expanded="false" tabindex="0" aria-disabled="false" aria-labelledby="select2-url2-xq-container" aria-controls="select2-url2-xq-container"><span class="select2-selection__rendered" id="select2-url2-xq-container" role="textbox" aria-readonly="true" title="
+                        RFC 7194
+                        
+                    ">
+                        RFC 7194
+                        
+                    </span><span class="select2-selection__arrow" role="presentation"><b role="presentation"></b></span></span></span><span class="dropdown-wrapper" aria-hidden="true"></span></span>
+
+            <button type="submit" class="btn btn-primary btn-sm" value="--html" name="difftype">
+                Side-by-side
+            </button>
+            
+            <button type="submit" class="btn btn-primary btn-sm" value="--hwdiff" name="difftype">
+                Inline
+            </button>
+
+</form>
+                </td>
+            </tr>
+        
+    
+    <tr>
+        <td></td>
+        <th scope="row">Author</th>
+        <td class="edit">
+            
+        </td>
+        <td>
+            
+            
+                <span><a href="https://datatracker.ietf.org/person/richih+ietf.org@richih.org" data-bs-original-title="Datatracker profile of Richard Michael Hartmann">Richard Michael Hartmann</a> <a href="mailto:richih%2Bietf.org%40richih.org" aria-label="Compose email to richih+ietf.org@richih.org" data-bs-original-title="Compose email to richih+ietf.org@richih.org">
+                <i class="bi bi-envelope"></i></a></span>
+            
+            
+                <br>
+                <a class="btn btn-primary btn-sm mt-1" href="mailto:rfc7194@ietf.org?subject=rfc7194" data-bs-original-title="Send email to the document authors">Email authors</a>
+            
+        </td>
+    </tr>
+    
+    
+    <tr>
+        <td></td>
+        <th scope="row">
+            RFC stream
+        </th>
+        <td class="edit">
+            
+        </td>
+        <td>
+            
+                
+                    <a href="https://datatracker.ietf.org/stream/ise/">
+                
+                
+                    
+                        Independent Submission
+                    
+                
+                
+                    </a>
+                
+            
+        </td>
+    </tr>
+    
+    <tr>
+        <td></td>
+        <th scope="row">
+            Other formats
+        </th>
+        <td class="edit">
+        </td>
+        <td>
+            
+                
+    <div class="buttonlist">
+    
+        
+        <a class="btn btn-primary btn-sm" target="_blank" href="https://www.rfc-editor.org/rfc/rfc7194.txt">
+            
+                <i class="bi bi-file-text"></i> txt
+            
+        </a>
+        
+    
+        
+        <a class="btn btn-primary btn-sm" target="_blank" href="https://www.rfc-editor.org/rfc/rfc7194.html">
+            
+                <i class="bi bi-file-code"></i> html
+            
+        </a>
+        
+    
+        
+        <a class="btn btn-primary btn-sm" download="rfc7194.pdf" target="_blank" href="https://www.rfc-editor.org/rfc/pdfrfc/rfc7194.txt.pdf">
+            
+                <i class="bi bi-file-pdf"></i> pdf
+            
+        </a>
+        
+    
+        
+    
+        
+        <a class="btn btn-primary btn-sm" target="_blank" href="https://datatracker.ietf.org/doc/rfc7194/bibtex/">
+            
+                <i class="bi bi-file-ruled"></i> bibtex
+            
+        </a>
+        
+    
+</div>
+
+            
+        </td>
+    </tr>
+    
+    
+        
+    
+</tbody>
+                                </table>
+                                <a class="btn btn-sm btn-warning mb-3" target="_blank" href="https://github.com/ietf-tools/datatracker/issues/new/choose">
+                                    Report a datatracker bug
+                                    <i class="bi bi-bug"></i>
+                                </a>
+                            </div>
+                            <div class="tab-pane mb-5" id="toc-tab-pane" role="tabpanel" aria-labelledby="toc-tab" tabindex="0">
+                                <nav class="nav nav-pills flex-column small" id="toc-nav">
+                                <a class="nav-link ps-1 d-flex hyphenate py-0" href="#autoid-1"><div class="pe-1">1.</div><div class="text-break">Rationale</div></a><a class="nav-link ps-1 d-flex hyphenate py-0" href="#autoid-2"><div class="pe-1">2.</div><div class="text-break">Technical Details</div></a><nav class="nav-pills ps-3 flex-column"><a class="nav-link ps-1 d-flex hyphenate py-0" href="#autoid-3"><div class="pe-1">2.1.</div><div class="text-break">Connection Establishment</div></a><a class="nav-link ps-1 d-flex hyphenate py-0" href="#autoid-4"><div class="pe-1">2.2.</div><div class="text-break">Certificate Details</div></a><nav class="nav-pills ps-3 flex-column"><a class="nav-link ps-1 d-flex hyphenate py-0" href="#autoid-5"><div class="pe-1">2.2.1.</div><div class="text-break">Server Certificate</div></a><a class="nav-link ps-1 d-flex hyphenate py-0" href="#autoid-6"><div class="pe-1">2.2.2.</div><div class="text-break">Client Certificate</div></a></nav></nav><a class="nav-link ps-1 d-flex hyphenate py-0" href="#autoid-7"><div class="pe-1">3.</div><div class="text-break">Security Considerations</div></a><a class="nav-link ps-1 d-flex hyphenate py-0" href="#autoid-8"><div class="pe-1">4.</div><div class="text-break">IANA Considerations</div></a><a class="nav-link ps-1 d-flex hyphenate py-0" href="#autoid-9"><div class="pe-1">5.</div><div class="text-break">Normative References</div></a><a class="nav-link ps-1 d-flex hyphenate py-0" href="#autoid-10"><div class="pe-1">6.</div><div class="text-break">Informative References</div></a><a class="nav-link ps-1 d-flex hyphenate py-0" href="#autoid-11"><div class="pe-1">7.</div><div class="text-break">Acknowledgements</div></a><a class="nav-link ps-1 d-flex hyphenate py-0" href="#autoid-12"><div class="pe-1">A.</div><div class="text-break">Supporting Data</div></a></nav>
+                            </div>
+                            <div class="tab-pane mb-5 small" id="pref-tab-pane" role="tabpanel" aria-labelledby="pref-tab" tabindex="0">
+                                <label class="form-label fw-bold mb-2">Show sidebar by default</label>
+                                <div class="btn-group-vertical btn-group-sm d-flex" role="group">
+                                    <input type="radio" class="btn-check" name="sidebar" id="on-radio">
+                                    <label class="btn btn-outline-primary" for="on-radio">Yes</label>
+                                    <input type="radio" class="btn-check" name="sidebar" id="off-radio">
+                                    <label class="btn btn-outline-primary" for="off-radio">No</label>
+                                </div>
+                                <label class="form-label fw-bold mt-4 mb-2">Tab to show by default</label>
+                                <div class="btn-group-vertical btn-group-sm d-flex" role="group">
+                                    <input type="radio" class="btn-check" name="deftab" id="docinfo-radio" checked="checked">
+                                    <label class="btn btn-outline-primary" for="docinfo-radio">
+                                        <i class="bi bi-info-circle me-1"></i>Info
+                                    </label>
+                                    <input type="radio" class="btn-check" name="deftab" id="toc-radio">
+                                    <label class="btn btn-outline-primary" for="toc-radio">
+                                        <i class="bi bi-list-ol me-1"></i>Contents
+                                    </label>
+                                </div>
+                                <label class="form-label fw-bold mt-4 mb-2">HTMLization configuration</label>
+                                <div class="btn-group-vertical btn-group-sm d-flex" role="group">
+                                    <input type="radio" class="btn-check" name="htmlconf" id="txt-radio">
+                                    <label class="btn btn-outline-primary" for="txt-radio" data-bs-original-title="This is the traditional HTMLization method.">
+                                        <i class="bi bi-badge-sd me-1"></i>HTMLize the plaintext
+                                    </label>
+                                    <input type="radio" class="btn-check" name="htmlconf" id="html-radio">
+                                    <label class="btn btn-outline-primary" for="html-radio" data-bs-original-title="This is the modern HTMLization method.">
+                                        <i class="bi bi-badge-hd me-1"></i>Plaintextify the HTML
+                                    </label>
+                                </div>
+                                <label class="form-label fw-bold mt-4 mb-2" for="ptsize">Maximum font size</label>
+                                <input type="range" class="form-range" min="7" max="16" id="ptsize" oninput="ptdemo.value = ptsize.value" value="12">
+                                <label class="form-label fw-bold mt-4 mb-2">Page dependencies</label>
+                                <div class="btn-group-vertical btn-group-sm d-flex" role="group">
+                                    <input type="radio" class="btn-check" name="pagedeps" id="inline-radio">
+                                    <label class="btn btn-outline-primary" for="inline-radio" data-bs-original-title="Generate larger, standalone web pages that do not require network access to render.">
+                                        <i class="bi bi-box me-1"></i>Inline
+                                    </label>
+                                    <input type="radio" class="btn-check" name="pagedeps" id="reference-radio">
+                                    <label class="btn btn-outline-primary" for="reference-radio" data-bs-original-title="Generate regular web pages that require network access to render.">
+                                        <i class="bi bi-link-45deg me-1"></i>Reference
+                                    </label>
+                                </div>
+                                <label class="form-label fw-bold mt-4 mb-2">Citation links</label>
+                                <div class="btn-group-vertical btn-group-sm d-flex" role="group">
+                                    <input type="radio" class="btn-check" name="reflinks" id="refsection-radio" checked="checked">
+                                    <label class="btn btn-outline-primary" for="refsection-radio" data-bs-original-title="Citation links go to the reference section.">
+                                        <i class="bi bi-arrow-clockwise"></i> Go to reference section
+                                    </label>
+                                    <input type="radio" class="btn-check" name="reflinks" id="citation-radio">
+                                    <label class="btn btn-outline-primary" for="citation-radio" data-bs-original-title="Citation links go directly to the cited document.">
+                                        <i class="bi bi-link-45deg me-1"></i>Go to linked document
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+<script type="text/javascript">
+  var _paq = window._paq || [];
+  
+  _paq.push(['disableCookies']);
+  _paq.push(['trackPageView']);
+  _paq.push(['enableLinkTracking']);
+  (function() {
+    var u="//analytics.ietf.org/";
+    _paq.push(['setTrackerUrl', u+'matomo.php']);
+    _paq.push(['setSiteId', 7]);
+    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+    g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+  })();
+</script>
+<noscript><p><img src="//analytics.ietf.org/piwik.php?idsite=7" style="border:0;" alt="" /></p></noscript>
+
+    <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'91e5e08028f2f5e2',t:'MTc0MTY0MTg0Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><iframe height="1" width="1" style="position: absolute; top: 0px; left: 0px; border: medium; visibility: hidden;"></iframe>
+
+</body></html>

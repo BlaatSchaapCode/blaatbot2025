@@ -1,0 +1,1886 @@
+<!DOCTYPE html>
+<html data-bs-theme="dark" lang="en" style="--doc-ptsize-max: 12pt;"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>
+            
+                draft-oakley-irc-ctcp-02
+            
+        </title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style cssr-id="n-global">body {
+
+ margin: 0;
+ font-size: 14px;
+ font-family: v-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+ line-height: 1.6;
+ -webkit-text-size-adjust: 100%;
+ -webkit-tap-highlight-color: transparent;
+
+}
+
+body input {
+
+ font-family: inherit;
+ font-size: inherit;
+ 
+}</style><style cssr-id="n-notification">.n-notification-container {
+
+ z-index: 4000;
+ position: fixed;
+ overflow: visible;
+ display: flex;
+ flex-direction: column;
+ align-items: flex-end;
+ 
+}
+
+.n-notification-container > .n-scrollbar {
+
+ width: initial;
+ overflow: visible;
+ height: -moz-fit-content !important;
+ height: fit-content !important;
+ max-height: 100vh !important;
+ 
+}
+
+.n-notification-container > .n-scrollbar > .n-scrollbar-container {
+
+ height: -moz-fit-content !important;
+ height: fit-content !important;
+ max-height: 100vh !important;
+ 
+}
+
+.n-notification-container > .n-scrollbar > .n-scrollbar-container .n-scrollbar-content {
+
+ padding-top: 12px;
+ padding-bottom: 33px;
+ 
+}
+
+.n-notification-container.n-notification-container--top, .n-notification-container.n-notification-container--top-right, .n-notification-container.n-notification-container--top-left {
+
+ top: 12px;
+ 
+}
+
+.n-notification-container.n-notification-container--top.transitioning > .n-scrollbar > .n-scrollbar-container, .n-notification-container.n-notification-container--top-right.transitioning > .n-scrollbar > .n-scrollbar-container, .n-notification-container.n-notification-container--top-left.transitioning > .n-scrollbar > .n-scrollbar-container {
+
+ min-height: 100vh !important;
+ 
+}
+
+.n-notification-container.n-notification-container--bottom, .n-notification-container.n-notification-container--bottom-right, .n-notification-container.n-notification-container--bottom-left {
+
+ bottom: 12px;
+ 
+}
+
+.n-notification-container.n-notification-container--bottom > .n-scrollbar > .n-scrollbar-container .n-scrollbar-content, .n-notification-container.n-notification-container--bottom-right > .n-scrollbar > .n-scrollbar-container .n-scrollbar-content, .n-notification-container.n-notification-container--bottom-left > .n-scrollbar > .n-scrollbar-container .n-scrollbar-content {
+
+ padding-bottom: 12px;
+ 
+}
+
+.n-notification-container.n-notification-container--bottom .n-notification-wrapper, .n-notification-container.n-notification-container--bottom-right .n-notification-wrapper, .n-notification-container.n-notification-container--bottom-left .n-notification-wrapper {
+
+ display: flex;
+ align-items: flex-end;
+ margin-bottom: 0;
+ margin-top: 12px;
+ 
+}
+
+.n-notification-container.n-notification-container--top, .n-notification-container.n-notification-container--bottom {
+
+ left: 50%;
+ transform: translateX(-50%);
+ 
+}
+
+.n-notification-container.n-notification-container--top .n-notification-wrapper.notification-transition-enter-from, .n-notification-container.n-notification-container--bottom .n-notification-wrapper.notification-transition-enter-from, .n-notification-container.n-notification-container--top .n-notification-wrapper.notification-transition-leave-to, .n-notification-container.n-notification-container--bottom .n-notification-wrapper.notification-transition-leave-to {
+
+ transform: scale(0.85);
+ 
+}
+
+.n-notification-container.n-notification-container--top .n-notification-wrapper.notification-transition-leave-from, .n-notification-container.n-notification-container--bottom .n-notification-wrapper.notification-transition-leave-from, .n-notification-container.n-notification-container--top .n-notification-wrapper.notification-transition-enter-to, .n-notification-container.n-notification-container--bottom .n-notification-wrapper.notification-transition-enter-to {
+
+ transform: scale(1);
+ 
+}
+
+.n-notification-container.n-notification-container--top .n-notification-wrapper {
+
+ transform-origin: top center;
+ 
+}
+
+.n-notification-container.n-notification-container--bottom .n-notification-wrapper {
+
+ transform-origin: bottom center;
+ 
+}
+
+.n-notification-container.n-notification-container--top-right .n-notification, .n-notification-container.n-notification-container--bottom-right .n-notification {
+
+ margin-left: 28px;
+ margin-right: 16px;
+ 
+}
+
+.n-notification-container.n-notification-container--top-left .n-notification, .n-notification-container.n-notification-container--bottom-left .n-notification {
+
+ margin-left: 16px;
+ margin-right: 28px;
+ 
+}
+
+.n-notification-container.n-notification-container--top-right {
+
+ right: 0;
+ 
+}
+
+.n-notification-container.n-notification-container--top-right .n-notification-wrapper.notification-transition-enter-from, .n-notification-container.n-notification-container--top-right .n-notification-wrapper.notification-transition-leave-to {
+
+ transform: translate(calc(100%), 0);
+ 
+}
+
+.n-notification-container.n-notification-container--top-right .n-notification-wrapper.notification-transition-leave-from, .n-notification-container.n-notification-container--top-right .n-notification-wrapper.notification-transition-enter-to {
+
+ transform: translate(0, 0);
+ 
+}
+
+.n-notification-container.n-notification-container--top-left {
+
+ left: 0;
+ 
+}
+
+.n-notification-container.n-notification-container--top-left .n-notification-wrapper.notification-transition-enter-from, .n-notification-container.n-notification-container--top-left .n-notification-wrapper.notification-transition-leave-to {
+
+ transform: translate(calc(-100%), 0);
+ 
+}
+
+.n-notification-container.n-notification-container--top-left .n-notification-wrapper.notification-transition-leave-from, .n-notification-container.n-notification-container--top-left .n-notification-wrapper.notification-transition-enter-to {
+
+ transform: translate(0, 0);
+ 
+}
+
+.n-notification-container.n-notification-container--bottom-right {
+
+ right: 0;
+ 
+}
+
+.n-notification-container.n-notification-container--bottom-right .n-notification-wrapper.notification-transition-enter-from, .n-notification-container.n-notification-container--bottom-right .n-notification-wrapper.notification-transition-leave-to {
+
+ transform: translate(calc(100%), 0);
+ 
+}
+
+.n-notification-container.n-notification-container--bottom-right .n-notification-wrapper.notification-transition-leave-from, .n-notification-container.n-notification-container--bottom-right .n-notification-wrapper.notification-transition-enter-to {
+
+ transform: translate(0, 0);
+ 
+}
+
+.n-notification-container.n-notification-container--bottom-left {
+
+ left: 0;
+ 
+}
+
+.n-notification-container.n-notification-container--bottom-left .n-notification-wrapper.notification-transition-enter-from, .n-notification-container.n-notification-container--bottom-left .n-notification-wrapper.notification-transition-leave-to {
+
+ transform: translate(calc(-100%), 0);
+ 
+}
+
+.n-notification-container.n-notification-container--bottom-left .n-notification-wrapper.notification-transition-leave-from, .n-notification-container.n-notification-container--bottom-left .n-notification-wrapper.notification-transition-enter-to {
+
+ transform: translate(0, 0);
+ 
+}
+
+.n-notification-container.n-notification-container--scrollable.n-notification-container--top-right {
+
+ top: 0;
+ 
+}
+
+.n-notification-container.n-notification-container--scrollable.n-notification-container--top-left {
+
+ top: 0;
+ 
+}
+
+.n-notification-container.n-notification-container--scrollable.n-notification-container--bottom-right {
+
+ bottom: 0;
+ 
+}
+
+.n-notification-container.n-notification-container--scrollable.n-notification-container--bottom-left {
+
+ bottom: 0;
+ 
+}
+
+.n-notification-container .n-notification-wrapper {
+
+ margin-bottom: 12px;
+ 
+}
+
+.n-notification-container .n-notification-wrapper.notification-transition-enter-from, .n-notification-container .n-notification-wrapper.notification-transition-leave-to {
+
+ opacity: 0;
+ margin-top: 0 !important;
+ margin-bottom: 0 !important;
+ 
+}
+
+.n-notification-container .n-notification-wrapper.notification-transition-leave-from, .n-notification-container .n-notification-wrapper.notification-transition-enter-to {
+
+ opacity: 1;
+ 
+}
+
+.n-notification-container .n-notification-wrapper.notification-transition-leave-active {
+
+ transition:
+ background-color .3s var(--n-bezier),
+ color .3s var(--n-bezier),
+ opacity .3s var(--n-bezier),
+ transform .3s var(--n-bezier-ease-in),
+ max-height .3s var(--n-bezier),
+ margin-top .3s linear,
+ margin-bottom .3s linear,
+ box-shadow .3s var(--n-bezier);
+ 
+}
+
+.n-notification-container .n-notification-wrapper.notification-transition-enter-active {
+
+ transition:
+ background-color .3s var(--n-bezier),
+ color .3s var(--n-bezier),
+ opacity .3s var(--n-bezier),
+ transform .3s var(--n-bezier-ease-out),
+ max-height .3s var(--n-bezier),
+ margin-top .3s linear,
+ margin-bottom .3s linear,
+ box-shadow .3s var(--n-bezier);
+ 
+}
+
+.n-notification-container .n-notification {
+
+ background-color: var(--n-color);
+ color: var(--n-text-color);
+ transition:
+ background-color .3s var(--n-bezier),
+ color .3s var(--n-bezier),
+ opacity .3s var(--n-bezier),
+ box-shadow .3s var(--n-bezier);
+ font-family: inherit;
+ font-size: var(--n-font-size);
+ font-weight: 400;
+ position: relative;
+ display: flex;
+ overflow: hidden;
+ flex-shrink: 0;
+ padding-left: var(--n-padding-left);
+ padding-right: var(--n-padding-right);
+ width: var(--n-width);
+ max-width: calc(100vw - 16px - 16px);
+ border-radius: var(--n-border-radius);
+ box-shadow: var(--n-box-shadow);
+ box-sizing: border-box;
+ opacity: 1;
+ 
+}
+
+.n-notification-container .n-notification .n-notification__avatar .n-icon {
+
+ color: var(--n-icon-color);
+ 
+}
+
+.n-notification-container .n-notification .n-notification__avatar .n-base-icon {
+
+ color: var(--n-icon-color);
+ 
+}
+
+.n-notification-container .n-notification.n-notification--show-avatar .n-notification-main {
+
+ margin-left: 40px;
+ width: calc(100% - 40px); 
+ 
+}
+
+.n-notification-container .n-notification.n-notification--closable .n-notification-main > *:first-child {
+
+ padding-right: 20px;
+ 
+}
+
+.n-notification-container .n-notification.n-notification--closable .n-notification__close {
+
+ position: absolute;
+ top: 0;
+ right: 0;
+ margin: var(--n-close-margin);
+ transition:
+ background-color .3s var(--n-bezier),
+ color .3s var(--n-bezier);
+ 
+}
+
+.n-notification-container .n-notification .n-notification__avatar {
+
+ position: absolute;
+ top: var(--n-padding-top);
+ left: var(--n-padding-left);
+ width: 28px;
+ height: 28px;
+ font-size: 28px;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ 
+}
+
+.n-notification-container .n-notification .n-notification__avatar .n-icon {
+transition: color .3s var(--n-bezier);
+}
+
+.n-notification-container .n-notification .n-notification-main {
+
+ padding-top: var(--n-padding-top);
+ padding-bottom: var(--n-padding-bottom);
+ box-sizing: border-box;
+ display: flex;
+ flex-direction: column;
+ margin-left: 8px;
+ width: calc(100% - 8px);
+ 
+}
+
+.n-notification-container .n-notification .n-notification-main .n-notification-main-footer {
+
+ display: flex;
+ align-items: center;
+ justify-content: space-between;
+ margin-top: 12px;
+ 
+}
+
+.n-notification-container .n-notification .n-notification-main .n-notification-main-footer .n-notification-main-footer__meta {
+
+ font-size: var(--n-meta-font-size);
+ transition: color .3s var(--n-bezier-ease-out);
+ color: var(--n-description-text-color);
+ 
+}
+
+.n-notification-container .n-notification .n-notification-main .n-notification-main-footer .n-notification-main-footer__action {
+
+ cursor: pointer;
+ transition: color .3s var(--n-bezier-ease-out);
+ color: var(--n-action-text-color);
+ 
+}
+
+.n-notification-container .n-notification .n-notification-main .n-notification-main__header {
+
+ font-weight: var(--n-title-font-weight);
+ font-size: var(--n-title-font-size);
+ transition: color .3s var(--n-bezier-ease-out);
+ color: var(--n-title-text-color);
+ 
+}
+
+.n-notification-container .n-notification .n-notification-main .n-notification-main__description {
+
+ margin-top: 8px;
+ font-size: var(--n-description-font-size);
+ white-space: pre-wrap;
+ word-wrap: break-word;
+ transition: color .3s var(--n-bezier-ease-out);
+ color: var(--n-description-text-color);
+ 
+}
+
+.n-notification-container .n-notification .n-notification-main .n-notification-main__content {
+
+ line-height: var(--n-line-height);
+ margin: 12px 0 0 0;
+ font-family: inherit;
+ white-space: pre-wrap;
+ word-wrap: break-word;
+ transition: color .3s var(--n-bezier-ease-out);
+ color: var(--n-text-color);
+ 
+}
+
+.n-notification-container .n-notification .n-notification-main .n-notification-main__content:first-child {
+margin: 0;
+}</style><link href="draft-oakley-irc-ctcp-02_bestanden/import_002.css" rel="stylesheet">
+        <link href="draft-oakley-irc-ctcp-02_bestanden/import.css" rel="stylesheet">
+        
+            <link rel="stylesheet" href="draft-oakley-irc-ctcp-02_bestanden/document_html_referenced.css">
+            
+            <script type="text/javascript" async="" defer="defer" src="draft-oakley-irc-ctcp-02_bestanden/matomo.js"></script><script type="module" crossorigin="" src="draft-oakley-irc-ctcp-02_bestanden/embedded-408116f0.js"></script>
+<link href="https://static.ietf.org/dt/12.37.0/assets/create-pinia-singleton-400c8f5f.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script">
+<link href="https://static.ietf.org/dt/12.37.0/assets/Scrollbar-dcf5a4d3.js" type="text/javascript" crossorigin="anonymous" rel="modulepreload" as="script">
+            <script src="draft-oakley-irc-ctcp-02_bestanden/document_html.js"></script>
+            <script src="draft-oakley-irc-ctcp-02_bestanden/theme.js"></script>
+        
+        <link rel="alternate" type="application/atom+xml" href="https://datatracker.ietf.org/feed/document-changes/draft-oakley-irc-ctcp/" aria-label="Document changes" data-bs-original-title="Document changes">
+        <meta name="description" content="Internet Relay Chat: Client-to-Client Protocol (CTCP) (Internet-Draft, 2018)">
+        
+
+<link rel="apple-touch-icon" sizes="180x180" href="https://static.ietf.org/dt/12.37.0/ietf/images/ietf-logo-nor-180.png">
+<link rel="icon" sizes="32x32" href="https://static.ietf.org/dt/12.37.0/ietf/images/ietf-logo-nor-32.png">
+<link rel="icon" sizes="16x16" href="https://static.ietf.org/dt/12.37.0/ietf/images/ietf-logo-nor-16.png">
+<link rel="manifest" href="https://datatracker.ietf.org/site.webmanifest">
+<link rel="mask-icon" href="https://static.ietf.org/dt/12.37.0/ietf/images/ietf-logo-nor-mask.svg" color="#ffffff">
+<meta name="msapplication-TileColor" content="#ffffff">
+<meta name="theme-color" content="#ffffff">
+        
+
+
+
+
+<meta property="og:title" content="Internet Relay Chat: Client-to-Client Protocol (CTCP)">
+<meta property="og:url" content="https://datatracker.ietf.org/doc/html/draft-oakley-irc-ctcp-02">
+<link rel="canonical" href="https://datatracker.ietf.org/doc/html/draft-oakley-irc-ctcp-02">
+<meta property="og:site_name" content="IETF Datatracker">
+<meta property="og:description" content="This document describes the Client-to-Client Protocol (CTCP), which lets Internet Relay Chat (IRC) clients send each other messages that get displayed or responded to in special ways. CTCP has been widely implemented, with most clients supporting it natively. This document outlines how to implement CTCP and the most common messages used. It updates RFC 1459 and RFC 2812.">
+<meta property="og:type" content="article">
+
+<meta property="article:section" content="Individual Internet-Draft">
+
+<meta property="article:author" content="Mantas Mikulėnas">
+<meta property="article:author" content="Daniel Oakley">
+
+
+
+        
+        <style>
+            
+            .diff-form .select2-selection__rendered {
+                direction: rtl;
+                text-align: left;
+            }
+        </style>
+    <link rel="modulepreload" as="script" crossorigin="" href="https://static.ietf.org/dt/12.37.0/assets/Status-3f2625bf.js"><style>:is([id*='google_ads_iframe'],[id*='taboola-'],.taboolaHeight,.taboola-placeholder,#top-ad,#credential_picker_container,#credentials-picker-container,#credential_picker_iframe,[id*='google-one-tap-iframe'],#google-one-tap-popup-container,.google-one-tap__module,.google-one-tap-modal-div,#amp_floatingAdDiv,#ez-content-blocker-container) {display:none!important;min-height:0!important;height:0!important;}</style></head>
+    <body>
+        
+        <noscript><iframe class="status" title="Site status" src="/status/latest"></iframe></noscript>
+<div class="vue-embed" data-component="Status" data-v-app=""><div class="n-config-provider"><!----><!----><!----></div></div>
+        <div class="btn-toolbar sidebar-toolbar position-fixed top-0 end-0 m-2 m-lg-3 d-print-none">
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary btn-sm me-1 dropdown-toggle d-flex align-items-center" id="bd-theme" type="button" aria-expanded="false" data-bs-toggle="dropdown" aria-label="Toggle theme">
+                        <i class="theme-icon-active bi bi-circle-half"></i>
+                </button>
+
+                <ul class="dropdown-menu" aria-labelledby="bd-theme">
+                    <li>
+                        <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="light" aria-pressed="false">
+                            <i class="me-2 opacity-50 theme-icon bi bi-sun-fill"></i>
+                            Light<i class="bi bi-check2 ms-auto d-none"></i>
+                        </button>
+                    </li>
+                    <li>
+                        <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="dark" aria-pressed="false">
+                            <i class="me-2 opacity-50 theme-icon bi bi-moon-stars-fill"></i>
+                            Dark<i class="bi bi-check2 ms-auto d-none"></i>
+                        </button>
+                    </li>
+                    <li>
+                        <button type="button" class="dropdown-item d-flex align-items-center active" data-bs-theme-value="auto" aria-pressed="true">
+                            <i class="me-2 opacity-50 theme-icon bi bi-circle-half"></i>
+                            Auto<i class="bi bi-check2 ms-auto d-none"></i>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            <button class="btn btn-outline-secondary btn-sm sidebar-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar" aria-expanded="true" aria-controls="sidebar" aria-label="Toggle metadata sidebar" data-bs-original-title="Toggle metadata sidebar">
+            <i class="bi bi-arrow-bar-left sidebar-shown"></i>
+            <i class="bi bi-arrow-bar-right sidebar-collapsed"></i>
+            </button>
+        </div>
+        <nav class="navbar bg-light-subtle px-1 fixed-top d-print-none d-md-none">
+            <a class="nav-link ps-1" href="https://datatracker.ietf.org/doc/draft-oakley-irc-ctcp/">
+                 
+                    draft-oakley-irc-ctcp-02
+                
+                <br class="d-sm-none">
+
+                <span class="ms-sm-3 badge rounded-pill badge-draft">
+                    
+                        None
+                    
+                </span>
+            </a>
+            <button class="navbar-toggler p-1" type="button" data-bs-toggle="collapse" data-bs-target="#docinfo-collapse" aria-controls="docinfo-collapse" aria-expanded="false" aria-label="Show document information">
+                <span class="navbar-toggler-icon small"></span>
+            </button>
+            <div class="navbar-nav navbar-nav-scroll overscroll-none collapse pt-1" id="docinfo-collapse">
+                <div class="bg-light-subtle p-0">
+                    <table class="table table-sm table-borderless small">
+                        <tbody class="meta align-top">
+                            <tr>
+                                <th scope="row"></th>
+                                <th scope="row">Title</th>
+                                <td class="edit"></td>
+                                <td>Internet Relay Chat: Client-to-Client Protocol (CTCP)</td>
+                            </tr>
+                        </tbody>
+                        
+
+
+
+
+
+
+
+<tbody class="meta align-top ">
+    <tr>
+        <th scope="row">Document</th>
+        <th scope="row">Document type</th>
+        <td class="edit"></td>
+        <td>
+            
+
+
+
+
+
+
+
+    <span class="text-danger">Expired Internet-Draft</span>
+    (individual)
+    
+
+            
+            
+                <div class="badge rounded-pill text-bg-warning">
+                    Expired &amp; archived
+                </div>
+            
+            
+                
+
+
+
+
+    <div class="alert alert-warning small p-2 mt-2" role="alert">
+        This document is an Internet-Draft (I-D).
+        Anyone may submit an I-D to the IETF.
+        This I-D is <strong>not endorsed by the IETF</strong> and has <strong>no formal standing</strong> in the
+        <a href="https://datatracker.ietf.org/doc/rfc2026/">IETF standards process</a>.
+    </div>
+
+            
+        </td>
+    </tr>
+    
+        <tr>
+            <td></td>
+            <th scope="row">Select version</th>
+            <td class="edit"></td>
+            <td>
+                
+
+
+
+    <ul class="revision-list pagination pagination-sm text-center flex-wrap my-0">
+        
+            
+                 
+                    <li class="page-item ">
+                        <a class="page-link" href="https://datatracker.ietf.org/doc/html/draft-oakley-irc-ctcp-00">
+                            00
+                        </a>
+                    </li>
+                
+            
+                 
+                    <li class="page-item ">
+                        <a class="page-link" href="https://datatracker.ietf.org/doc/html/draft-oakley-irc-ctcp-01" rel="nofollow">
+                            01
+                        </a>
+                    </li>
+                
+            
+                 
+                    <li class="page-item active">
+                        <a class="page-link" href="https://datatracker.ietf.org/doc/html/draft-oakley-irc-ctcp-02">
+                            02
+                        </a>
+                    </li>
+                
+            
+            
+        
+    </ul>
+
+            </td>
+        </tr>
+        
+            <tr>
+                <td></td>
+                <th scope="row">Compare versions</th>
+                <td class="edit"></td>
+                <td>
+                    
+
+
+
+<form class="form-horizontal diff-form" action="https://author-tools.ietf.org/iddiff" method="get" target="_blank">
+
+            <select class="form-select form-select-sm mb-1 select2-field select2-hidden-accessible" data-max-entries="1" data-width="resolve" data-allow-clear="false" data-minimum-input-length="0" aria-label="From revision" name="url1" data-select2-id="select2-data-1-o0rh" tabindex="-1" aria-hidden="true">
+                
+                    <option value="draft-oakley-irc-ctcp-02">
+                        draft-oakley-irc-ctcp-02
+                        
+                    </option>
+                
+                    <option value="draft-oakley-irc-ctcp-01" selected="selected" data-select2-id="select2-data-3-li90">
+                        draft-oakley-irc-ctcp-01
+                        
+                    </option>
+                
+                    <option value="draft-oakley-irc-ctcp-00">
+                        draft-oakley-irc-ctcp-00
+                        
+                    </option>
+                
+                
+            </select><span class="select2 select2-container select2-container--bootstrap-5" dir="ltr" data-select2-id="select2-data-2-fqa5" style="width: auto;"><span class="selection"><span class="select2-selection select2-selection--single form-select form-select-sm mb-1" role="combobox" aria-haspopup="true" aria-expanded="false" tabindex="0" aria-disabled="false" aria-labelledby="select2-url1-uh-container" aria-controls="select2-url1-uh-container"><span class="select2-selection__rendered" id="select2-url1-uh-container" role="textbox" aria-readonly="true" title="
+                        draft-oakley-irc-ctcp-01
+                        
+                    ">
+                        draft-oakley-irc-ctcp-01
+                        
+                    </span><span class="select2-selection__arrow" role="presentation"><b role="presentation"></b></span></span></span><span class="dropdown-wrapper" aria-hidden="true"></span></span>
+
+            <select class="form-select form-select-sm mb-1 select2-field select2-hidden-accessible" data-max-entries="1" data-width="resolve" data-allow-clear="false" data-minimum-input-length="0" aria-label="To revision" name="url2" data-select2-id="select2-data-4-q3oj" tabindex="-1" aria-hidden="true">
+                
+                    <option value="draft-oakley-irc-ctcp-02" selected="selected" data-select2-id="select2-data-6-6s1c">
+                        draft-oakley-irc-ctcp-02
+                        
+                    </option>
+                
+                    <option value="draft-oakley-irc-ctcp-01">
+                        draft-oakley-irc-ctcp-01
+                        
+                    </option>
+                
+                    <option value="draft-oakley-irc-ctcp-00">
+                        draft-oakley-irc-ctcp-00
+                        
+                    </option>
+                
+                
+            </select><span class="select2 select2-container select2-container--bootstrap-5" dir="ltr" data-select2-id="select2-data-5-zlr3" style="width: auto;"><span class="selection"><span class="select2-selection select2-selection--single form-select form-select-sm mb-1" role="combobox" aria-haspopup="true" aria-expanded="false" tabindex="0" aria-disabled="false" aria-labelledby="select2-url2-ur-container" aria-controls="select2-url2-ur-container"><span class="select2-selection__rendered" id="select2-url2-ur-container" role="textbox" aria-readonly="true" title="
+                        draft-oakley-irc-ctcp-02
+                        
+                    ">
+                        draft-oakley-irc-ctcp-02
+                        
+                    </span><span class="select2-selection__arrow" role="presentation"><b role="presentation"></b></span></span></span><span class="dropdown-wrapper" aria-hidden="true"></span></span>
+
+            <button type="submit" class="btn btn-primary btn-sm" value="--html" name="difftype">
+                Side-by-side
+            </button>
+            
+            <button type="submit" class="btn btn-primary btn-sm" value="--hwdiff" name="difftype">
+                Inline
+            </button>
+
+</form>
+                </td>
+            </tr>
+        
+    
+    <tr>
+        <td></td>
+        <th scope="row">Authors</th>
+        <td class="edit">
+            
+        </td>
+        <td>
+            
+            
+                <span><a href="https://datatracker.ietf.org/person/grawity@gmail.com" data-bs-original-title="Datatracker profile of Mantas Mikulėnas">Mantas Mikulėnas</a> <a href="mailto:grawity%40gmail.com" aria-label="Compose email to grawity@gmail.com" data-bs-original-title="Compose email to grawity@gmail.com">
+                <i class="bi bi-envelope"></i></a></span>,
+            
+                <span><a href="https://datatracker.ietf.org/person/daniel@danieloaks.net" data-bs-original-title="Datatracker profile of Daniel Oakley">Daniel Oakley</a> <a href="mailto:daniel%40danieloaks.net" aria-label="Compose email to daniel@danieloaks.net" data-bs-original-title="Compose email to daniel@danieloaks.net">
+                <i class="bi bi-envelope"></i></a></span>
+            
+            
+                <br>
+                <a class="btn btn-primary btn-sm mt-1" href="mailto:draft-oakley-irc-ctcp@ietf.org?subject=draft-oakley-irc-ctcp" data-bs-original-title="Send email to the document authors">Email authors</a>
+            
+        </td>
+    </tr>
+    
+    
+        
+        
+        
+    
+    <tr>
+        <td></td>
+        <th scope="row">
+            RFC stream
+        </th>
+        <td class="edit">
+            
+        </td>
+        <td class="text-body-secondary">
+            
+                (None)
+            
+        </td>
+    </tr>
+    
+        <tr>
+            <td></td>
+            <th scope="row">
+                Intended RFC status
+            </th>
+            <td class="edit">
+                
+            </td>
+            <td>
+                
+                    Informational
+                
+            </td>
+        </tr>
+    
+    <tr>
+        <td></td>
+        <th scope="row">
+            Other formats
+        </th>
+        <td class="edit">
+        </td>
+        <td>
+            
+                
+    <div class="buttonlist">
+    
+        
+        <a class="btn btn-primary btn-sm" target="_blank" href="https://www.ietf.org/archive/id/draft-oakley-irc-ctcp-02.txt">
+            
+                <i class="bi bi-file-text"></i> txt
+            
+        </a>
+        
+    
+        
+        <a class="btn btn-primary btn-sm" target="_blank" href="https://www.ietf.org/archive/id/draft-oakley-irc-ctcp-02.xml">
+            
+                <i class="bi bi-file-code"></i> xml
+            
+        </a>
+        
+    
+        
+    
+        
+        <a class="btn btn-primary btn-sm" target="_blank" href="https://datatracker.ietf.org/doc/draft-oakley-irc-ctcp/02/bibtex/">
+            
+                <i class="bi bi-file-ruled"></i> bibtex
+            
+        </a>
+        
+    
+        
+        <a class="btn btn-primary btn-sm" target="_blank" href="https://datatracker.ietf.org/doc/bibxml3/draft-oakley-irc-ctcp-02.xml">
+            
+                <i class="bi bi-file-code"></i> bibxml
+            
+        </a>
+        
+    
+</div>
+
+            
+        </td>
+    </tr>
+    
+    
+        
+    
+</tbody>
+                        <tbody><tr>
+                            <th scope="row"></th>
+                            <th scope="row"></th>
+                            <td class="edit"></td>
+                            <td>
+                                <a class="btn btn-sm btn-warning mb-3" target="_blank" href="https://github.com/ietf-tools/datatracker/issues/new/choose">
+                                    Report a bug
+                                    <i class="bi bi-bug"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody></table>
+                </div>
+            </div>
+        </nav>
+        <div class="row g-0">
+            <div class="col-md-9 d-flex justify-content-center lh-sm" data-bs-spy="scroll" data-bs-target="#toc-nav" data-bs-smooth-scroll="true" tabindex="0" id="content">
+                
+                    <div class="rfcmarkup">
+                        <br class="noprint">
+                        <!-- [html-validate-disable-block attr-quotes, void-style, element-permitted-content, heading-level -- FIXME: rfcmarkup/rfc2html generates HTML with issues] -->
+                        <div class="rfcmarkup"><pre>Network Working Group                                       M. Mikulenas
+Internet-Draft                                               Independent
+Updates: <a href="https://datatracker.ietf.org/doc/html/rfc1459">1459</a>, <a href="https://datatracker.ietf.org/doc/html/rfc2812">2812</a> (if approved)                              D. Oakley
+Intended status: Informational                                   ircdocs
+Expires: July 13, 2018                                  January 09, 2018
+
+
+         <span class="h1">Internet Relay Chat: Client-to-Client Protocol (CTCP)</span>
+                        <span class="h1">draft-oakley-irc-ctcp-02</span>
+
+Abstract
+
+   This document describes the Client-to-Client Protocol (CTCP), which
+   lets Internet Relay Chat (IRC) clients send each other messages that
+   get displayed or responded to in special ways.  CTCP has been widely
+   implemented, with most clients supporting it natively.  This document
+   outlines how to implement CTCP and the most common messages used.
+
+   It updates <a href="https://datatracker.ietf.org/doc/html/rfc1459">RFC 1459</a> and <a href="https://datatracker.ietf.org/doc/html/rfc2812">RFC 2812</a>.
+
+Status of This Memo
+
+   This Internet-Draft is submitted in full conformance with the
+   provisions of <a href="https://datatracker.ietf.org/doc/html/bcp78">BCP 78</a> and <a href="https://datatracker.ietf.org/doc/html/bcp79">BCP 79</a>.
+
+   Internet-Drafts are working documents of the Internet Engineering
+   Task Force (IETF).  Note that other groups may also distribute
+   working documents as Internet-Drafts.  The list of current Internet-
+   Drafts is at <a href="https://datatracker.ietf.org/drafts/current/">http://datatracker.ietf.org/drafts/current/</a>.
+
+   Internet-Drafts are draft documents valid for a maximum of six months
+   and may be updated, replaced, or obsoleted by other documents at any
+   time.  It is inappropriate to use Internet-Drafts as reference
+   material or to cite them other than as "work in progress."
+
+   This Internet-Draft will expire on July 13, 2018.
+
+Copyright Notice
+
+   Copyright (c) 2018 IETF Trust and the persons identified as the
+   document authors.  All rights reserved.
+
+   This document is subject to <a href="https://datatracker.ietf.org/doc/html/bcp78">BCP 78</a> and the IETF Trust's Legal
+   Provisions Relating to IETF Documents
+   (<a href="http://trustee.ietf.org/license-info">http://trustee.ietf.org/license-info</a>) in effect on the date of
+   publication of this document.  Please review these documents
+   carefully, as they describe your rights and restrictions with respect
+   to this document.
+
+
+
+<span class="grey">Mikulenas &amp; Oakley        Expires July 13, 2018                 [Page 1]</span></pre>
+<hr class="noprint"><!--NewPage--><pre class="newpage"><span id="page-2"></span>
+<span class="grey">Internet-Draft        IRC Client-to-Client Protocol         January 2018</span>
+
+
+Table of Contents
+
+   <a href="#section-1">1</a>.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   <a href="#page-2">2</a>
+   <a href="#section-2">2</a>.  Message Syntax  . . . . . . . . . . . . . . . . . . . . . . .   <a href="#page-3">3</a>
+   <a href="#section-3">3</a>.  Message Types . . . . . . . . . . . . . . . . . . . . . . . .   <a href="#page-3">3</a>
+     <a href="#section-3.1">3.1</a>.  Extended formatting . . . . . . . . . . . . . . . . . . .   <a href="#page-4">4</a>
+     <a href="#section-3.2">3.2</a>.  Metadata Query  . . . . . . . . . . . . . . . . . . . . .   <a href="#page-4">4</a>
+     <a href="#section-3.3">3.3</a>.  Extended Query  . . . . . . . . . . . . . . . . . . . . .   <a href="#page-4">4</a>
+   <a href="#section-4">4</a>.  Messages  . . . . . . . . . . . . . . . . . . . . . . . . . .   <a href="#page-5">5</a>
+   <a href="#section-5">5</a>.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .   <a href="#page-5">5</a>
+   <a href="#section-6">6</a>.  Security Considerations . . . . . . . . . . . . . . . . . . .   <a href="#page-5">5</a>
+   <a href="#section-7">7</a>.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   <a href="#page-6">6</a>
+   <a href="#section-8">8</a>.  Normative References  . . . . . . . . . . . . . . . . . . . .   <a href="#page-6">6</a>
+   <a href="#appendix-A">Appendix A</a>.  Message List . . . . . . . . . . . . . . . . . . . .   <a href="#page-6">6</a>
+     <a href="#appendix-A.1">A.1</a>.  ACTION  . . . . . . . . . . . . . . . . . . . . . . . . .   <a href="#page-6">6</a>
+     <a href="#appendix-A.2">A.2</a>.  CLIENTINFO  . . . . . . . . . . . . . . . . . . . . . . .   <a href="#page-7">7</a>
+     <a href="#appendix-A.3">A.3</a>.  DCC . . . . . . . . . . . . . . . . . . . . . . . . . . .   <a href="#page-7">7</a>
+     <a href="#appendix-A.4">A.4</a>.  FINGER  . . . . . . . . . . . . . . . . . . . . . . . . .   <a href="#page-8">8</a>
+     <a href="#appendix-A.5">A.5</a>.  PING  . . . . . . . . . . . . . . . . . . . . . . . . . .   <a href="#page-8">8</a>
+     <a href="#appendix-A.6">A.6</a>.  SOURCE  . . . . . . . . . . . . . . . . . . . . . . . . .   <a href="#page-8">8</a>
+     <a href="#appendix-A.7">A.7</a>.  TIME  . . . . . . . . . . . . . . . . . . . . . . . . . .   <a href="#page-9">9</a>
+     <a href="#appendix-A.8">A.8</a>.  VERSION . . . . . . . . . . . . . . . . . . . . . . . . .   <a href="#page-9">9</a>
+     <a href="#appendix-A.9">A.9</a>.  USERINFO  . . . . . . . . . . . . . . . . . . . . . . . .  <a href="#page-10">10</a>
+   <a href="#appendix-B">Appendix B</a>.  Change History [RFC Editor: Please remove this
+                section] . . . . . . . . . . . . . . . . . . . . . .  <a href="#page-10">10</a>
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  <a href="#page-10">10</a>
+
+<span class="h2" id="autoid-1"><a class="selflink" id="section-1" href="#section-1">1</a>.  Introduction</span>
+
+   The core Internet Relay Chat (IRC) protocol as described in [<a href="https://datatracker.ietf.org/doc/html/rfc1459" data-bs-original-title="&quot;Internet Relay Chat Protocol&quot;">RFC1459</a>]
+   and [<a href="https://datatracker.ietf.org/doc/html/rfc2812" data-bs-original-title="&quot;Internet Relay Chat: Client Protocol&quot;">RFC2812</a>] only has a single command for regular user messages,
+   and does not provide a way for clients to exchange information
+   directly.  Client-to-Client Protocol (CTCP) messages let clients
+   exchange messages that get displayed or responded to in special ways.
+   Some examples of how CTCP is used is to request special formatting on
+   messages, query other clients for metadata, and help initiate file
+   transfers with other clients.
+
+   This document goes over the subset of CTCP which is commonly
+   implemented, and is compatible with clients implementing CTCP as
+   described by older documents.
+
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
+   document are to be interpreted as described in [<a href="https://datatracker.ietf.org/doc/html/rfc2119" data-bs-original-title="&quot;Key words for use in RFCs to Indicate Requirement Levels&quot;">RFC2119</a>].
+
+
+
+
+
+
+<span class="grey">Mikulenas &amp; Oakley        Expires July 13, 2018                 [Page 2]</span></pre>
+<hr class="noprint"><!--NewPage--><pre class="newpage"><span id="page-3"></span>
+<span class="grey">Internet-Draft        IRC Client-to-Client Protocol         January 2018</span>
+
+
+<span class="h2" id="autoid-2"><a class="selflink" id="section-2" href="#section-2">2</a>.  Message Syntax</span>
+
+   CTCP queries are sent with the PRIVMSG IRC command, and CTCP replies
+   are sent with NOTICE command.  To indicate a CTCP query or reply, the
+   body of the message (the second parameter) begins with the CTCP
+   delimiter.  The ABNF [<a href="https://datatracker.ietf.org/doc/html/rfc5234" data-bs-original-title="&quot;Augmented BNF for Syntax Specifications: ABNF&quot;">RFC5234</a>] for this message body is as follows:
+
+        delim    = %x01
+
+        command  = 1*( %x02-09 / %x0B-0C / %x0E-1F / %x21-FF )
+                      ; any octet except NUL, delim, CR, LF, and " "
+
+        params   = 1*( %x02-09 / %x0B-0C / %x0E-FF )
+                      ; any octet except NUL, delim, CR, and LF
+
+        body     = delim command [ SPACE params ] [ delim ]
+
+   Commands are case-insensitive.  When creating new CTCP commands,
+   authors SHOULD use only alphanumeric characters for ease of
+   implementation.
+
+   The final CTCP delimiter SHOULD be sent on outgoing messages for
+   compatibility reasons, and software MUST accept incoming messages
+   which lack it.  This is due to how servers implement message
+   truncation and certain clients implement message splitting.
+
+   Queries MAY be sent to channels.  When these queries are responded
+   to, the responses are sent to the querying client rather than the
+   channel which the query was originally sent to.
+
+   Many servers implement optional filtering so that only the ACTION
+   CTCP message can be sent to channels.  When this is done, it can
+   typically be enabled or disabled by channel operators with a channel
+   mode.
+
+   Here are two examples of CTCP queries and replies:
+
+     :alice!a@localhost PRIVMSG bob :\x01VERSION\x01
+     :bob!b@localhost NOTICE alice :\x01VERSION Snak for Mac 4.13\x01
+
+     :alice!a@localhost PRIVMSG #ircv3 :\x01PING 1473523796 918320\x01
+     :bob!b@localhost NOTICE alice :\x01PING 1473523796 918320\x01
+
+<span class="h2" id="autoid-3"><a class="selflink" id="section-3" href="#section-3">3</a>.  Message Types</span>
+
+   CTCP messages generally take on one of these types.  These message
+   types are defined here to simplify understanding, and aren't
+   differentiated by the protocol itself.
+
+
+
+<span class="grey">Mikulenas &amp; Oakley        Expires July 13, 2018                 [Page 3]</span></pre>
+<hr class="noprint"><!--NewPage--><pre class="newpage"><span id="page-4"></span>
+<span class="grey">Internet-Draft        IRC Client-to-Client Protocol         January 2018</span>
+
+
+<span class="h3" id="autoid-4"><a class="selflink" id="section-3.1" href="#section-3.1">3.1</a>.  Extended formatting</span>
+
+   This type of CTCP requests special formatting of a user-visible
+   message.  That is, to send a user-visible message that should be
+   displayed differently from regular messages - e.g. as an action, a
+   whisper, an announcement.
+
+   Extended formatting messages are sent as a PRIVMSG, and are expected
+   to be used in channels as well as between clients.  There is no
+   automatic response to this message type, as it is not a query nor
+   reply.
+
+   These messages are sent as a PRIVMSG and can have parameters, but
+   generate no reply.
+
+   Example:
+
+     :dan!u@localhost PRIVMSG #ircv3 :\x01ACTION writes some specs!\x01
+
+<span class="h3" id="autoid-5"><a class="selflink" id="section-3.2" href="#section-3.2">3.2</a>.  Metadata Query</span>
+
+   This type of CTCP provides relatively static information about the
+   target client, user or connection.
+
+   This CTCP takes the form of a query and a response (as a PRIVMSG and
+   NOTICE, respectively).  Due to how bouncers interact with multiple
+   clients, there may sometimes be multiple responses to queries.
+
+   Metadata queries MUST NOT require the recipient to implement any side
+   effects (beyond sending the reply itself); if a CTCP message causes
+   side effects by design, it should be categorized as an extended query
+   instead.
+
+   Metadata queries do not have any parameters, but expect a reply with
+   parameters as the response data.
+
+   Example:
+
+     :alice!a@localhost PRIVMSG bob :\x01VERSION\x01
+     :bob!b@localhost NOTICE alice :\x01VERSION SaberChat 27.5\x01
+
+<span class="h3" id="autoid-6"><a class="selflink" id="section-3.3" href="#section-3.3">3.3</a>.  Extended Query</span>
+
+   This type of CTCP provides dynamic information or invoke actions from
+   the client.
+
+   This CTCP takes the form of a query and a response (as a PRIVMSG and
+   NOTICE, respectively).
+
+
+
+<span class="grey">Mikulenas &amp; Oakley        Expires July 13, 2018                 [Page 4]</span></pre>
+<hr class="noprint"><!--NewPage--><pre class="newpage"><span id="page-5"></span>
+<span class="grey">Internet-Draft        IRC Client-to-Client Protocol         January 2018</span>
+
+
+   Queries sent to a channel always generate private replies.
+
+   Extended queries and replies may have parameters.
+
+   Example:
+
+     :alice!a@localhost PRIVMSG bob :\x01PING 1473523796 918320\x01
+     :bob!b@localhost NOTICE alice :\x01PING 1473523796 918320\x01
+
+<span class="h2" id="autoid-7"><a class="selflink" id="section-4" href="#section-4">4</a>.  Messages</span>
+
+   CTCP messages themselves are not standardised.  Clients that receive
+   either unexpected messages or known messages with unexpected values
+   SHOULD ignore them and produce no response to the sending user.
+   Clients MAY receive more than one response per user for a query they
+   send, due to multiple clients being connected behind an IRC bouncer.
+
+<span class="h2" id="autoid-8"><a class="selflink" id="section-5" href="#section-5">5</a>.  Acknowledgements</span>
+
+   Thanks to the IRCv3 group for giving feedback on this specification,
+   and to Khaled for advice on client flood protection.
+
+   Thanks to Michael Sandrof for creating CTCP, Troy Rollo for creating
+   the related DCC protocol, as well as Klaus Zeuge and Ben Mesander who
+   wrote and revised related specifications.
+
+   Special thanks to dequis, Sadie and James Wheare for help with this
+   and related work.
+
+<span class="h2" id="autoid-9"><a class="selflink" id="section-6" href="#section-6">6</a>.  Security Considerations</span>
+
+   CTCP messages are completely untrusted data, and clients MUST NOT
+   assume that they are well-formed or complete.
+
+   Older CTCP specifications describe quoting methods which are complex
+   and not widely implemented.  Implementations SHOULD NOT implement
+   "low-level quoting" or "CTCP-level quoting" when parsing messages.
+
+   Older CTCP specifications describe including more than one CTCP
+   message inside a single PRIVMSG or NOTICE command.  Implementations
+   SHOULD NOT implement this form of CTCP parsing as it is not widely-
+   implemented and may result in an implementation that can be more
+   easily flooded off the server they are connected to.
+
+   CTCP requests can be abused to flood clients off the server they are
+   connected to.  Clients may ignore or delay excessive incoming
+   requests to protect against this.
+
+
+
+
+<span class="grey">Mikulenas &amp; Oakley        Expires July 13, 2018                 [Page 5]</span></pre>
+<hr class="noprint"><!--NewPage--><pre class="newpage"><span id="page-6"></span>
+<span class="grey">Internet-Draft        IRC Client-to-Client Protocol         January 2018</span>
+
+
+<span class="h2" id="autoid-10"><a class="selflink" id="section-7" href="#section-7">7</a>.  IANA Considerations</span>
+
+   This document has no actions for IANA.
+
+<span class="h2" id="autoid-11"><a class="selflink" id="section-8" href="#section-8">8</a>.  Normative References</span>
+
+   [<a id="ref-RFC1459">RFC1459</a>]  Oikarinen, J. and D. Reed, "Internet Relay Chat Protocol",
+              <a href="https://datatracker.ietf.org/doc/html/rfc1459">RFC 1459</a>, DOI 10.17487/RFC1459, May 1993,
+              &lt;<a href="https://www.rfc-editor.org/info/rfc1459">https://www.rfc-editor.org/info/rfc1459</a>&gt;.
+
+   [<a id="ref-RFC2119">RFC2119</a>]  Bradner, S., "Key words for use in RFCs to Indicate
+              Requirement Levels", <a href="https://datatracker.ietf.org/doc/html/bcp14">BCP 14</a>, <a href="https://datatracker.ietf.org/doc/html/rfc2119">RFC 2119</a>,
+              DOI 10.17487/RFC2119, March 1997, &lt;<a href="https://www.rfc-editor.org/info/rfc2119">https://www.rfc-</a>
+              <a href="https://www.rfc-editor.org/info/rfc2119">editor.org/info/rfc2119</a>&gt;.
+
+   [<a id="ref-RFC2812">RFC2812</a>]  Kalt, C., "Internet Relay Chat: Client Protocol",
+              <a href="https://datatracker.ietf.org/doc/html/rfc2812">RFC 2812</a>, DOI 10.17487/RFC2812, April 2000,
+              &lt;<a href="https://www.rfc-editor.org/info/rfc2812">https://www.rfc-editor.org/info/rfc2812</a>&gt;.
+
+   [<a id="ref-RFC5234">RFC5234</a>]  Crocker, D., Ed. and P. Overell, "Augmented BNF for Syntax
+              Specifications: ABNF", STD 68, <a href="https://datatracker.ietf.org/doc/html/rfc5234">RFC 5234</a>,
+              DOI 10.17487/RFC5234, January 2008, &lt;<a href="https://www.rfc-editor.org/info/rfc5234">https://www.rfc-</a>
+              <a href="https://www.rfc-editor.org/info/rfc5234">editor.org/info/rfc5234</a>&gt;.
+
+   [<a id="ref-RFC5322">RFC5322</a>]  Resnick, P., Ed., "Internet Message Format", <a href="https://datatracker.ietf.org/doc/html/rfc5322">RFC 5322</a>,
+              DOI 10.17487/RFC5322, October 2008, &lt;<a href="https://www.rfc-editor.org/info/rfc5322">https://www.rfc-</a>
+              <a href="https://www.rfc-editor.org/info/rfc5322">editor.org/info/rfc5322</a>&gt;.
+
+<span class="h2" id="autoid-12"><a class="selflink" id="appendix-A" href="#appendix-A">Appendix A</a>.  Message List</span>
+
+   This section is not exhaustive, and only lists those CTCP messages
+   which are widely implemented across the IRC ecosystem.
+
+   The reply and parameter lines below use a simplified syntax that
+   represents variables by surrounding them with angle brackets.
+
+<span class="h3" id="autoid-13"><a class="selflink" id="appendix-A.1" href="#appendix-A.1">A.1</a>.  ACTION</span>
+
+   Type:    Extended Formatting
+   Params:  ACTION &lt;text&gt;
+
+   This extended formatting message shows that &lt;text&gt; should be
+   displayed as a third-person action or emote; in clients, it's
+   generally activated with the command "/me".
+
+   If &lt;text&gt; is empty, clients SHOULD still include a single space after
+   "ACTION" (i.e. an empty params section) to help compatibility.
+
+
+
+
+<span class="grey">Mikulenas &amp; Oakley        Expires July 13, 2018                 [Page 6]</span></pre>
+<hr class="noprint"><!--NewPage--><pre class="newpage"><span id="page-7"></span>
+<span class="grey">Internet-Draft        IRC Client-to-Client Protocol         January 2018</span>
+
+
+   Clients SHOULD correctly parse incoming ACTION messages with or
+   without the params section.
+
+   ACTION is universally implemented and very commonly used.  Clients
+   MUST implement this CTCP message to effectively use IRC.
+
+   Examples:
+
+     Raw:        :dan!user@host PRIVMSG #ircv3 :\x01ACTION does it!\x01
+
+     Formatted:  * dan does it!
+
+     Raw:        :dan!user@host PRIVMSG #ircv3 :\x01ACTION \x01
+     Raw:        :dan!user@host PRIVMSG #ircv3 :\x01ACTION\x01
+     Raw:        :dan!user@host PRIVMSG #ircv3 :\x01ACTION
+
+     Formatted:  * dan
+
+<span class="h3" id="autoid-14"><a class="selflink" id="appendix-A.2" href="#appendix-A.2">A.2</a>.  CLIENTINFO</span>
+
+   Type:   Extended Query
+   Reply:  CLIENTINFO &lt;tokens&gt;
+
+   This extended query returns a list of the CTCP messages that this
+   client supports and implements, delimited by a single ASCII space.
+
+   CLIENTINFO is widely implemented.  Clients SHOULD implement this CTCP
+   message.
+
+   Example:
+
+     Query:     CLIENTINFO
+     Response:  CLIENTINFO ACTION DCC CLIENTINFO PING TIME VERSION
+
+<span class="h3" id="autoid-15"><a class="selflink" id="appendix-A.3" href="#appendix-A.3">A.3</a>.  DCC</span>
+
+   Type:    Extended Query
+   Params:  DCC &lt;type&gt; &lt;argument&gt; &lt;host&gt; &lt;port&gt;
+
+   This extended query sets up and controls connections that go directly
+   between clients, bypassing the IRC server.  This is typically used
+   for features that require a large amount of traffic between clients
+   or simply wish to bypass the server itself such as file transfer and
+   direct chat.
+
+   The Direct Client-to-Client (DCC) Protocol requires its own
+   specification, and is not described in-depth here.
+
+
+
+
+<span class="grey">Mikulenas &amp; Oakley        Expires July 13, 2018                 [Page 7]</span></pre>
+<hr class="noprint"><!--NewPage--><pre class="newpage"><span id="page-8"></span>
+<span class="grey">Internet-Draft        IRC Client-to-Client Protocol         January 2018</span>
+
+
+   DCC is widely implemented.  Clients MAY implement this CTCP message.
+
+<span class="h3" id="autoid-16"><a class="selflink" id="appendix-A.4" href="#appendix-A.4">A.4</a>.  FINGER</span>
+
+   Type:   Metadata Query
+   Reply:  FINGER &lt;info&gt;
+
+   This metadata query returns miscellaneous info about the user,
+   typically the same information that's held in their realname field.
+
+   However, some implementations return the client name and version
+   instead.
+
+   FINGER is largely obsolete.  Clients MAY implement this CTCP message.
+
+   Example:
+
+     Query:     FINGER
+     Response:  FINGER WeeChat 1.8-dev
+
+<span class="h3" id="autoid-17"><a class="selflink" id="appendix-A.5" href="#appendix-A.5">A.5</a>.  PING</span>
+
+   Type:    Extended Query
+   Params:  PING &lt;info&gt;
+
+   This extended query confirms reachability and latency to the target
+   client.  When receiving a CTCP PING, the reply MUST contain exactly
+   the same parameters as the original query.
+
+   PING is universally implemented.  Clients SHOULD implement this CTCP
+   message.
+
+   Example:
+
+     Query:     PING 1473523721 662865
+     Response:  PING 1473523721 662865
+
+     Query:     PING foo bar baz
+     Response:  PING foo bar baz
+
+<span class="h3" id="autoid-18"><a class="selflink" id="appendix-A.6" href="#appendix-A.6">A.6</a>.  SOURCE</span>
+
+   Type:   Metadata Query
+   Reply:  SOURCE &lt;info&gt;
+
+   This metadata query returns the location of the source code for the
+   client.
+
+
+
+
+<span class="grey">Mikulenas &amp; Oakley        Expires July 13, 2018                 [Page 8]</span></pre>
+<hr class="noprint"><!--NewPage--><pre class="newpage"><span id="page-9"></span>
+<span class="grey">Internet-Draft        IRC Client-to-Client Protocol         January 2018</span>
+
+
+   SOURCE is rarely implemented.  Clients MAY implement this CTCP
+   message.
+
+   Example:
+
+     Query:     SOURCE
+     Response:  SOURCE <a href="https://weechat.org/download">https://weechat.org/download</a>
+
+<span class="h3" id="autoid-19"><a class="selflink" id="appendix-A.7" href="#appendix-A.7">A.7</a>.  TIME</span>
+
+   Type:    Extended Query
+   Params:  TIME &lt;timestring&gt;
+
+   This extended query returns the client's local time in an unspecified
+   human-readable format.  In practice, both the format output by
+   ctime() and the format described in <a href="https://datatracker.ietf.org/doc/html/rfc5322#section-3.3">Section&nbsp;3.3 of [RFC5322]</a> are
+   common.  Earlier specifications recommended prefixing the time string
+   with a colon, but this is no longer recommended.
+
+   New implementations MAY default to UTC time for privacy reasons.
+
+   TIME is almost universally implemented.  Clients MAY implement this
+   CTCP message.
+
+   Example:
+
+     Query:     TIME
+     Response:  TIME Mon, 08 May 2017 09:15:29 GMT
+
+<span class="h3" id="autoid-20"><a class="selflink" id="appendix-A.8" href="#appendix-A.8">A.8</a>.  VERSION</span>
+
+   Type:   Metadata Query
+   Reply:  VERSION &lt;verstring&gt;
+
+   This metadata query returns the name and version of the client
+   software in use.  There is no specified format for the version
+   string.
+
+   Clients may allow users to customise the response value for this
+   query.
+
+   VERSION is universally implemented.  Clients SHOULD implement this
+   CTCP message.
+
+   Example:
+
+     Query:     VERSION
+     Response:  VERSION WeeChat 1.8-dev (git: v1.7-329-g22f2fd03a)
+
+
+
+<span class="grey">Mikulenas &amp; Oakley        Expires July 13, 2018                 [Page 9]</span></pre>
+<hr class="noprint"><!--NewPage--><pre class="newpage"><span id="page-10"></span>
+<span class="grey">Internet-Draft        IRC Client-to-Client Protocol         January 2018</span>
+
+
+<span class="h3" id="autoid-21"><a class="selflink" id="appendix-A.9" href="#appendix-A.9">A.9</a>.  USERINFO</span>
+
+   Type:   Metadata Query
+   Reply:  USERINFO &lt;info&gt;
+
+   This metadata query returns miscellaneous info about the user,
+   typically the same information that's held in their realname field.
+
+   However, some implementations return "&lt;nickname&gt; (&lt;realname&gt;)"
+   instead.
+
+   USERINFO is largely obsolete.  Clients MAY implement this CTCP
+   message.
+
+   Example:
+
+     Query:     USERINFO
+     Response:  USERINFO fred (Fred Foobar)
+
+<span class="h2" id="autoid-22"><a class="selflink" id="appendix-B" href="#appendix-B">Appendix B</a>.  Change History [RFC Editor: Please remove this section]</span>
+
+   Changes from draft 1 (July 18, 2017)
+
+   o  General editing, fixed mistypes.
+
+   o  Simplified some of the examples.
+
+   Changes from draft 0 (May 29, 2017)
+
+   o  Added note about servers truncating CTCP messages (thanks Peter).
+
+   o  Fixed misspellings and added note to TIME about previously-
+      recommended prefix (thanks Patrick).
+
+   o  Mentioned how to parse/send empty ACTION messages (thanks dequis
+      and the crew).
+
+Authors' Addresses
+
+   Mantas Mikulenas
+   Independent
+
+   Email: grawity@gmail.com
+
+
+
+
+
+
+
+
+<span class="grey">Mikulenas &amp; Oakley        Expires July 13, 2018                [Page 10]</span></pre>
+<hr class="noprint"><!--NewPage--><pre class="newpage"><span id="page-11"></span>
+<span class="grey">Internet-Draft        IRC Client-to-Client Protocol         January 2018</span>
+
+
+   Daniel Oakley
+   ircdocs
+
+   Email: daniel@danieloaks.net
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Mikulenas &amp; Oakley        Expires July 13, 2018                [Page 11]
+</pre></div>
+                    </div>
+                
+            </div>
+            <div class="d-print-none col-md-3 bg-light-subtle collapse show" id="sidebar">
+                <div class="position-fixed border-start sidebar overflow-scroll overscroll-none no-scrollbar">
+                    <div class="d-flex flex-column vh-100 pt-2 pt-lg-3 ps-3 pl-md-2 pl-lg-3">
+                        <div>
+                            <a class="btn btn-primary btn-sm" href="https://datatracker.ietf.org/doc/draft-oakley-irc-ctcp/">Datatracker</a>
+                            <p class="fw-bold pt-2">
+                                
+                                    draft-oakley-irc-ctcp-02
+                                
+                                <br>
+                                
+
+
+
+
+
+
+
+    <span class="text-danger">Expired Internet-Draft</span>
+    (individual)
+    
+
+                            </p>
+                        </div>
+                        
+                        <ul class="nav nav-tabs nav-fill small me-2" role="tablist">
+                            <li class="nav-item" role="presentation" data-bs-original-title="Document information">
+                                <button class="nav-link px-2 active" id="docinfo-tab" data-bs-toggle="tab" data-bs-target="#docinfo-tab-pane" type="button" role="tab" aria-controls="docinfo-tab-pane" aria-selected="true">
+                                    <i class="bi bi-info-circle"></i><span class="d-none d-md-block d-xl-inline ms-xl-1">Info</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation" data-bs-original-title="Table of contents">
+                                <button class="nav-link px-2" id="toc-tab" data-bs-toggle="tab" data-bs-target="#toc-tab-pane" type="button" role="tab" aria-controls="toc-tab-pane" aria-selected="false" tabindex="-1">
+                                    <i class="bi bi-list-ol"></i><span class="d-none d-md-block d-xl-inline ms-xl-1">Contents</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation" data-bs-original-title="Preferences">
+                                <button class="nav-link px-2" id="pref-tab" data-bs-toggle="tab" data-bs-target="#pref-tab-pane" type="button" role="tab" aria-controls="pref-tab-pane" aria-selected="false" tabindex="-1">
+                                    <i class="bi bi-gear"></i><span class="d-none d-md-block d-xl-inline ms-xl-1">Prefs</span>
+                                </button>
+                            </li>
+                        </ul>
+                        <div class="overflow-auto tab-content pt-2 me-2">
+                            <div class="tab-pane active show" id="docinfo-tab-pane" role="tabpanel" aria-labelledby="docinfo-tab" tabindex="0">
+                                <table class="table table-sm table-borderless">
+                                    
+
+
+
+
+
+
+
+<tbody class="meta align-top ">
+    <tr>
+        <th scope="row">Document</th>
+        <th scope="row">Document type</th>
+        <td class="edit"></td>
+        <td>
+            
+
+
+
+
+
+
+
+    <span class="text-danger">Expired Internet-Draft</span>
+    (individual)
+    
+
+            
+            
+                <div class="badge rounded-pill text-bg-warning">
+                    Expired &amp; archived
+                </div>
+            
+            
+                
+
+
+
+
+    <div class="alert alert-warning small p-2 mt-2" role="alert">
+        This document is an Internet-Draft (I-D).
+        Anyone may submit an I-D to the IETF.
+        This I-D is <strong>not endorsed by the IETF</strong> and has <strong>no formal standing</strong> in the
+        <a href="https://datatracker.ietf.org/doc/rfc2026/">IETF standards process</a>.
+    </div>
+
+            
+        </td>
+    </tr>
+    
+        <tr>
+            <td></td>
+            <th scope="row">Select version</th>
+            <td class="edit"></td>
+            <td>
+                
+
+
+
+    <ul class="revision-list pagination pagination-sm text-center flex-wrap my-0">
+        
+            
+                 
+                    <li class="page-item ">
+                        <a class="page-link" href="https://datatracker.ietf.org/doc/html/draft-oakley-irc-ctcp-00">
+                            00
+                        </a>
+                    </li>
+                
+            
+                 
+                    <li class="page-item ">
+                        <a class="page-link" href="https://datatracker.ietf.org/doc/html/draft-oakley-irc-ctcp-01" rel="nofollow">
+                            01
+                        </a>
+                    </li>
+                
+            
+                 
+                    <li class="page-item active">
+                        <a class="page-link" href="https://datatracker.ietf.org/doc/html/draft-oakley-irc-ctcp-02">
+                            02
+                        </a>
+                    </li>
+                
+            
+            
+        
+    </ul>
+
+            </td>
+        </tr>
+        
+            <tr>
+                <td></td>
+                <th scope="row">Compare versions</th>
+                <td class="edit"></td>
+                <td>
+                    
+
+
+
+<form class="form-horizontal diff-form" action="https://author-tools.ietf.org/iddiff" method="get" target="_blank">
+
+            <select class="form-select form-select-sm mb-1 select2-field select2-hidden-accessible" data-max-entries="1" data-width="resolve" data-allow-clear="false" data-minimum-input-length="0" aria-label="From revision" name="url1" data-select2-id="select2-data-7-g9cn" tabindex="-1" aria-hidden="true">
+                
+                    <option value="draft-oakley-irc-ctcp-02">
+                        draft-oakley-irc-ctcp-02
+                        
+                    </option>
+                
+                    <option value="draft-oakley-irc-ctcp-01" selected="selected" data-select2-id="select2-data-9-esj6">
+                        draft-oakley-irc-ctcp-01
+                        
+                    </option>
+                
+                    <option value="draft-oakley-irc-ctcp-00">
+                        draft-oakley-irc-ctcp-00
+                        
+                    </option>
+                
+                
+            </select><span class="select2 select2-container select2-container--bootstrap-5" dir="ltr" data-select2-id="select2-data-8-ir5k" style="width: 279.367px;"><span class="selection"><span class="select2-selection select2-selection--single form-select form-select-sm mb-1" role="combobox" aria-haspopup="true" aria-expanded="false" tabindex="0" aria-disabled="false" aria-labelledby="select2-url1-wz-container" aria-controls="select2-url1-wz-container"><span class="select2-selection__rendered" id="select2-url1-wz-container" role="textbox" aria-readonly="true" title="
+                        draft-oakley-irc-ctcp-01
+                        
+                    ">
+                        draft-oakley-irc-ctcp-01
+                        
+                    </span><span class="select2-selection__arrow" role="presentation"><b role="presentation"></b></span></span></span><span class="dropdown-wrapper" aria-hidden="true"></span></span>
+
+            <select class="form-select form-select-sm mb-1 select2-field select2-hidden-accessible" data-max-entries="1" data-width="resolve" data-allow-clear="false" data-minimum-input-length="0" aria-label="To revision" name="url2" data-select2-id="select2-data-10-ljwt" tabindex="-1" aria-hidden="true">
+                
+                    <option value="draft-oakley-irc-ctcp-02" selected="selected" data-select2-id="select2-data-12-wqyv">
+                        draft-oakley-irc-ctcp-02
+                        
+                    </option>
+                
+                    <option value="draft-oakley-irc-ctcp-01">
+                        draft-oakley-irc-ctcp-01
+                        
+                    </option>
+                
+                    <option value="draft-oakley-irc-ctcp-00">
+                        draft-oakley-irc-ctcp-00
+                        
+                    </option>
+                
+                
+            </select><span class="select2 select2-container select2-container--bootstrap-5" dir="ltr" data-select2-id="select2-data-11-go7r" style="width: 279.367px;"><span class="selection"><span class="select2-selection select2-selection--single form-select form-select-sm mb-1" role="combobox" aria-haspopup="true" aria-expanded="false" tabindex="0" aria-disabled="false" aria-labelledby="select2-url2-7y-container" aria-controls="select2-url2-7y-container"><span class="select2-selection__rendered" id="select2-url2-7y-container" role="textbox" aria-readonly="true" title="
+                        draft-oakley-irc-ctcp-02
+                        
+                    ">
+                        draft-oakley-irc-ctcp-02
+                        
+                    </span><span class="select2-selection__arrow" role="presentation"><b role="presentation"></b></span></span></span><span class="dropdown-wrapper" aria-hidden="true"></span></span>
+
+            <button type="submit" class="btn btn-primary btn-sm" value="--html" name="difftype">
+                Side-by-side
+            </button>
+            
+            <button type="submit" class="btn btn-primary btn-sm" value="--hwdiff" name="difftype">
+                Inline
+            </button>
+
+</form>
+                </td>
+            </tr>
+        
+    
+    <tr>
+        <td></td>
+        <th scope="row">Authors</th>
+        <td class="edit">
+            
+        </td>
+        <td>
+            
+            
+                <span><a href="https://datatracker.ietf.org/person/grawity@gmail.com" data-bs-original-title="Datatracker profile of Mantas Mikulėnas">Mantas Mikulėnas</a> <a href="mailto:grawity%40gmail.com" aria-label="Compose email to grawity@gmail.com" data-bs-original-title="Compose email to grawity@gmail.com">
+                <i class="bi bi-envelope"></i></a></span>,
+            
+                <span><a href="https://datatracker.ietf.org/person/daniel@danieloaks.net" data-bs-original-title="Datatracker profile of Daniel Oakley">Daniel Oakley</a> <a href="mailto:daniel%40danieloaks.net" aria-label="Compose email to daniel@danieloaks.net" data-bs-original-title="Compose email to daniel@danieloaks.net">
+                <i class="bi bi-envelope"></i></a></span>
+            
+            
+                <br>
+                <a class="btn btn-primary btn-sm mt-1" href="mailto:draft-oakley-irc-ctcp@ietf.org?subject=draft-oakley-irc-ctcp" data-bs-original-title="Send email to the document authors">Email authors</a>
+            
+        </td>
+    </tr>
+    
+    
+        
+        
+        
+    
+    <tr>
+        <td></td>
+        <th scope="row">
+            RFC stream
+        </th>
+        <td class="edit">
+            
+        </td>
+        <td class="text-body-secondary">
+            
+                (None)
+            
+        </td>
+    </tr>
+    
+        <tr>
+            <td></td>
+            <th scope="row">
+                Intended RFC status
+            </th>
+            <td class="edit">
+                
+            </td>
+            <td>
+                
+                    Informational
+                
+            </td>
+        </tr>
+    
+    <tr>
+        <td></td>
+        <th scope="row">
+            Other formats
+        </th>
+        <td class="edit">
+        </td>
+        <td>
+            
+                
+    <div class="buttonlist">
+    
+        
+        <a class="btn btn-primary btn-sm" target="_blank" href="https://www.ietf.org/archive/id/draft-oakley-irc-ctcp-02.txt">
+            
+                <i class="bi bi-file-text"></i> txt
+            
+        </a>
+        
+    
+        
+        <a class="btn btn-primary btn-sm" target="_blank" href="https://www.ietf.org/archive/id/draft-oakley-irc-ctcp-02.xml">
+            
+                <i class="bi bi-file-code"></i> xml
+            
+        </a>
+        
+    
+        
+    
+        
+        <a class="btn btn-primary btn-sm" target="_blank" href="https://datatracker.ietf.org/doc/draft-oakley-irc-ctcp/02/bibtex/">
+            
+                <i class="bi bi-file-ruled"></i> bibtex
+            
+        </a>
+        
+    
+        
+        <a class="btn btn-primary btn-sm" target="_blank" href="https://datatracker.ietf.org/doc/bibxml3/draft-oakley-irc-ctcp-02.xml">
+            
+                <i class="bi bi-file-code"></i> bibxml
+            
+        </a>
+        
+    
+</div>
+
+            
+        </td>
+    </tr>
+    
+    
+        
+    
+</tbody>
+                                </table>
+                                <a class="btn btn-sm btn-warning mb-3" target="_blank" href="https://github.com/ietf-tools/datatracker/issues/new/choose">
+                                    Report a datatracker bug
+                                    <i class="bi bi-bug"></i>
+                                </a>
+                            </div>
+                            <div class="tab-pane mb-5" id="toc-tab-pane" role="tabpanel" aria-labelledby="toc-tab" tabindex="0">
+                                <nav class="nav nav-pills flex-column small" id="toc-nav">
+                                <a class="nav-link ps-1 d-flex hyphenate py-0" href="#autoid-1"><div class="pe-1">1.</div><div class="text-break">Introduction</div></a><a class="nav-link ps-1 d-flex hyphenate py-0" href="#autoid-2"><div class="pe-1">2.</div><div class="text-break">Message Syntax</div></a><a class="nav-link ps-1 d-flex hyphenate py-0" href="#autoid-3"><div class="pe-1">3.</div><div class="text-break">Message Types</div></a><nav class="nav-pills ps-3 flex-column"><a class="nav-link ps-1 d-flex hyphenate py-0" href="#autoid-4"><div class="pe-1">3.1.</div><div class="text-break">Extended formatting</div></a><a class="nav-link ps-1 d-flex hyphenate py-0" href="#autoid-5"><div class="pe-1">3.2.</div><div class="text-break">Metadata Query</div></a><a class="nav-link ps-1 d-flex hyphenate py-0" href="#autoid-6"><div class="pe-1">3.3.</div><div class="text-break">Extended Query</div></a></nav><a class="nav-link ps-1 d-flex hyphenate py-0" href="#autoid-7"><div class="pe-1">4.</div><div class="text-break">Messages</div></a><a class="nav-link ps-1 d-flex hyphenate py-0" href="#autoid-8"><div class="pe-1">5.</div><div class="text-break">Acknowledgements</div></a><a class="nav-link ps-1 d-flex hyphenate py-0" href="#autoid-9"><div class="pe-1">6.</div><div class="text-break">Security Considerations</div></a><a class="nav-link ps-1 d-flex hyphenate py-0" href="#autoid-10"><div class="pe-1">7.</div><div class="text-break">IANA Considerations</div></a><a class="nav-link ps-1 d-flex hyphenate py-0" href="#autoid-11"><div class="pe-1">8.</div><div class="text-break">Normative References</div></a><a class="nav-link ps-1 d-flex hyphenate py-0" href="#autoid-12"><div class="pe-1">A.</div><div class="text-break">Message List</div></a><nav class="nav-pills ps-3 flex-column"><a class="nav-link ps-1 d-flex hyphenate py-0" href="#autoid-13"><div class="pe-1">A.1.</div><div class="text-break">ACTION</div></a><a class="nav-link ps-1 d-flex hyphenate py-0" href="#autoid-14"><div class="pe-1">A.2.</div><div class="text-break">CLIENTINFO</div></a><a class="nav-link ps-1 d-flex hyphenate py-0" href="#autoid-15"><div class="pe-1">A.3.</div><div class="text-break">DCC</div></a><a class="nav-link ps-1 d-flex hyphenate py-0" href="#autoid-16"><div class="pe-1">A.4.</div><div class="text-break">FINGER</div></a><a class="nav-link ps-1 d-flex hyphenate py-0" href="#autoid-17"><div class="pe-1">A.5.</div><div class="text-break">PING</div></a><a class="nav-link ps-1 d-flex hyphenate py-0" href="#autoid-18"><div class="pe-1">A.6.</div><div class="text-break">SOURCE</div></a><a class="nav-link ps-1 d-flex hyphenate py-0" href="#autoid-19"><div class="pe-1">A.7.</div><div class="text-break">TIME</div></a><a class="nav-link ps-1 d-flex hyphenate py-0 active" href="#autoid-20"><div class="pe-1">A.8.</div><div class="text-break">VERSION</div></a><a class="nav-link ps-1 d-flex hyphenate py-0" href="#autoid-21"><div class="pe-1">A.9.</div><div class="text-break">USERINFO</div></a></nav><a class="nav-link ps-1 d-flex hyphenate py-0" href="#autoid-22"><div class="pe-1">B.</div><div class="text-break">Change History [RFC Editor: Please remove this section]</div></a></nav>
+                            </div>
+                            <div class="tab-pane mb-5 small" id="pref-tab-pane" role="tabpanel" aria-labelledby="pref-tab" tabindex="0">
+                                <label class="form-label fw-bold mb-2">Show sidebar by default</label>
+                                <div class="btn-group-vertical btn-group-sm d-flex" role="group">
+                                    <input type="radio" class="btn-check" name="sidebar" id="on-radio">
+                                    <label class="btn btn-outline-primary" for="on-radio">Yes</label>
+                                    <input type="radio" class="btn-check" name="sidebar" id="off-radio">
+                                    <label class="btn btn-outline-primary" for="off-radio">No</label>
+                                </div>
+                                <label class="form-label fw-bold mt-4 mb-2">Tab to show by default</label>
+                                <div class="btn-group-vertical btn-group-sm d-flex" role="group">
+                                    <input type="radio" class="btn-check" name="deftab" id="docinfo-radio" checked="checked">
+                                    <label class="btn btn-outline-primary" for="docinfo-radio">
+                                        <i class="bi bi-info-circle me-1"></i>Info
+                                    </label>
+                                    <input type="radio" class="btn-check" name="deftab" id="toc-radio">
+                                    <label class="btn btn-outline-primary" for="toc-radio">
+                                        <i class="bi bi-list-ol me-1"></i>Contents
+                                    </label>
+                                </div>
+                                <label class="form-label fw-bold mt-4 mb-2">HTMLization configuration</label>
+                                <div class="btn-group-vertical btn-group-sm d-flex" role="group">
+                                    <input type="radio" class="btn-check" name="htmlconf" id="txt-radio">
+                                    <label class="btn btn-outline-primary" for="txt-radio" data-bs-original-title="This is the traditional HTMLization method.">
+                                        <i class="bi bi-badge-sd me-1"></i>HTMLize the plaintext
+                                    </label>
+                                    <input type="radio" class="btn-check" name="htmlconf" id="html-radio">
+                                    <label class="btn btn-outline-primary" for="html-radio" data-bs-original-title="This is the modern HTMLization method.">
+                                        <i class="bi bi-badge-hd me-1"></i>Plaintextify the HTML
+                                    </label>
+                                </div>
+                                <label class="form-label fw-bold mt-4 mb-2" for="ptsize">Maximum font size</label>
+                                <input type="range" class="form-range" min="7" max="16" id="ptsize" oninput="ptdemo.value = ptsize.value" value="12">
+                                <label class="form-label fw-bold mt-4 mb-2">Page dependencies</label>
+                                <div class="btn-group-vertical btn-group-sm d-flex" role="group">
+                                    <input type="radio" class="btn-check" name="pagedeps" id="inline-radio">
+                                    <label class="btn btn-outline-primary" for="inline-radio" data-bs-original-title="Generate larger, standalone web pages that do not require network access to render.">
+                                        <i class="bi bi-box me-1"></i>Inline
+                                    </label>
+                                    <input type="radio" class="btn-check" name="pagedeps" id="reference-radio">
+                                    <label class="btn btn-outline-primary" for="reference-radio" data-bs-original-title="Generate regular web pages that require network access to render.">
+                                        <i class="bi bi-link-45deg me-1"></i>Reference
+                                    </label>
+                                </div>
+                                <label class="form-label fw-bold mt-4 mb-2">Citation links</label>
+                                <div class="btn-group-vertical btn-group-sm d-flex" role="group">
+                                    <input type="radio" class="btn-check" name="reflinks" id="refsection-radio" checked="checked">
+                                    <label class="btn btn-outline-primary" for="refsection-radio" data-bs-original-title="Citation links go to the reference section.">
+                                        <i class="bi bi-arrow-clockwise"></i> Go to reference section
+                                    </label>
+                                    <input type="radio" class="btn-check" name="reflinks" id="citation-radio">
+                                    <label class="btn btn-outline-primary" for="citation-radio" data-bs-original-title="Citation links go directly to the cited document.">
+                                        <i class="bi bi-link-45deg me-1"></i>Go to linked document
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+<script type="text/javascript">
+  var _paq = window._paq || [];
+  
+  _paq.push(['disableCookies']);
+  _paq.push(['trackPageView']);
+  _paq.push(['enableLinkTracking']);
+  (function() {
+    var u="//analytics.ietf.org/";
+    _paq.push(['setTrackerUrl', u+'matomo.php']);
+    _paq.push(['setSiteId', 7]);
+    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+    g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+  })();
+</script>
+<noscript><p><img src="//analytics.ietf.org/piwik.php?idsite=7" style="border:0;" alt="" /></p></noscript>
+
+    
+
+</body></html>

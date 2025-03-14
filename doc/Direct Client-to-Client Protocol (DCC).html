@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Direct Client-to-Client Protocol (DCC)</title>
+
+        <style class="anchorjs"></style><link href="Direct%20Client-to-Client%20Protocol%20(DCC)_bestanden/open-sans.css" rel="stylesheet" type="text/css">
+        <link href="Direct%20Client-to-Client%20Protocol%20(DCC)_bestanden/font-awesome.min.css" rel="stylesheet" type="text/css">
+        <link href="Direct%20Client-to-Client%20Protocol%20(DCC)_bestanden/pure-min.css" rel="stylesheet" type="text/css">
+        <link href="Direct%20Client-to-Client%20Protocol%20(DCC)_bestanden/screen.css" rel="stylesheet" type="text/css">
+
+        <script src="Direct%20Client-to-Client%20Protocol%20(DCC)_bestanden/anchor.min.js"></script>
+
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+        <link rel="apple-touch-icon" sizes="57x57" href="https://ircdocs.horse/favicons/apple-touch-icon-57x57.png">
+        <link rel="apple-touch-icon" sizes="60x60" href="https://ircdocs.horse/favicons/apple-touch-icon-60x60.png">
+        <link rel="apple-touch-icon" sizes="72x72" href="https://ircdocs.horse/favicons/apple-touch-icon-72x72.png">
+        <link rel="apple-touch-icon" sizes="76x76" href="https://ircdocs.horse/favicons/apple-touch-icon-76x76.png">
+        <link rel="apple-touch-icon" sizes="114x114" href="https://ircdocs.horse/favicons/apple-touch-icon-114x114.png">
+        <link rel="apple-touch-icon" sizes="120x120" href="https://ircdocs.horse/favicons/apple-touch-icon-120x120.png">
+        <link rel="apple-touch-icon" sizes="144x144" href="https://ircdocs.horse/favicons/apple-touch-icon-144x144.png">
+        <link rel="apple-touch-icon" sizes="152x152" href="https://ircdocs.horse/favicons/apple-touch-icon-152x152.png">
+        <link rel="apple-touch-icon" sizes="180x180" href="https://ircdocs.horse/favicons/apple-touch-icon-180x180.png">
+        <link rel="icon" type="image/png" href="https://ircdocs.horse/favicons/favicon-32x32.png" sizes="32x32">
+        <link rel="icon" type="image/png" href="https://ircdocs.horse/favicons/android-chrome-192x192.png" sizes="192x192">
+        <link rel="icon" type="image/png" href="https://ircdocs.horse/favicons/favicon-96x96.png" sizes="96x96">
+        <link rel="icon" type="image/png" href="https://ircdocs.horse/favicons/favicon-16x16.png" sizes="16x16">
+        <link rel="manifest" href="https://ircdocs.horse/favicons/manifest.json">
+        <link rel="mask-icon" href="https://ircdocs.horse/favicons/safari-pinned-tab.svg" color="#5bbad5">
+        <link rel="shortcut icon" href="https://ircdocs.horse/favicons/favicon.ico">
+    <style>:is([id*='google_ads_iframe'],[id*='taboola-'],.taboolaHeight,.taboola-placeholder,#top-ad,#credential_picker_container,#credentials-picker-container,#credential_picker_iframe,[id*='google-one-tap-iframe'],#google-one-tap-popup-container,.google-one-tap__module,.google-one-tap-modal-div,#amp_floatingAdDiv,#ez-content-blocker-container) {display:none!important;min-height:0!important;height:0!important;}</style></head>
+    <body>
+        <script>
+            // enable dark mode
+            if (document.cookie == "darkmode=true") {
+                document.body.classList.add("dark");
+            }
+        </script>
+        
+        <div id="wiptag">
+            <span class="detail">This document is a heavy work in progress<br>and should not be considered complete</span>
+        </div>
+        
+        
+
+        <a onclick="toggledarkmode()" id="darkmodebtn"><i class="fa fa-sun-o show-when-dark"></i><i class="fa fa-moon-o show-when-light"></i></a>
+
+        
+
+            <div id="nav"><div>
+                <nav>
+                    <a href="https://modern.ircdocs.horse/about" title="Modern IRC Documents">horse docs</a>
+                    <a href="https://modern.ircdocs.horse/" title="Modern IRC Client Protocol"><i class="fa fa-exchange"></i> client protocol</a>
+                    <a href="https://modern.ircdocs.horse/formatting" title="IRC Formatting"><i class="fa fa-paint-brush"></i> formatting</a>
+                    <a href="https://modern.ircdocs.horse/ctcp" title="Client-to-Client Protocol"><i class="fa fa-repeat"></i> ctcp</a>
+                    <a href="https://modern.ircdocs.horse/dcc" title="Direct Client-to-Client Protocol"><i class="fa fa-download"></i> dcc</a>
+                </nav>
+            </div></div>
+        <div id="wrapper">
+            <div id="content">
+                <h1>Direct Client-to-Client Protocol (DCC)</h1>
+
+                <div id="spec">
+                    
+                        
+                        
+                        
+                        <div class="pure-g copyright">
+
+    <div class="pure-u-1-1">
+        <span class="line">Daniel Oaks <span class="edmark">[Editor]</span></span>
+        
+            
+                <a href="http://ircdocs.horse/" class="line">ircdocs</a>
+            
+        
+        <span class="line"><a href="mailto:daniel@danieloaks.net">daniel@danieloaks.net</a></span>
+    </div>
+
+</div>
+
+<div class="note">
+    <p>This document intends to be a useful overview and reference of DCC as it is implemented today. It is a <a href="https://modern.ircdocs.horse/about#living-specification">living specification</a>
+ which is updated in response to feedback and implementations as they 
+change. This document describes existing behaviour and what we consider 
+best practices for new software.</p>
+    <p>If something written in here isn't interoperable with an IRC client you know of, please <a href="https://github.com/ircdocs/modern-irc/issues">open an issue</a>.</p>
+</div>
+
+<div class="warning">
+    <p>NOTE: This is NOWHERE NEAR FINISHED and may be ENTIRELY INACCURATE. Dragons be here, insane stuff be here.</p>
+    <p>Regardless of the accuracy of this specification, DCC in general 
+is not encrypted (apart from the SDCC extension which is not 
+widely-supported and does not verify any certificate details). I don't 
+particularly like where DCC is at the moment, but with this document I'm
+ hoping to start the discussion around properly encrypting direct 
+connections, and/or building something that does so with the knowledge 
+of what's currently out there.</p>
+    <p>You can contribute by sending pull requests to our <a href="https://github.com/ircdocs/modern-irc">Github repository</a>!</p>
+</div>
+
+<div id="printable-toc" style="display: none"></div>
+
+<hr>
+
+<h1 id="introduction">Introduction<a class="anchorjs-link anchor" href="#introduction" aria-label="Anchor link for: introduction" data-anchorjs-icon="" style="font-family: anchorjs-icons; font-style: normal; font-variant: normal; font-weight: normal; line-height: 1; padding-left: 0.375em;"></a></h1>
+
+<p>The Direct Client-to-Client Protocol (DCC) has been the primary 
+method of establishing connections directly between IRC clients for a 
+long time now. Once established, DCC connections bypass the IRC network 
+and servers, allowing for all sorts of data to be transferred between 
+clients including files and direct chat sessions.</p>
+
+<p>There have been many extensions to DCC through the years, such as 
+XDCC, SDCC and others. This document intends to describe DCC as it works
+ today and provide a useful specification for new client authors 
+implementing this feature.</p>
+
+<p>If you are a new software author implementing this feature, please keep in mind that <strong>DCC has no encryption.</strong> If you must implement DCC, please look at the <a href="#secure-dcc-sdcc">SDCC</a> section at the bottom of this document so that you can implement even the most minor security measures for this protocol.</p>
+
+
+                        <hr>
+                        <h1 id="toc">Table of Contents<a class="anchorjs-link anchor" href="#toc" aria-label="Anchor link for: toc" data-anchorjs-icon="" style="font-family: anchorjs-icons; font-style: normal; font-variant: normal; font-weight: normal; line-height: 1; padding-left: 0.375em;"></a></h1>
+                        <ul id="toc" class="section-nav">
+<li class="toc-entry toc-h1"><a href="#architecture">Architecture</a>
+<ul>
+<li class="toc-entry toc-h2"><a href="#dcc-query-syntax">DCC Query Syntax</a>
+<ul>
+<li class="toc-entry toc-h3"><a href="#port-0">Port 0</a></li>
+</ul>
+</li>
+<li class="toc-entry toc-h2"><a href="#dcc-chat">DCC CHAT</a>
+<ul>
+<li class="toc-entry toc-h3"><a href="#initiating-sessions">Initiating Sessions</a></li>
+<li class="toc-entry toc-h3"><a href="#sending-messages">Sending Messages</a>
+<ul>
+<li class="toc-entry toc-h4"><a href="#action">ACTION</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-entry toc-h2"><a href="#dcc-send">DCC SEND</a>
+<ul>
+<li class="toc-entry toc-h3"><a href="#initiating-sessions-1">Initiating Sessions</a></li>
+<li class="toc-entry toc-h3"><a href="#sending-the-file">Sending The File</a></li>
+<li class="toc-entry toc-h3"><a href="#resuming-the-send">Resuming The Send</a></li>
+</ul>
+</li>
+<li class="toc-entry toc-h2"><a href="#dcc-resume">DCC RESUME</a></li>
+<li class="toc-entry toc-h2"><a href="#dcc-accept">DCC ACCEPT</a></li>
+</ul>
+</li>
+<li class="toc-entry toc-h1"><a href="#extensions">Extensions</a>
+<ul>
+<li class="toc-entry toc-h2"><a href="#secure-dcc-sdcc">Secure DCC (SDCC)</a></li>
+<li class="toc-entry toc-h2"><a href="#reverse--firewall-bypassing-dcc">Reverse / Firewall-bypassing DCC</a></li>
+<li class="toc-entry toc-h2"><a href="#extended-dcc-xdcc">Extended DCC (XDCC)</a></li>
+</ul>
+</li>
+</ul>
+
+<hr>
+
+<h1 id="architecture">
+<a class="anchor" href="#architecture" aria-hidden="true"><span class="octicon octicon-link"></span></a>Architecture<a class="anchorjs-link anchor" href="#architecture" aria-label="Anchor link for: architecture" data-anchorjs-icon="" style="font-family: anchorjs-icons; font-style: normal; font-variant: normal; font-weight: normal; line-height: 1; padding-left: 0.375em;"></a></h1>
+
+<p><a href="https://modern.ircdocs.horse/ctcp">CTCP</a> messages are used to initiate DCC sessions. Specifically, the <a href="https://modern.ircdocs.horse/ctcp#dcc"><code class="language-plaintext highlighter-rouge">DCC</code></a> message is used to start and control DCC sessions.</p>
+
+<p>This section details the types of DCC available, and how to open DCC sessions.</p>
+
+<h2 id="dcc-query-syntax">
+<a class="anchor" href="#dcc-query-syntax" aria-hidden="true"><span class="octicon octicon-link"></span></a>DCC Query Syntax<a class="anchorjs-link anchor" href="#dcc-query-syntax" aria-label="Anchor link for: dcc query syntax" data-anchorjs-icon="" style="font-family: anchorjs-icons; font-style: normal; font-variant: normal; font-weight: normal; line-height: 1; padding-left: 0.375em;"></a></h2>
+
+<p>The initial CTCP <code class="language-plaintext highlighter-rouge">DCC</code> query message has this format:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>DCC &lt;type&gt; &lt;argument&gt; &lt;host&gt; &lt;port&gt;
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">&lt;type&gt;</code> contains the type of DCC being initiated, such as <code class="language-plaintext highlighter-rouge">CHAT</code> or <code class="language-plaintext highlighter-rouge">SEND</code>. <code class="language-plaintext highlighter-rouge">&lt;argument&gt;</code> refers to a type-specific kind of argument, such as a filename. <code class="language-plaintext highlighter-rouge">&lt;host&gt;</code> represents to the IP address which should be connected to, and <code class="language-plaintext highlighter-rouge">&lt;port&gt;</code> refers to a valid port on which the connection should be established (the value of this parameter can also be <code class="language-plaintext highlighter-rouge">0</code>, in which case the rules below apply.</p>
+
+<p><code class="language-plaintext highlighter-rouge">&lt;host&gt;</code>,
+ for legacy reasons, uses a ‘fun’ mixture of representations. For IPv4 
+hosts, this parameter is the string representation of the positive 
+integer that is the IP address in network byte order (e.g. <code class="language-plaintext highlighter-rouge">127.0.0.1</code> is represented as <code class="language-plaintext highlighter-rouge">2130706433</code>
+ in this param). For IPv6 hosts, clients instead support the standard, 
+widely-implemented IPv6 hex representation separated by colons (e.g. <code class="language-plaintext highlighter-rouge">::1</code>).</p>
+
+<p>Note that for DCC queries to work, the querying client MUST know its’
+ own public host address, or the address that the other client can use 
+to access it. Clients have discovered this in various ways through the 
+years, and this section doesn’t yet describe how to do so. However, 
+clients <code class="language-plaintext highlighter-rouge">MUST NOT</code> try to discover this through the <a href="https://modern.ircdocs.horse/#rpl_welcome-001"><code class="language-plaintext highlighter-rouge">RPL_WELCOME</code></a> numeric, as the prevalence of spoofed hostnames used today makes this infeasible on most public networks and introduces issues.</p>
+
+<h3 id="port-0">
+<a class="anchor" href="#port-0" aria-hidden="true"><span class="octicon octicon-link"></span></a>Port 0<a class="anchorjs-link anchor" href="#port-0" aria-label="Anchor link for: port 0" data-anchorjs-icon="" style="font-family: anchorjs-icons; font-style: normal; font-variant: normal; font-weight: normal; line-height: 1; padding-left: 0.375em;"></a></h3>
+
+<p>When port 0 is advertised on a DCC query, it signals that the sending
+ client wishes to open a connection but cannot (or does not wish to) 
+explicitly offer a listening port. This is commonly called Reverse DCC 
+or Firewall-bypassing DCC (we refer to it as Reverse DCC in this 
+document).</p>
+
+<p>When a client receives a reverse DCC query, it means that the sending
+ client wants the receiving client to establish the connection instead 
+(with a valid port number in the <code class="language-plaintext highlighter-rouge">&lt;port&gt;</code>
+ parameter). If the receiving client wishes to continue, they’ll send a 
+request back to the client that originally sent them the query.</p>
+
+<p>Reverse DCC interacts a bit strangely with the <code class="language-plaintext highlighter-rouge">RESUME</code> type, and is outlined below in the specific section.</p>
+
+<h2 id="dcc-chat">
+<a class="anchor" href="#dcc-chat" aria-hidden="true"><span class="octicon octicon-link"></span></a>DCC CHAT<a class="anchorjs-link anchor" href="#dcc-chat" aria-label="Anchor link for: dcc chat" data-anchorjs-icon="" style="font-family: anchorjs-icons; font-style: normal; font-variant: normal; font-weight: normal; line-height: 1; padding-left: 0.375em;"></a></h2>
+
+<p><code class="language-plaintext highlighter-rouge">CHAT</code> is used to establish chat sessions directly between clients. It should be noted that <strong>plain DCC does not use any form of encryption and SHOULD be avoided.</strong></p>
+
+<h3 id="initiating-sessions">
+<a class="anchor" href="#initiating-sessions" aria-hidden="true"><span class="octicon octicon-link"></span></a>Initiating Sessions<a class="anchorjs-link anchor" href="#initiating-sessions" aria-label="Anchor link for: initiating sessions" data-anchorjs-icon="" style="font-family: anchorjs-icons; font-style: normal; font-variant: normal; font-weight: normal; line-height: 1; padding-left: 0.375em;"></a></h3>
+
+<p>To initiate a <code class="language-plaintext highlighter-rouge">DCC CHAT</code> session, send a <code class="language-plaintext highlighter-rouge">CTCP</code> query with the format:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>DCC CHAT &lt;unused&gt; &lt;host&gt; &lt;port&gt;
+</code></pre></div></div>
+
+<p>Where <code class="language-plaintext highlighter-rouge">&lt;unused&gt;</code> is a holding string – we recommend just using <code class="language-plaintext highlighter-rouge">"chat"</code> here. <code class="language-plaintext highlighter-rouge">&lt;host&gt;</code> and <code class="language-plaintext highlighter-rouge">&lt;port&gt;</code> are the host and the port the recipient connect to in order to establish the connection.</p>
+
+<p>After receiving the query, the receiver will have the option of 
+accepting or rejecting the chat request. End users MUST be given the 
+option to either accept or ignore this request, as opening it will 
+expose their public IP address.</p>
+
+<p>To accept a given chat request, open a TCP connection to the given 
+port. To reject a given request, simply ignore the query and do not 
+respond to it.</p>
+
+<h3 id="sending-messages">
+<a class="anchor" href="#sending-messages" aria-hidden="true"><span class="octicon octicon-link"></span></a>Sending Messages<a class="anchorjs-link anchor" href="#sending-messages" aria-label="Anchor link for: sending messages" data-anchorjs-icon="" style="font-family: anchorjs-icons; font-style: normal; font-variant: normal; font-weight: normal; line-height: 1; padding-left: 0.375em;"></a></h3>
+
+<p>After opening the direct TCP connection, clients will send lines to each other separated by the pair of characters <code class="language-plaintext highlighter-rouge">CR</code> <code class="language-plaintext highlighter-rouge">('\r', 0x0D)</code> and <code class="language-plaintext highlighter-rouge">LF</code> <code class="language-plaintext highlighter-rouge">('\n', 0x0A)</code>.</p>
+
+<p>There are no prepended commands or verbs such as <code class="language-plaintext highlighter-rouge">PRIVMSG</code> and <code class="language-plaintext highlighter-rouge">NOTICE</code>.</p>
+
+<h4 id="action">
+<a class="anchor" href="#action" aria-hidden="true"><span class="octicon octicon-link"></span></a>ACTION<a class="anchorjs-link anchor" href="#action" aria-label="Anchor link for: action" data-anchorjs-icon="" style="font-family: anchorjs-icons; font-style: normal; font-variant: normal; font-weight: normal; line-height: 1; padding-left: 0.375em;"></a></h4>
+
+<p>If one wishes to perform a standard <a href="https://modern.ircdocs.horse/ctcp#action"><code class="language-plaintext highlighter-rouge">CTCP ACTION</code></a>-like message, they should prefix the line with <code class="language-plaintext highlighter-rouge">"\x01ACTION "</code>. That is, the standard CTCP delimiter <code class="language-plaintext highlighter-rouge">('\x01', 0x01)</code>, the verb <code class="language-plaintext highlighter-rouge">"ACTION"</code>, and a single space, before sending the client’s message.</p>
+
+<p>Clients that receive a line prefixed with <code class="language-plaintext highlighter-rouge">"\x01ACTION "</code> MUST display that line as a standard <a href="https://modern.ircdocs.horse/ctcp#action"><code class="language-plaintext highlighter-rouge">CTCP ACTION</code></a> message would be displayed.</p>
+
+<p><em>Example:</em></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  Raw:        \x01ACTION writes a specification
+
+  Formatted:  * dan writes a specification
+</code></pre></div></div>
+
+<h2 id="dcc-send">
+<a class="anchor" href="#dcc-send" aria-hidden="true"><span class="octicon octicon-link"></span></a>DCC SEND<a class="anchorjs-link anchor" href="#dcc-send" aria-label="Anchor link for: dcc send" data-anchorjs-icon="" style="font-family: anchorjs-icons; font-style: normal; font-variant: normal; font-weight: normal; line-height: 1; padding-left: 0.375em;"></a></h2>
+
+<p><code class="language-plaintext highlighter-rouge">SEND</code> is 
+used to send another client a given file. This is done directly between 
+clients to avoid the overhead of having to transfer files through the 
+IRC server. It should be noted that <strong>plain DCC does not use any form of encryption and SHOULD be avoided.</strong></p>
+
+<h3 id="initiating-sessions-1">
+<a class="anchor" href="#initiating-sessions-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>Initiating Sessions<a class="anchorjs-link anchor" href="#initiating-sessions-1" aria-label="Anchor link for: initiating sessions 1" data-anchorjs-icon="" style="font-family: anchorjs-icons; font-style: normal; font-variant: normal; font-weight: normal; line-height: 1; padding-left: 0.375em;"></a></h3>
+
+<p>To initiate a <code class="language-plaintext highlighter-rouge">DCC SEND</code> session, send a <code class="language-plaintext highlighter-rouge">CTCP</code> query with the format:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>DCC SEND &lt;filename&gt; &lt;host&gt; &lt;port&gt;
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">&lt;filename&gt;</code> is the filename of the file to be sent. <code class="language-plaintext highlighter-rouge">&lt;host&gt;</code> and <code class="language-plaintext highlighter-rouge">&lt;port&gt;</code> are the host and the port the recipient connect to in order to establish the connection.</p>
+
+<p>After receiving the query, the receiver will have the option of 
+accepting or rejecting the file send request. End users MUST be given 
+the option to either accept or ignore this request, as opening it will 
+expose their public IP address, and automatically receiving files on 
+certain systems may be used to exploit vulnerabilities.</p>
+
+<p>Clients SHOULD NOT allow saving files into system directories, 
+directories that could affect the operation of the IRC client or the 
+system as a whole. Clients SHOULD instead restrict saved files to a 
+single directory chosen by the user or purposefully chosen to be the 
+destination of received DCC files. End users MUST also be given the 
+option to rename the file and save it under a different filename.</p>
+
+<p>To accept a given chat request, open a TCP connection to the given 
+port. To reject a given request, simply ignore the query and do not 
+respond to it.</p>
+
+<h3 id="sending-the-file">
+<a class="anchor" href="#sending-the-file" aria-hidden="true"><span class="octicon octicon-link"></span></a>Sending The File<a class="anchorjs-link anchor" href="#sending-the-file" aria-label="Anchor link for: sending the file" data-anchorjs-icon="" style="font-family: anchorjs-icons; font-style: normal; font-variant: normal; font-weight: normal; line-height: 1; padding-left: 0.375em;"></a></h3>
+
+<p>After opening the direct TCP connection, the sending client sends the
+ raw bytes of the file over the newly-established connection.</p>
+
+<h3 id="resuming-the-send">
+<a class="anchor" href="#resuming-the-send" aria-hidden="true"><span class="octicon octicon-link"></span></a>Resuming The Send<a class="anchorjs-link anchor" href="#resuming-the-send" aria-label="Anchor link for: resuming the send" data-anchorjs-icon="" style="font-family: anchorjs-icons; font-style: normal; font-variant: normal; font-weight: normal; line-height: 1; padding-left: 0.375em;"></a></h3>
+
+<p>This section is not yet written.</p>
+
+<h2 id="dcc-resume">
+<a class="anchor" href="#dcc-resume" aria-hidden="true"><span class="octicon octicon-link"></span></a>DCC RESUME<a class="anchorjs-link anchor" href="#dcc-resume" aria-label="Anchor link for: dcc resume" data-anchorjs-icon="" style="font-family: anchorjs-icons; font-style: normal; font-variant: normal; font-weight: normal; line-height: 1; padding-left: 0.375em;"></a></h2>
+
+<p>This section is not yet written.</p>
+
+<h2 id="dcc-accept">
+<a class="anchor" href="#dcc-accept" aria-hidden="true"><span class="octicon octicon-link"></span></a>DCC ACCEPT<a class="anchorjs-link anchor" href="#dcc-accept" aria-label="Anchor link for: dcc accept" data-anchorjs-icon="" style="font-family: anchorjs-icons; font-style: normal; font-variant: normal; font-weight: normal; line-height: 1; padding-left: 0.375em;"></a></h2>
+
+<p>This section is not yet written.</p>
+
+<hr>
+
+<h1 id="extensions">
+<a class="anchor" href="#extensions" aria-hidden="true"><span class="octicon octicon-link"></span></a>Extensions<a class="anchorjs-link anchor" href="#extensions" aria-label="Anchor link for: extensions" data-anchorjs-icon="" style="font-family: anchorjs-icons; font-style: normal; font-variant: normal; font-weight: normal; line-height: 1; padding-left: 0.375em;"></a></h1>
+
+<p>These are various extensions that change how DCC connections are established and used. These are detailed here.</p>
+
+<h2 id="secure-dcc-sdcc">
+<a class="anchor" href="#secure-dcc-sdcc" aria-hidden="true"><span class="octicon octicon-link"></span></a>Secure DCC (SDCC)<a class="anchorjs-link anchor" href="#secure-dcc-sdcc" aria-label="Anchor link for: secure dcc sdcc" data-anchorjs-icon="" style="font-family: anchorjs-icons; font-style: normal; font-variant: normal; font-weight: normal; line-height: 1; padding-left: 0.375em;"></a></h2>
+
+<p>In this method, the verb <code class="language-plaintext highlighter-rouge">SCHAT</code> is used instead of <code class="language-plaintext highlighter-rouge">CHAT</code> and <code class="language-plaintext highlighter-rouge">SSEND</code> is used instead of <code class="language-plaintext highlighter-rouge">SEND</code>. When using secure DCC, the direct TCP connection uses TLS rather than plaintext.</p>
+
+<p>Although it uses TLS, the certificate on either side is not verified 
+in any way, which means this is still not secure by today’s standards. 
+However, it can help protect against dragnet data collection so it’s 
+still a definite step up from regular plaintext DCC.</p>
+
+<h2 id="reverse--firewall-bypassing-dcc">
+<a class="anchor" href="#reverse--firewall-bypassing-dcc" aria-hidden="true"><span class="octicon octicon-link"></span></a>Reverse / Firewall-bypassing DCC<a class="anchorjs-link anchor" href="#reverse--firewall-bypassing-dcc" aria-label="Anchor link for: reverse  firewall bypassing dcc" data-anchorjs-icon="" style="font-family: anchorjs-icons; font-style: normal; font-variant: normal; font-weight: normal; line-height: 1; padding-left: 0.375em;"></a></h2>
+
+<p>This type of DCC request (that we call Reverse DCC) is used to bypass
+ NAT and similar issues. The functionality is described above in the <a href="#port-0">Port 0</a> section and relevant part of the <a href="#dcc-resume">DCC RESUME</a> section.</p>
+
+<h2 id="extended-dcc-xdcc">
+<a class="anchor" href="#extended-dcc-xdcc" aria-hidden="true"><span class="octicon octicon-link"></span></a>Extended DCC (XDCC)<a class="anchorjs-link anchor" href="#extended-dcc-xdcc" aria-label="Anchor link for: extended dcc xdcc" data-anchorjs-icon="" style="font-family: anchorjs-icons; font-style: normal; font-variant: normal; font-weight: normal; line-height: 1; padding-left: 0.375em;"></a></h2>
+
+<p>XDCC (originally an acronym for Xabi’s DCC) is a set of additional 
+commands to allow clients to list files available for download. As well,
+ XDCC allows clients to request downloading a particular advertised file
+ – upon which a <code class="language-plaintext highlighter-rouge">DCC SEND</code> session will be established by the side advertising the file.</p>
+
+                    
+                </div>
+            </div>
+        </div>
+        <div id="footer">
+            <hr>
+            <p>The canonical version of this document is hosted at <a href="http://modern.ircdocs.horse/">http://modern.ircdocs.horse</a></p>
+            <p>You can talk to us at <a href="ircs://irc.libera.chat:6697/#ircdocs">#ircdocs on Libera.Chat</a></p>
+            <p>Pull requests may be submitted to and the source code for it can be found at<br><a href="https://github.com/ircdocs/modern-irc">http://github.com/ircdocs/modern-irc</a></p>
+        </div>
+    
+    <script>
+        anchors.options = {
+            placement: 'right',
+            class: 'anchor',
+        };
+        anchors.add('#spec h1, #spec h2, #spec h3, #spec h4, #spec h5, #spec .figure');
+
+        function toggledarkmode() {
+            document.body.classList.toggle("dark");
+            if (document.body.classList.contains("dark")) {
+                document.cookie = "darkmode=true";
+            } else {
+                document.cookie = "darkmode=false";
+            }
+        }
+
+        function disableietf() {
+            document.getElementById('hovering-ietf-warning').classList.add('displaynone');
+        }
+    </script>
+
+</body></html>
