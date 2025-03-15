@@ -52,8 +52,12 @@ int main(int argc, char *argv[]) {
     network::init();
 
     // auto irc = std::make_shared<protocol::cIRC>;
-    auto irc = std::make_shared<protocol::cIRC>("bb25");
+    auto irc = std::make_shared<protocol::cIRC>();
+    irc->setNick("bb25");
+    irc->setUser("bb25");
+
     auto tls = std::make_shared<network::cTlsConnection>(irc);
+
     irc->setConnection(tls);
 
     // irc->setConnection(test);

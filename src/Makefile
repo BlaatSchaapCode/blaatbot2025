@@ -9,6 +9,7 @@ LDFLAGS += -ltls
 CXX_INCLUDES += network
 CXX_INCLUDES += protocol
 CXX_INCLUDES += utils
+CXX_INCLUDES += ../ext/base64/include/
 
 CXX_SRC += ./network/network.cpp
 CXX_SRC += ./network/connection.cpp

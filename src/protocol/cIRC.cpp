@@ -8,12 +8,16 @@
 #include "cIRC.hpp"
 
 #include "splitString.hpp"
+#include <chrono>
 #include <cstring>
+#include <format>
+#include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <string>
 
 #include "logger.hpp"
+#include "version.hpp"
 
 namespace protocol {
 
@@ -32,17 +36,12 @@ namespace protocol {
  *
  */
 
-cIRC::cIRC(std::string nick, std::string user) {
-    if (user.length())
-        mUser = user;
-    else
-        mUser = nick;
-    mNick = nick;
-
+cIRC::cIRC() {
     mMessageParsers["PING"] = [this](const IRCMessage message) { onPING(message); };
     mMessageParsers["PRIVMSG"] = [this](const IRCMessage message) { onPRIVMSG(message); };
     mMessageParsers["NOTICE"] = [this](const IRCMessage message) { onNOTICE(message); };
     mMessageParsers["ERROR"] = [this](const IRCMessage message) { onERROR(message); };
+    mMessageParsers[Numeric::ERR_NICKNAMEINUSE] = [this](const IRCMessage message) { onNicknameInUse(message); };
 }
 
 cIRC::~cIRC() {
@@ -51,10 +50,14 @@ cIRC::~cIRC() {
 
 void cIRC::onConnected() {
 
-    mMessageParsers["CAP"] = [this](const IRCMessage message) { onMessageDuringRegistration(message); };
-    mMessageParsers[Numeric::ERR_UNKNOWNCOMMAND] = [this](const IRCMessage message) { onMessageDuringRegistration(message); };
+    mMessageParsers["CAP"] = [this](const IRCMessage message) { onRegistrationMessage(message); };
+    mMessageParsers[Numeric::ERR_UNKNOWNCOMMAND] = [this](const IRCMessage message) { onRegistrationMessage(message); };
 
-    mMessageParsers[Numeric::ERR_NICKNAMEINUSE] = [this](const IRCMessage message) { onMessageDuringRegistration(message); };
+    mMessageParsers[Numeric::RPL_WELCOME] = [this](const IRCMessage message) { onRegistrationMessage(message); };
+    mMessageParsers[Numeric::RPL_YOURHOST] = [this](const IRCMessage message) { onRegistrationMessage(message); };
+    mMessageParsers[Numeric::RPL_CREATED] = [this](const IRCMessage message) { onRegistrationMessage(message); };
+    mMessageParsers[Numeric::RPL_MYINFO] = [this](const IRCMessage message) { onRegistrationMessage(message); };
+    mMessageParsers[Numeric::RPL_ISUPPORT] = [this](const IRCMessage message) { onRegistrationMessage(message); };
 
     send("CAP LS 302");
     // CAP either returns  capability list "CAP" or 421
@@ -64,23 +67,57 @@ void cIRC::onConnected() {
 
 void cIRC::onDisconnected() {}
 
-void cIRC::onMessageDuringRegistration(const IRCMessage message) {
+void cIRC::onRegistrationMessage(const IRCMessage message) {
 
-    if (Numeric::ERR_NICKNAMEINUSE == message.command) {
-        // TODO, limit retries, make configurable
-        mNick += "_";
-        send("NICK " + mNick);
+    // TODO, redo registration logic
+
+    if (message.command == Numeric::RPL_WELCOME) {
+        mRegistrationComplete = true;
+        return;
+    }
+
+    if (message.command == Numeric::RPL_YOURHOST) {
+
+        return;
+    }
+    if (message.command == Numeric::RPL_CREATED) {
+
+        return;
+    }
+    if (message.command == Numeric::RPL_MYINFO) {
+
+        return;
+    }
+    if (message.command == Numeric::RPL_ISUPPORT) {
+    	const std::string iSupport = "are supported by this server";
+    	if (message.parameters.size() > 2) {
+    		if ( message.parameters [message.parameters.size()-1] == iSupport ) {
+    			// Making sure Numeric 005 is RPL_ISUPPORT since there is a conflict
+    			// with RFC 2812  where 005 was RPL_BOUNCE instead
+    			//mServerISupport
+    			mServerISupport.insert( mServerISupport.end(), message.parameters.begin()+1, message.parameters.end() -1);
+    		}
+    	}
+    	/* RFC 2812 states
+    	 005    RPL_BOUNCE "Try server <server name>, port <port number>"
+    	 Is there any ancient ircd to test this against?
+    	 */
+        return;
+    }
+
+    if (mRegistrationComplete) {
+        LOG_INFO("Already Registered");
         return;
     }
 
     if (message.command == Numeric::ERR_UNKNOWNCOMMAND) {
         LOG_INFO("Server does not support IRCv3 Capabilities");
+        mServerSupportsCapabilities = false;
     }
 
     if (message.command == "CAP") {
         LOG_INFO("Server supports IRCv3 capabilities");
         // TODO Parse capabilities, if when it contains message-tags, use it
-        // TODO How investigate how SASL works
 
         if (message.parameters.size() > 2 && message.parameters[1] == "LS") {
             // Further CAP Messages will be handled by the onCAP handler
@@ -108,7 +145,6 @@ void cIRC::onMessageDuringRegistration(const IRCMessage message) {
         send("CAP END");
 
     mMessageParsers[Numeric::ERR_UNKNOWNCOMMAND] = nullptr;
-    mMessageParsers[Numeric::ERR_NICKNAMEINUSE] = nullptr;
 }
 void cIRC::onCAP(const IRCMessage message) {}
 
@@ -125,13 +161,22 @@ void cIRC::onCTCPQuery(const IRCMessage message, const CTCPMessage ctcp) {
     } else if (ctcp.command == "DCC") {
     } else if (ctcp.command == "FINGER") {
     } else if (ctcp.command == "PING") {
-        if (ctcp.parameters.length())
-            sendCTCPResponse(message.nick, ctcp.command + " " + ctcp.parameters);
-        else
-            sendCTCPResponse(message.nick, ctcp.command);
+        sendCTCPResponse(message.nick, ctcp.command, ctcp.parameters);
     } else if (ctcp.command == "SOURCE") {
+        sendCTCPResponse(message.nick, "SOURCE", "https://github.com/BlaatSchaapCode/blaatbot2025/");
     } else if (ctcp.command == "TIME") {
+        // This prints in UTC
+        // sendCTCPResponse(message.nick, "TIME", std::format("{:%FT%TZ}", std::chrono::system_clock::now()));
+
+        //    	 adds the +0000 timezone... but how to get the timezone in the string
+
+        const auto zt{std::chrono::zoned_time{std::chrono::current_zone(), std::chrono::system_clock::now()}};
+
+        sendCTCPResponse(message.nick, "TIME", std::format("{:%FT%T%z}", zt));
+
     } else if (ctcp.command == "VERSION") {
+        utils::Version version;
+        sendCTCPResponse(message.nick, "VERSION", "BlaatBot2025 " + version.m_git_commit);
     } else if (ctcp.command == "USERINFO") {
     }
 }
@@ -220,6 +265,15 @@ void cIRC::onNOTICE(const IRCMessage message) {
     }
 }
 void cIRC::onERROR(const IRCMessage message) {}
+
+void cIRC::onNicknameInUse(const IRCMessage message) {
+    if (!mRegistrationComplete && Numeric::ERR_NICKNAMEINUSE == message.command) {
+        // TODO, limit retries, make configurable
+        mNick += "_";
+        send("NICK " + mNick);
+        return;
+    }
+}
 
 void cIRC::onMessage(const IRCMessage message) {
 
@@ -370,7 +424,17 @@ void cIRC::sendNOTICE(const std::string target, const std::string text) {
         send("NOTICE " + target + " :" + text);
     }
 }
-void cIRC::sendCTCPQuery(const std::string target, const std::string text) { sendPRIVMSG(target, "\01" + text + "\01"); }
-void cIRC::sendCTCPResponse(const std::string target, const std::string text) { sendNOTICE(target, "\01" + text + "\01"); }
+void cIRC::sendCTCPQuery(const std::string target, const std::string command, const std::string parameters) {
+    if (parameters.length())
+        sendPRIVMSG(target, "\01" + command + " " + parameters + "\01");
+    else
+        sendPRIVMSG(target, "\01" + command + "\01");
+}
+void cIRC::sendCTCPResponse(const std::string target, const std::string command, const std::string parameters) {
+    if (parameters.length())
+        sendNOTICE(target, "\01" + command + " " + parameters + "\01");
+    else
+        sendNOTICE(target, "\01" + command + "\01");
+}
 
 } // namespace protocol

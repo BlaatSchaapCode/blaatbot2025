@@ -21,9 +21,6 @@ namespace protocol {
 
 class cIRC : public cProtocol {
   public:
-    cIRC(std::string nick, std::string user = "");
-    virtual ~cIRC();
-
     struct IRCMessage {
         std::string tags;
 
@@ -38,8 +35,8 @@ class cIRC : public cProtocol {
     };
 
     struct CTCPMessage {
-    	std::string command;
-    	std::string parameters;
+        std::string command;
+        std::string parameters;
     };
 
     struct Numeric {
@@ -175,6 +172,20 @@ class cIRC : public cProtocol {
         static constexpr std::string RPL_SASLMECHS = "908";
     };
 
+    cIRC();
+    virtual ~cIRC();
+
+    void setNick(std::string nick) { mNick = nick; }
+    void setUser(std::string user) { mUser = user; }
+    void setPass(std::string pass) { mPass = pass; }
+    void setRealName(std::string realName) { mRealName = realName; }
+    void setNickServPass(std::string nsPass) { mNsPass = nsPass; }
+    void setSaslPlain(std::string authzid, std::string authcid, std::string passwd) {
+        mSaslPlainAuthzid = authzid;
+        mSaslPlainAuthcid = authcid;
+        mSaslPlainPasswd = passwd;
+    }
+
     void onData(std::vector<char> data) override;
     void onConnected() override;
     void onDisconnected() override;
@@ -185,6 +196,15 @@ class cIRC : public cProtocol {
 
     std::vector<char> mBuffer;
 
+    // NickServ
+    std::string mNsPass;
+
+    // Sasl PLain
+    std::string mSaslPlainAuthzid;
+    std::string mSaslPlainAuthcid;
+    std::string mSaslPlainPasswd;
+
+    // Standard IRC
     std::string mPass;
     std::string mUser;
     std::string mNick;
@@ -193,11 +213,15 @@ class cIRC : public cProtocol {
     bool mServerSupportsCapabilities = false;
     std::vector<std::string> mServerCapabilities;
 
+    std::vector<std::string> mServerISupport;
+
+    bool mRegistrationComplete = false;
+
     void parseMessage(std::string message);
     void onMessage(const IRCMessage message);
     void send(std::string message);
 
-    void onMessageDuringRegistration(const IRCMessage message);
+    void onRegistrationMessage(const IRCMessage message);
     void onPING(const IRCMessage message);
     void onCAP(const IRCMessage message);
     void onERROR(const IRCMessage message);
@@ -207,10 +231,12 @@ class cIRC : public cProtocol {
     void onCTCPQuery(const IRCMessage message, const CTCPMessage ctcp);
     void onCTCPResponse(const IRCMessage message, const CTCPMessage ctcp);
 
+    void onNicknameInUse(const IRCMessage message);
+
     void sendPRIVMSG(const std::string target, const std::string text);
     void sendNOTICE(const std::string target, const std::string text);
-    void sendCTCPQuery(const std::string target, const std::string text);
-    void sendCTCPResponse(const std::string target, const std::string text);
+    void sendCTCPQuery(const std::string target, const std::string command, const std::string parameters = "");
+    void sendCTCPResponse(const std::string target, const std::string command, const std::string parameters = "");
 
     bool validTarget(const std::string target);
     bool validText(const std::string text);
