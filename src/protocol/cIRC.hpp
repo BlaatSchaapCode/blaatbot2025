@@ -170,6 +170,57 @@ class cIRC : public cProtocol {
         static constexpr std::string ERR_SASLABORTED = "906";
         static constexpr std::string ERR_SASLALREADY = "907";
         static constexpr std::string RPL_SASLMECHS = "908";
+
+
+        // Microsoft IRCX
+        // 8xx Range is IRCX messages
+        static constexpr std::string IRCRPL_IRCX = "800";
+        static constexpr std::string IRCRPL_ACCESSADD = "801";
+        static constexpr std::string IRCRPL_ACCESSDELETE = "802";
+        static constexpr std::string IRCRPL_ACCESSSTART = "803";
+        static constexpr std::string IRCRPL_ACCESSLIST = "804";
+        static constexpr std::string IRCRPL_ACCESSEND = "805";
+        static constexpr std::string IRCRPL_EVENTADD = "806";
+        static constexpr std::string IRCRPL_EVENTDEL = "807";
+        static constexpr std::string IRCRPL_EVENTSTART = "808";
+        static constexpr std::string IRCRPL_EVENTLIST = "809";
+        static constexpr std::string IRCRPL_EVENTEND = "810";
+        static constexpr std::string IRCRPL_LISTXSTART = "811";
+        static constexpr std::string IRCRPL_LISTXLIST = "812";
+        static constexpr std::string IRCRPL_LISTXPICS = "813";
+        static constexpr std::string IRCRPL_LISTXTRUNC = "816";
+        static constexpr std::string IRCRPL_LISTXEND = "817";
+        static constexpr std::string IRCRPL_PROPLIST = "818";
+        static constexpr std::string IRCRPL_PROPEND = "819";
+
+        // The IRCX Error Message range is 9xx. Conflicts with SASL messages
+        static constexpr std::string IRCERR_BADCOMMAND = "900";
+        static constexpr std::string IRCERR_TOOMANYARGUMENTS = "901";
+        static constexpr std::string IRCERR_BADFUNCTION = "902";
+        static constexpr std::string IRCERR_BADLEVEL = "903";
+        static constexpr std::string IRCERR_BADTAG = "904";
+        static constexpr std::string IRCERR_BADPROPERTY = "905";
+        static constexpr std::string IRCERR_BADVALUE = "906";
+        static constexpr std::string IRCERR_RESOURCE = "907";
+        static constexpr std::string IRCERR_SECURITY = "908";
+        static constexpr std::string IRCERR_ALREADYAUTHENTICATED = "909";
+        static constexpr std::string IRCERR_AUTHENTICATIONFAILED = "910";
+        static constexpr std::string IRCERR_AUTHENTICATIONSUSPENDED = "911";
+        static constexpr std::string IRCERR_UNKNOWNPACKAGE = "912";
+        static constexpr std::string IRCERR_NOACCESS = "913";
+        static constexpr std::string IRCERR_DUPACCESS = "914";
+        static constexpr std::string IRCERR_MISACCESS = "915";
+        static constexpr std::string IRCERR_TOOMANYACCESSES = "916";
+        static constexpr std::string IRCERR_EVENTDUP = "918";
+        static constexpr std::string IRCERR_EVENTMIS = "919";
+        static constexpr std::string IRCERR_NOSUCHEVENT = "920";
+        static constexpr std::string IRCERR_TOOMANYEVENTS = "921";
+        static constexpr std::string IRCERR_NOWHISPER = "923";
+        static constexpr std::string IRCERR_NOSUCHOBJECT = "924";
+        static constexpr std::string IRCERR_NOTSUPPORTED = "925";
+        static constexpr std::string IRCERR_CHANNELEXIST = "926";
+        static constexpr std::string IRCERR_ALREADYONCHANNEL = "927";
+        static constexpr std::string IRCERR_UNKNOWNERROR = "999";
     };
 
     cIRC();
