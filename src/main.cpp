@@ -56,13 +56,16 @@ int main(int argc, char *argv[]) {
     irc->setNick("bb25");
     irc->setUser("bb25");
 
-    auto tls = std::make_shared<network::cTlsConnection>(irc);
+//    auto tls = std::make_shared<network::cTlsConnection>();
+//    tls->setProtocol(irc);
+//    irc->setConnection(tls);
+//    tls->connect("irc.blaatschaap.be", 6697, true);
 
-    irc->setConnection(tls);
 
-    // irc->setConnection(test);
-    // test.connect("irc.blaatschaap.be", 6667);
-    tls->connect("irc.blaatschaap.be", 6697, true);
+    auto tcp = std::make_shared<network::cTcpConnection>();
+    tcp->setProtocol(irc);
+    irc->setConnection(tcp);
+    tcp->connect("192.168.178.42");
 
     result = parse_options(argc, argv);
     if (result)

@@ -23,13 +23,13 @@ namespace network {
 class cConnection : public std::enable_shared_from_this<cConnection> {
 
   public:
-    cConnection(std::shared_ptr<::protocol::cProtocol> protocol);
     virtual ~cConnection();
     virtual void send(std::vector<char> data) = 0;
     void send(std::string s) {
         std::vector<char> v(s.begin(), s.end());
         send(v);
     }
+    void setProtocol(std::shared_ptr<::protocol::cProtocol> protocol) { mProtocol = protocol; }
 
   protected:
     std::shared_ptr<::protocol::cProtocol> mProtocol;

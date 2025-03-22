@@ -171,7 +171,6 @@ class cIRC : public cProtocol {
         static constexpr std::string ERR_SASLALREADY = "907";
         static constexpr std::string RPL_SASLMECHS = "908";
 
-
         // Microsoft IRCX
         // 8xx Range is IRCX messages
         static constexpr std::string IRCRPL_IRCX = "800";
@@ -261,12 +260,21 @@ class cIRC : public cProtocol {
     std::string mNick;
     std::string mRealName;
 
-    bool mServerSupportsCapabilities = false;
-    std::map<std::string,std::string> mServerCapabilities;
+    struct {
+        bool hasCapabilities = false;
+        bool hasExtensions = false;
+        bool registrationComplete = false;
+        int maxLen = 512;
 
-    std::map<std::string,std::string> mServerISupport;
-
-    bool mRegistrationComplete = false;
+        std::map<std::string, std::string> features;
+        std::map<std::string, std::string> capabilities;
+        struct {
+			int version;
+			bool enabled;
+        	std::vector<std::string> packages;
+        	std::vector<std::string> options;
+        } extensions;
+    } serverInfo;
 
     void parseMessage(std::string message);
     void onMessage(const IRCMessage message);
@@ -275,6 +283,7 @@ class cIRC : public cProtocol {
     void onRegistrationMessage(const IRCMessage message);
     void onPING(const IRCMessage message);
     void onCAP(const IRCMessage message);
+    void onIRCX(const IRCMessage message);
     void onERROR(const IRCMessage message);
     void onUnknownCommand(const IRCMessage message);
 

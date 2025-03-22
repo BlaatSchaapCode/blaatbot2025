@@ -47,6 +47,8 @@ cIRC::cIRC() {
     mMessageParsers[Numeric::ERR_NOMOTD] = [this](const IRCMessage message) { onReady(); };
 
     mMessageParsers["CAP"] = [this](const IRCMessage message) { onCAP(message); };
+    mMessageParsers[Numeric::IRCRPL_IRCX] = [this](const IRCMessage message) { onIRCX(message); };
+
     mMessageParsers[Numeric::ERR_UNKNOWNCOMMAND] = [this](const IRCMessage message) { onUnknownCommand(message); };
 
     mMessageParsers[Numeric::RPL_WELCOME] = [this](const IRCMessage message) { onRegistrationMessage(message); };
@@ -54,7 +56,6 @@ cIRC::cIRC() {
     mMessageParsers[Numeric::RPL_CREATED] = [this](const IRCMessage message) { onRegistrationMessage(message); };
     mMessageParsers[Numeric::RPL_MYINFO] = [this](const IRCMessage message) { onRegistrationMessage(message); };
     mMessageParsers[Numeric::RPL_ISUPPORT] = [this](const IRCMessage message) { onRegistrationMessage(message); };
-
 }
 
 cIRC::~cIRC() {
@@ -70,47 +71,42 @@ void cIRC::onCanRegister(void) {
 
     send("USER " + mUser + " 0 * :" + mRealName);
     send("NICK " + mNick);
-
 }
 
 void cIRC::onReady(void) {
     // To be called when the connection is ready.
     // called after either end of motd pr motd missing message.
 
-    if (mServerCapabilities.count("message-tags"))
+    if (serverInfo.capabilities.count("message-tags"))
         send("CAP REQ :message-tags");
 
-    if (mServerISupport.count("BOT"))
-        send("MODE " + mNick + " +" + mServerISupport["BOT"]);
+    if (serverInfo.features.count("BOT"))
+        send("MODE " + mNick + " +" + serverInfo.features["BOT"]);
 
     send("JOIN #bscp-test");
 }
 
 void cIRC::onConnected() {
 
-
-	// Probe for capabilities
-	// Note: when the server does not support capabilities it may response
-	// with ERR_UNKNOWNCOMMAND (421)  but it is also possible it ignores the
-	// message. We should start a timeout to handle such case
-    send("CAP LS 302");
-
+    // Probe for capabilities
+    // Note: when the server does not support capabilities it may response
+    // with ERR_UNKNOWNCOMMAND (421)  but it is also possible it ignores the
+    // message. We should start a timeout to handle such case
+    //    send("CAP LS 302");
 
     // Probe for extensions
-    send("MODE IRCX");
-
+    send("MODE ISIRCX");
 }
 
 void cIRC::onDisconnected() {}
 
-
 void cIRC::onUnknownCommand(const IRCMessage message) {
     if (message.command == Numeric::ERR_UNKNOWNCOMMAND) {
-    	if (!mRegistrationComplete) {
-    		// Server replied unknown command to CAP LS
-    		// Continue with registration
-    		onCanRegister();
-    	}
+        if (!serverInfo.registrationComplete) {
+            // Server replied unknown command to CAP LS
+            // Continue with registration
+            onCanRegister();
+        }
     }
 }
 
@@ -119,7 +115,7 @@ void cIRC::onRegistrationMessage(const IRCMessage message) {
     // TODO, redo registration logic
 
     if (message.command == Numeric::RPL_WELCOME) {
-        mRegistrationComplete = true;
+        serverInfo.registrationComplete = true;
         return;
     }
 
@@ -146,7 +142,7 @@ void cIRC::onRegistrationMessage(const IRCMessage message) {
 
                 std::vector<std::string> isupprt;
                 isupprt.insert(isupprt.end(), message.parameters.begin() + 1, message.parameters.end() - 1);
-                mServerISupport.merge(parseKeyValue(isupprt));
+                serverInfo.features.merge(parseKeyValue(isupprt));
 
                 //
             }
@@ -158,7 +154,7 @@ void cIRC::onRegistrationMessage(const IRCMessage message) {
         return;
     }
 
-    if (mRegistrationComplete) {
+    if (serverInfo.registrationComplete) {
         LOG_INFO("Already Registered");
         return;
     }
@@ -167,20 +163,48 @@ void cIRC::onRegistrationMessage(const IRCMessage message) {
 }
 void cIRC::onCAP(const IRCMessage message) {
     if (message.command == "CAP") {
-        mServerSupportsCapabilities = true;
+        serverInfo.hasCapabilities = true;
         if (message.parameters.size() > 2) {
             std::string subCommand = message.parameters[1];
             if (subCommand == "LS") {
                 bool moreCapabilitiesComing = message.parameters[2] == "*";
-                mServerCapabilities.merge(parseKeyValue(splitString(message.parameters[2 + moreCapabilitiesComing])));
+                serverInfo.capabilities.merge(parseKeyValue(splitString(message.parameters[2 + moreCapabilitiesComing])));
 
-                if  (!mRegistrationComplete && !moreCapabilitiesComing) {
-                	send("CAP END");
-                	onCanRegister();
+                if (!serverInfo.registrationComplete && !moreCapabilitiesComing) {
+                    send("CAP END");
+                    onCanRegister();
                 }
             }
         }
     }
+}
+void cIRC::onIRCX(const IRCMessage message) {
+    // >>> :irc.mysite.com 800 Anonymous 0 0 ANON 512 *
+    // <state> <version> <package-list> <maxmsg> <option-list>
+    serverInfo.hasExtensions = true;
+
+    serverInfo.extensions.enabled = message.parameters[1] == "1";
+    try {
+        serverInfo.extensions.version = std::stoi(message.parameters[2]);
+    } catch (...) {
+        serverInfo.extensions.version = -1;
+    }
+    serverInfo.extensions.packages = splitString(message.parameters[3]);
+    try {
+        serverInfo.maxLen = std::stoi(message.parameters[4]); // TODO
+    } catch (...) {
+        serverInfo.maxLen = 512;
+    }
+    if (message.parameters[5] == "*") {
+        serverInfo.extensions.options.clear();
+    } else {
+        serverInfo.extensions.options = splitString(message.parameters[5]);
+    }
+    // TODO: check if we already have tried enabling,
+    // preventing an endless loop if the server supports IRCX but
+    // denies our enable request.
+    if (!serverInfo.extensions.enabled)
+        send("IRCX");
 }
 
 void cIRC::onPING(const IRCMessage message) {
@@ -302,7 +326,7 @@ void cIRC::onNOTICE(const IRCMessage message) {
 void cIRC::onERROR(const IRCMessage message) {}
 
 void cIRC::onNicknameInUse(const IRCMessage message) {
-    if (!mRegistrationComplete && Numeric::ERR_NICKNAMEINUSE == message.command) {
+    if (!serverInfo.registrationComplete && Numeric::ERR_NICKNAMEINUSE == message.command) {
         // TODO, limit retries, make configurable
         mNick += "_";
         send("NICK " + mNick);
