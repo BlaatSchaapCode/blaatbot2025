@@ -280,7 +280,14 @@ class cIRC : public cProtocol {
     void onMessage(const IRCMessage message);
     void send(std::string message);
 
-    void onRegistrationMessage(const IRCMessage message);
+    void onISupport(const IRCMessage message);
+
+    void onWelcome(const IRCMessage message);
+    void onYourHost(const IRCMessage message);
+    void onCreated(const IRCMessage message);
+    void onMyInfo(const IRCMessage message);
+
+
     void onPING(const IRCMessage message);
     void onCAP(const IRCMessage message);
     void onIRCX(const IRCMessage message);

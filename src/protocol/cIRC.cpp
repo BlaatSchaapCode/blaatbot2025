@@ -51,11 +51,14 @@ cIRC::cIRC() {
 
     mMessageParsers[Numeric::ERR_UNKNOWNCOMMAND] = [this](const IRCMessage message) { onUnknownCommand(message); };
 
-    mMessageParsers[Numeric::RPL_WELCOME] = [this](const IRCMessage message) { onRegistrationMessage(message); };
-    mMessageParsers[Numeric::RPL_YOURHOST] = [this](const IRCMessage message) { onRegistrationMessage(message); };
-    mMessageParsers[Numeric::RPL_CREATED] = [this](const IRCMessage message) { onRegistrationMessage(message); };
-    mMessageParsers[Numeric::RPL_MYINFO] = [this](const IRCMessage message) { onRegistrationMessage(message); };
-    mMessageParsers[Numeric::RPL_ISUPPORT] = [this](const IRCMessage message) { onRegistrationMessage(message); };
+    // mMessageParsers[Numeric::RPL_WELCOME] = [this](const IRCMessage message) { onRegistrationMessage(message); };
+    // mMessageParsers[Numeric::RPL_YOURHOST] = [this](const IRCMessage message) { onRegistrationMessage(message); };
+    mMessageParsers[Numeric::RPL_CREATED] = [this](const IRCMessage message) { onISupport(message); };
+    mMessageParsers[Numeric::RPL_MYINFO] = [this](const IRCMessage message) { onISupport(message); };
+    mMessageParsers[Numeric::RPL_ISUPPORT] = [this](const IRCMessage message) { onISupport(message); };
+
+    mMessageParsers[Numeric::RPL_WELCOME] = [this](const IRCMessage message) { onWelcome(message); };
+    mMessageParsers[Numeric::RPL_YOURHOST] = [this](const IRCMessage message) { onYourHost(message); };
 }
 
 cIRC::~cIRC() {
@@ -92,7 +95,7 @@ void cIRC::onConnected() {
     // Note: when the server does not support capabilities it may response
     // with ERR_UNKNOWNCOMMAND (421)  but it is also possible it ignores the
     // message. We should start a timeout to handle such case
-    //    send("CAP LS 302");
+	send("CAP LS 302");
 
     // Probe for extensions
     send("MODE ISIRCX");
@@ -110,56 +113,44 @@ void cIRC::onUnknownCommand(const IRCMessage message) {
     }
 }
 
-void cIRC::onRegistrationMessage(const IRCMessage message) {
+void cIRC::onWelcome(const IRCMessage message) {
+    serverInfo.registrationComplete = true;
+    // "<client> :Welcome to the <networkname> IRC Network, <nick>[!<user>@<host>]"
+}
 
-    // TODO, redo registration logic
+void cIRC::onYourHost(const IRCMessage message) {
+    // "<client> :Your host is <servername>, running version <version>"
+}
 
-    if (message.command == Numeric::RPL_WELCOME) {
-        serverInfo.registrationComplete = true;
-        return;
-    }
+void cIRC::onCreated(const IRCMessage message) {
+    // "<client> :This server was created <datetime>"
+}
 
-    if (message.command == Numeric::RPL_YOURHOST) {
+void cIRC::onMyInfo(const IRCMessage message) {
+    //   "<client> <servername> <version> <available user modes>
+    //   <available channel modes> [<channel modes with a parameter>]"
+}
+void cIRC::onISupport(const IRCMessage message) {
 
-        return;
-    }
-    if (message.command == Numeric::RPL_CREATED) {
+    // https://defs.ircdocs.horse/defs/isupport.html
+    const std::string iSupport = "are supported by this server";
+    if (message.parameters.size() > 2) {
+        if (message.parameters[message.parameters.size() - 1] == iSupport) {
+            // Making sure Numeric 005 is RPL_ISUPPORT since there is a conflict
+            // with RFC 2812  where 005 was RPL_BOUNCE instead
+            // mServerISupport
 
-        return;
-    }
-    if (message.command == Numeric::RPL_MYINFO) {
-
-        return;
-    }
-    if (message.command == Numeric::RPL_ISUPPORT) {
-        // https://defs.ircdocs.horse/defs/isupport.html
-        const std::string iSupport = "are supported by this server";
-        if (message.parameters.size() > 2) {
-            if (message.parameters[message.parameters.size() - 1] == iSupport) {
-                // Making sure Numeric 005 is RPL_ISUPPORT since there is a conflict
-                // with RFC 2812  where 005 was RPL_BOUNCE instead
-                // mServerISupport
-
-                std::vector<std::string> isupprt;
-                isupprt.insert(isupprt.end(), message.parameters.begin() + 1, message.parameters.end() - 1);
-                serverInfo.features.merge(parseKeyValue(isupprt));
-
-                //
-            }
+            std::vector<std::string> isupprt;
+            isupprt.insert(isupprt.end(), message.parameters.begin() + 1, message.parameters.end() - 1);
+            serverInfo.features.merge(parseKeyValue(isupprt));
+            return;
         }
-        /* RFC 2812 states
-         005    RPL_BOUNCE "Try server <server name>, port <port number>"
-         Is there any ancient ircd to test this against?
-         */
-        return;
     }
+    /* RFC 2812 states
+     005    RPL_BOUNCE "Try server <server name>, port <port number>"
+     Is there any ancient ircd to test this against?
+     */
 
-    if (serverInfo.registrationComplete) {
-        LOG_INFO("Already Registered");
-        return;
-    }
-
-    mMessageParsers[Numeric::ERR_UNKNOWNCOMMAND] = nullptr;
 }
 void cIRC::onCAP(const IRCMessage message) {
     if (message.command == "CAP") {
@@ -205,6 +196,9 @@ void cIRC::onIRCX(const IRCMessage message) {
     // denies our enable request.
     if (!serverInfo.extensions.enabled)
         send("IRCX");
+
+    if (!serverInfo.registrationComplete && serverInfo.extensions.enabled)
+        onCanRegister();
 }
 
 void cIRC::onPING(const IRCMessage message) {
