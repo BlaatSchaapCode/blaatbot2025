@@ -211,9 +211,9 @@ class cIRC : public cProtocol {
     std::string mRealName;
 
     bool mServerSupportsCapabilities = false;
-    std::vector<std::string> mServerCapabilities;
+    std::map<std::string,std::string> mServerCapabilities;
 
-    std::vector<std::string> mServerISupport;
+    std::map<std::string,std::string> mServerISupport;
 
     bool mRegistrationComplete = false;
 
@@ -225,6 +225,10 @@ class cIRC : public cProtocol {
     void onPING(const IRCMessage message);
     void onCAP(const IRCMessage message);
     void onERROR(const IRCMessage message);
+    void onUnknownCommand(const IRCMessage message);
+
+    void onReady(void);
+    void onCanRegister(void);
 
     void onPRIVMSG(const IRCMessage message);
     void onNOTICE(const IRCMessage message);

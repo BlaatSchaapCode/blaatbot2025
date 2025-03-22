@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
 
     // irc->setConnection(test);
     // test.connect("irc.blaatschaap.be", 6667);
-    tls->connect("irc.blaatschaap.be", 6697);
+    tls->connect("irc.blaatschaap.be", 6697, true);
 
     result = parse_options(argc, argv);
     if (result)

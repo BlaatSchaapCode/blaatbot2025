@@ -7,6 +7,8 @@
 
 #include "splitString.hpp"
 
+#include "logger.hpp"
+
 // https://stackoverflow.com/questions/5607589/right-way-to-split-an-stdstring-into-a-vectorstring
 std::vector<std::string> splitString(const std::string &str, const std::string &delimiter, const unsigned int max_elements) {
     std::vector<std::string> tokens;
@@ -26,4 +28,25 @@ std::vector<std::string> splitString(const std::string &str, const std::string &
         }
     }
     return tokens;
+}
+
+
+std::map<std::string,std::string> parseKeyValue(const std::vector<std::string>&tokens){
+	std::map<std::string,std::string> result;
+
+
+	std::string key,value;
+	for (auto & token : tokens) {
+		auto issignpos = token.find('=');
+        if (issignpos == std::string::npos) {
+        	key = token;
+        	value = "";
+        } else {
+        	key = token.substr(0, issignpos);
+        	value = token.substr(issignpos + 1);
+        }
+        LOG_INFO("key %s value %s", key.c_str(), value.c_str());
+        result[key]=value;
+	}
+	return result;
 }

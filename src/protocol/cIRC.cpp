@@ -42,16 +42,12 @@ cIRC::cIRC() {
     mMessageParsers["NOTICE"] = [this](const IRCMessage message) { onNOTICE(message); };
     mMessageParsers["ERROR"] = [this](const IRCMessage message) { onERROR(message); };
     mMessageParsers[Numeric::ERR_NICKNAMEINUSE] = [this](const IRCMessage message) { onNicknameInUse(message); };
-}
 
-cIRC::~cIRC() {
-    // TODO Auto-generated destructor stub
-}
+    mMessageParsers[Numeric::RPL_ENDOFMOTD] = [this](const IRCMessage message) { onReady(); };
+    mMessageParsers[Numeric::ERR_NOMOTD] = [this](const IRCMessage message) { onReady(); };
 
-void cIRC::onConnected() {
-
-    mMessageParsers["CAP"] = [this](const IRCMessage message) { onRegistrationMessage(message); };
-    mMessageParsers[Numeric::ERR_UNKNOWNCOMMAND] = [this](const IRCMessage message) { onRegistrationMessage(message); };
+    mMessageParsers["CAP"] = [this](const IRCMessage message) { onCAP(message); };
+    mMessageParsers[Numeric::ERR_UNKNOWNCOMMAND] = [this](const IRCMessage message) { onUnknownCommand(message); };
 
     mMessageParsers[Numeric::RPL_WELCOME] = [this](const IRCMessage message) { onRegistrationMessage(message); };
     mMessageParsers[Numeric::RPL_YOURHOST] = [this](const IRCMessage message) { onRegistrationMessage(message); };
@@ -59,13 +55,64 @@ void cIRC::onConnected() {
     mMessageParsers[Numeric::RPL_MYINFO] = [this](const IRCMessage message) { onRegistrationMessage(message); };
     mMessageParsers[Numeric::RPL_ISUPPORT] = [this](const IRCMessage message) { onRegistrationMessage(message); };
 
+}
+
+cIRC::~cIRC() {
+    // TODO Auto-generated destructor stub
+}
+
+void cIRC::onCanRegister(void) {
+    if (mPass.length())
+        send("PASS " + mPass);
+
+    if (!mRealName.length())
+        mRealName = mNick;
+
+    send("USER " + mUser + " 0 * :" + mRealName);
+    send("NICK " + mNick);
+
+}
+
+void cIRC::onReady(void) {
+    // To be called when the connection is ready.
+    // called after either end of motd pr motd missing message.
+
+    if (mServerCapabilities.count("message-tags"))
+        send("CAP REQ :message-tags");
+
+    if (mServerISupport.count("BOT"))
+        send("MODE " + mNick + " +" + mServerISupport["BOT"]);
+
+    send("JOIN #bscp-test");
+}
+
+void cIRC::onConnected() {
+
+
+	// Probe for capabilities
+	// Note: when the server does not support capabilities it may response
+	// with ERR_UNKNOWNCOMMAND (421)  but it is also possible it ignores the
+	// message. We should start a timeout to handle such case
     send("CAP LS 302");
-    // CAP either returns  capability list "CAP" or 421
-    // << CAP LS 302
-    // >> :eu3.chat4all.org 421 andre CAP :Unknown command
+
+
+    // Probe for extensions
+    send("MODE IRCX");
+
 }
 
 void cIRC::onDisconnected() {}
+
+
+void cIRC::onUnknownCommand(const IRCMessage message) {
+    if (message.command == Numeric::ERR_UNKNOWNCOMMAND) {
+    	if (!mRegistrationComplete) {
+    		// Server replied unknown command to CAP LS
+    		// Continue with registration
+    		onCanRegister();
+    	}
+    }
+}
 
 void cIRC::onRegistrationMessage(const IRCMessage message) {
 
@@ -89,19 +136,25 @@ void cIRC::onRegistrationMessage(const IRCMessage message) {
         return;
     }
     if (message.command == Numeric::RPL_ISUPPORT) {
-    	const std::string iSupport = "are supported by this server";
-    	if (message.parameters.size() > 2) {
-    		if ( message.parameters [message.parameters.size()-1] == iSupport ) {
-    			// Making sure Numeric 005 is RPL_ISUPPORT since there is a conflict
-    			// with RFC 2812  where 005 was RPL_BOUNCE instead
-    			//mServerISupport
-    			mServerISupport.insert( mServerISupport.end(), message.parameters.begin()+1, message.parameters.end() -1);
-    		}
-    	}
-    	/* RFC 2812 states
-    	 005    RPL_BOUNCE "Try server <server name>, port <port number>"
-    	 Is there any ancient ircd to test this against?
-    	 */
+        // https://defs.ircdocs.horse/defs/isupport.html
+        const std::string iSupport = "are supported by this server";
+        if (message.parameters.size() > 2) {
+            if (message.parameters[message.parameters.size() - 1] == iSupport) {
+                // Making sure Numeric 005 is RPL_ISUPPORT since there is a conflict
+                // with RFC 2812  where 005 was RPL_BOUNCE instead
+                // mServerISupport
+
+                std::vector<std::string> isupprt;
+                isupprt.insert(isupprt.end(), message.parameters.begin() + 1, message.parameters.end() - 1);
+                mServerISupport.merge(parseKeyValue(isupprt));
+
+                //
+            }
+        }
+        /* RFC 2812 states
+         005    RPL_BOUNCE "Try server <server name>, port <port number>"
+         Is there any ancient ircd to test this against?
+         */
         return;
     }
 
@@ -110,43 +163,25 @@ void cIRC::onRegistrationMessage(const IRCMessage message) {
         return;
     }
 
-    if (message.command == Numeric::ERR_UNKNOWNCOMMAND) {
-        LOG_INFO("Server does not support IRCv3 Capabilities");
-        mServerSupportsCapabilities = false;
-    }
-
+    mMessageParsers[Numeric::ERR_UNKNOWNCOMMAND] = nullptr;
+}
+void cIRC::onCAP(const IRCMessage message) {
     if (message.command == "CAP") {
-        LOG_INFO("Server supports IRCv3 capabilities");
-        // TODO Parse capabilities, if when it contains message-tags, use it
+        mServerSupportsCapabilities = true;
+        if (message.parameters.size() > 2) {
+            std::string subCommand = message.parameters[1];
+            if (subCommand == "LS") {
+                bool moreCapabilitiesComing = message.parameters[2] == "*";
+                mServerCapabilities.merge(parseKeyValue(splitString(message.parameters[2 + moreCapabilitiesComing])));
 
-        if (message.parameters.size() > 2 && message.parameters[1] == "LS") {
-            // Further CAP Messages will be handled by the onCAP handler
-            mMessageParsers["CAP"] = [this](const IRCMessage message) { onCAP(message); };
-            mServerSupportsCapabilities = true;
-
-            // TODO Capabilities require further parsing of their parameters.
-            mServerCapabilities = splitString(message.parameters[1]);
-            if (std::find(mServerCapabilities.begin(), mServerCapabilities.end(), "message-tags") == mServerCapabilities.end()) {
-                send("CAP REQ :message-tags");
+                if  (!mRegistrationComplete && !moreCapabilitiesComing) {
+                	send("CAP END");
+                	onCanRegister();
+                }
             }
         }
     }
-
-    if (mPass.length())
-        send("PASS " + mPass);
-
-    // TODO. Move the setting up user, pass, nick, realname around
-    if (!mRealName.length())
-        mRealName = mNick;
-
-    send("USER " + mUser + " 0 * :" + mRealName);
-    send("NICK " + mNick);
-    if (mServerSupportsCapabilities)
-        send("CAP END");
-
-    mMessageParsers[Numeric::ERR_UNKNOWNCOMMAND] = nullptr;
 }
-void cIRC::onCAP(const IRCMessage message) {}
 
 void cIRC::onPING(const IRCMessage message) {
     if (message.command == "PING") {
@@ -308,6 +343,7 @@ void cIRC::parseMessage(std::string line) {
     auto tokens = splitString(line);
 
     // Tags, Optional, IRCv3
+    // https://defs.ircdocs.horse/defs/tags
     if (tokens.size()) {
         if (tokens[0][0] == '@') {
             message.tags = tokens[0];
