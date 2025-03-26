@@ -45,7 +45,7 @@ std::map<std::string,std::string> parseKeyValue(const std::vector<std::string>&t
         	key = token.substr(0, issignpos);
         	value = token.substr(issignpos + 1);
         }
-        LOG_INFO("key %s value %s", key.c_str(), value.c_str());
+        LOG_DEBUG("key %s value %s", key.c_str(), value.c_str());
         result[key]=value;
 	}
 	return result;

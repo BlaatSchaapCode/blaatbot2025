@@ -22,10 +22,10 @@ class cProtocol {
     virtual void onData(std::vector<char> data) = 0;
     virtual void onConnected() = 0;
     virtual void onDisconnected() = 0;
-    void setConnection(std::shared_ptr<::network::cConnection> Connection);
+    void setConnection(::network::cConnection *connection) { mConnection = connection; }
 
   protected:
-    std::shared_ptr<::network::cConnection> mConnection = nullptr;
+    ::network::cConnection *mConnection = nullptr;
 };
 
 } // namespace protocol

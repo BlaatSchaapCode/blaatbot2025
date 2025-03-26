@@ -22,14 +22,16 @@ namespace protocol {
 class cIRC : public cProtocol {
   public:
     struct IRCMessage {
-        std::string tags;
+    	std::string raw;
 
-        std::string source;
-        // source is split up into nick, user and host
-        std::string nick;
-        std::string user;
-        std::string host;
-
+    	std::string tags;
+        struct {
+			std::string raw;
+			// source is split up into nick, user and host
+			std::string nick;
+			std::string user;
+			std::string host;
+        } source;
         std::string command;
         std::vector<std::string> parameters;
     };
@@ -223,7 +225,7 @@ class cIRC : public cProtocol {
     };
 
     cIRC();
-    virtual ~cIRC();
+    ~cIRC();
 
     void setNick(std::string nick) { mNick = nick; }
     void setUser(std::string user) { mUser = user; }
@@ -265,6 +267,15 @@ class cIRC : public cProtocol {
         bool hasExtensions = false;
         bool registrationComplete = false;
         int maxLen = 512;
+
+        std::string network;
+        std::string host;
+        std::string software;
+
+        // For now. Will parse them later
+        std::string userModes, channelModes, channelModesWithParameters;
+
+        std::string services;
 
         std::map<std::string, std::string> features;
         std::map<std::string, std::string> capabilities;

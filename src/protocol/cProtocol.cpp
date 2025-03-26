@@ -8,6 +8,4 @@
 #include "cProtocol.hpp"
 namespace protocol {
 cProtocol::~cProtocol() {}
-void cProtocol::setConnection(std::shared_ptr<::network::cConnection> connection) { mConnection = connection; }
-
 } // namespace protocol

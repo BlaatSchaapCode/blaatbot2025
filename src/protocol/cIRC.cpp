@@ -51,10 +51,8 @@ cIRC::cIRC() {
 
     mMessageParsers[Numeric::ERR_UNKNOWNCOMMAND] = [this](const IRCMessage message) { onUnknownCommand(message); };
 
-    // mMessageParsers[Numeric::RPL_WELCOME] = [this](const IRCMessage message) { onRegistrationMessage(message); };
-    // mMessageParsers[Numeric::RPL_YOURHOST] = [this](const IRCMessage message) { onRegistrationMessage(message); };
-    mMessageParsers[Numeric::RPL_CREATED] = [this](const IRCMessage message) { onISupport(message); };
-    mMessageParsers[Numeric::RPL_MYINFO] = [this](const IRCMessage message) { onISupport(message); };
+    mMessageParsers[Numeric::RPL_CREATED] = [this](const IRCMessage message) { onCreated(message); };
+    mMessageParsers[Numeric::RPL_MYINFO] = [this](const IRCMessage message) { onMyInfo(message); };
     mMessageParsers[Numeric::RPL_ISUPPORT] = [this](const IRCMessage message) { onISupport(message); };
 
     mMessageParsers[Numeric::RPL_WELCOME] = [this](const IRCMessage message) { onWelcome(message); };
@@ -63,6 +61,7 @@ cIRC::cIRC() {
 
 cIRC::~cIRC() {
     // TODO Auto-generated destructor stub
+    send("QUIT exited");
 }
 
 void cIRC::onCanRegister(void) {
@@ -77,11 +76,12 @@ void cIRC::onCanRegister(void) {
 }
 
 void cIRC::onReady(void) {
+
+    LOG_INFO("Ready");
     // To be called when the connection is ready.
     // called after either end of motd pr motd missing message.
 
-    if (serverInfo.capabilities.count("message-tags"))
-        send("CAP REQ :message-tags");
+    sendCTCPQuery("NickServ", "VERSION");
 
     if (serverInfo.features.count("BOT"))
         send("MODE " + mNick + " +" + serverInfo.features["BOT"]);
@@ -95,7 +95,7 @@ void cIRC::onConnected() {
     // Note: when the server does not support capabilities it may response
     // with ERR_UNKNOWNCOMMAND (421)  but it is also possible it ignores the
     // message. We should start a timeout to handle such case
-	send("CAP LS 302");
+    send("CAP LS 302");
 
     // Probe for extensions
     send("MODE ISIRCX");
@@ -116,10 +116,39 @@ void cIRC::onUnknownCommand(const IRCMessage message) {
 void cIRC::onWelcome(const IRCMessage message) {
     serverInfo.registrationComplete = true;
     // "<client> :Welcome to the <networkname> IRC Network, <nick>[!<user>@<host>]"
+
+    std::string preNetString = "Welcome to the ";
+    std::string postNetString = " IRC Network";
+    auto preNetPos = message.parameters[1].find(preNetString);
+    auto postNetPos = message.parameters[1].find(postNetString);
+    if (preNetPos != std::string::npos && postNetPos != std::string::npos) {
+        serverInfo.network =
+            message.parameters[1].substr(preNetString.length() + preNetPos, postNetPos - preNetPos - preNetString.length());
+        LOG_INFO("Network : %s", serverInfo.network.c_str());
+        std::string nickUserHost = message.parameters[1].substr(postNetString.length() + postNetPos + 1);
+        LOG_INFO("NickUserHost : %s", nickUserHost.c_str());
+    }
 }
 
 void cIRC::onYourHost(const IRCMessage message) {
     // "<client> :Your host is <servername>, running version <version>"
+	// All of this is also part of the MYINFO message
+	// In a more machine-friendly manner
+
+//    std::string preHostStr = "Your host is ";
+//    std::string postHostStr = ", running version";
+//    auto preHostPos = message.parameters[1].find(preHostStr);
+//    auto postHostPos = message.parameters[1].find(postHostStr);
+//    if (preHostPos != std::string::npos && postHostPos != std::string::npos) {
+//        serverInfo.host =
+//            message.parameters[1].substr(preHostStr.length() + preHostPos, postHostPos - preHostPos - preHostStr.length());
+//        LOG_INFO("Host : %s", serverInfo.host.c_str());
+//
+//
+//		serverInfo.software = message.parameters[1].substr(postHostStr.length() + postHostPos + 1);
+//		LOG_INFO("Software : %s", serverInfo.software.c_str());
+//
+//    }
 }
 
 void cIRC::onCreated(const IRCMessage message) {
@@ -129,6 +158,17 @@ void cIRC::onCreated(const IRCMessage message) {
 void cIRC::onMyInfo(const IRCMessage message) {
     //   "<client> <servername> <version> <available user modes>
     //   <available channel modes> [<channel modes with a parameter>]"
+
+    serverInfo.host = message.parameters[1];
+    serverInfo.software = message.parameters[2];
+
+    serverInfo.userModes = message.parameters[3];
+    serverInfo.channelModes = message.parameters[4];
+    // Optional available
+    serverInfo.channelModesWithParameters = message.parameters[5];
+
+    LOG_INFO("Host : %s", serverInfo.host.c_str());
+    LOG_INFO("IRCd : %s", serverInfo.software.c_str());
 }
 void cIRC::onISupport(const IRCMessage message) {
 
@@ -140,6 +180,17 @@ void cIRC::onISupport(const IRCMessage message) {
             // with RFC 2812  where 005 was RPL_BOUNCE instead
             // mServerISupport
 
+            // TODO: support negating features
+            /*
+             * Tokens of the form -PARAMETER are used to negate a previously
+             * specified parameter. If the client receives a token like this,
+             * the client MUST consider that parameter to be removed and revert
+             * to the behaviour that would occur if the parameter was not
+             * specified. The client MUST act as though the paramater is no
+             * longer advertised to it. These tokens are intended to allow
+             * servers to change their features without disconnecting clients.
+             * Tokens of this form MUST NOT contain a value field.
+             */
             std::vector<std::string> isupprt;
             isupprt.insert(isupprt.end(), message.parameters.begin() + 1, message.parameters.end() - 1);
             serverInfo.features.merge(parseKeyValue(isupprt));
@@ -149,19 +200,25 @@ void cIRC::onISupport(const IRCMessage message) {
     /* RFC 2812 states
      005    RPL_BOUNCE "Try server <server name>, port <port number>"
      Is there any ancient ircd to test this against?
+     Found some collection of ircds https://arsiv.behroozwolf.net/index.php?dir=servers/
+     Also ftp://ftp.funet.fi/pub/unix/irc/server/
      */
-
 }
 void cIRC::onCAP(const IRCMessage message) {
     if (message.command == "CAP") {
         serverInfo.hasCapabilities = true;
         if (message.parameters.size() > 2) {
             std::string subCommand = message.parameters[1];
+
+            // TODO: Supported, Requested, Acknowledged capabilities
+
             if (subCommand == "LS") {
                 bool moreCapabilitiesComing = message.parameters[2] == "*";
                 serverInfo.capabilities.merge(parseKeyValue(splitString(message.parameters[2 + moreCapabilitiesComing])));
 
                 if (!serverInfo.registrationComplete && !moreCapabilitiesComing) {
+                    if (serverInfo.capabilities.count("message-tags"))
+                        send("CAP REQ :message-tags");
                     send("CAP END");
                     onCanRegister();
                 }
@@ -214,28 +271,26 @@ void cIRC::onCTCPQuery(const IRCMessage message, const CTCPMessage ctcp) {
     } else if (ctcp.command == "DCC") {
     } else if (ctcp.command == "FINGER") {
     } else if (ctcp.command == "PING") {
-        sendCTCPResponse(message.nick, ctcp.command, ctcp.parameters);
+        sendCTCPResponse(message.source.nick, ctcp.command, ctcp.parameters);
     } else if (ctcp.command == "SOURCE") {
-        sendCTCPResponse(message.nick, "SOURCE", "https://github.com/BlaatSchaapCode/blaatbot2025/");
+        sendCTCPResponse(message.source.nick, "SOURCE", "https://github.com/BlaatSchaapCode/blaatbot2025/");
     } else if (ctcp.command == "TIME") {
-        // This prints in UTC
-        // sendCTCPResponse(message.nick, "TIME", std::format("{:%FT%TZ}", std::chrono::system_clock::now()));
-
-        //    	 adds the +0000 timezone... but how to get the timezone in the string
-
         const auto zt{std::chrono::zoned_time{std::chrono::current_zone(), std::chrono::system_clock::now()}};
-
-        sendCTCPResponse(message.nick, "TIME", std::format("{:%FT%T%z}", zt));
-
+        sendCTCPResponse(message.source.nick, "TIME", std::format("{:%FT%T%z}", zt));
     } else if (ctcp.command == "VERSION") {
         utils::Version version;
-        sendCTCPResponse(message.nick, "VERSION", "BlaatBot2025 " + version.m_git_commit);
+        sendCTCPResponse(message.source.nick, "VERSION", "BlaatBot2025 " + version.m_git_commit);
     } else if (ctcp.command == "USERINFO") {
     }
 }
 
 void cIRC::onCTCPResponse(const IRCMessage message, const CTCPMessage ctcp) {
     // TODO}
+
+    if (message.source.nick == "NickServ") {
+        serverInfo.services = splitString(ctcp.parameters)[0];
+        LOG_INFO("Services : %s", serverInfo.services.c_str());
+    }
 }
 
 std::string cIRC::stripFormatting(std::string formattedString) {
@@ -302,8 +357,8 @@ void cIRC::onNOTICE(const IRCMessage message) {
                 auto parameterPos = ctcpString.find(" ");
                 if (parameterPos != std::string::npos) {
                     ctcp.command = ctcpString.substr(0, parameterPos);
-                    if (ctcpString.length() >= parameterPos + 2)
-                        ctcp.parameters = ctcpString.substr(parameterPos + 2);
+                    if (ctcpString.length() >= parameterPos + 1)
+                        ctcp.parameters = ctcpString.substr(parameterPos + 1);
                 } else {
                     ctcp.command = ctcpString;
                 }
@@ -337,8 +392,9 @@ void cIRC::onMessage(const IRCMessage message) {
     }
 }
 void cIRC::parseMessage(std::string line) {
-    LOG_INFO((">>> " + line).c_str());
+    LOG_DEBUG((">>> " + line).c_str());
     IRCMessage message;
+    message.raw = line;
 
     std::string trailingParameter;
 
@@ -373,23 +429,24 @@ void cIRC::parseMessage(std::string line) {
     // Source, Optional, RFC 1459
     if (tokens.size()) {
         if (tokens[0][0] == ':') {
-            message.source = tokens[0];
-            message.source.erase(0, 1); // remove the ':'
+            message.source.raw = tokens[0];
+            message.source.raw.erase(0, 1); // remove the ':'
             tokens.erase(tokens.begin());
 
-            auto userPos = message.source.find("!");
-            auto hostPos = message.source.find("@");
+            auto userPos = message.source.raw.find("!");
+            auto hostPos = message.source.raw.find("@");
             if (userPos != std::string::npos) {
-                message.nick = message.source.substr(0, userPos);
+                message.source.nick = message.source.raw.substr(0, userPos);
             } else {
                 userPos = 0;
             }
             if (hostPos != std::string::npos) {
-                message.user = message.source.substr(userPos + 1, hostPos - userPos - 1);
+                message.source.user = message.source.raw.substr(userPos + 1, hostPos - userPos - 1);
+                hostPos++;
             } else {
                 hostPos = 0;
             }
-            message.host = message.source.substr(hostPos + 1);
+            message.source.host = message.source.raw.substr(hostPos);
         }
     }
 
@@ -443,7 +500,7 @@ void cIRC::onData(std::vector<char> data) {
 }
 
 void cIRC::send(std::string message) {
-    LOG_INFO(("<<< " + message).c_str());
+    LOG_DEBUG(("<<< " + message).c_str());
     this->mConnection->send(message + "\r\n");
 }
 

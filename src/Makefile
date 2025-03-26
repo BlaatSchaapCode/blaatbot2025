@@ -11,6 +11,7 @@ CXX_INCLUDES += protocol
 CXX_INCLUDES += utils
 CXX_INCLUDES += ../ext/base64/include/
 
+CXX_SRC += ./clients/cClient.cpp
 CXX_SRC += ./network/network.cpp
 CXX_SRC += ./network/connection.cpp
 CXX_SRC += ./network/cTlsConnection.cpp
@@ -20,6 +21,7 @@ CXX_SRC += ./protocol/cIRC.cpp
 CXX_SRC += ./utils/compat.cpp
 CXX_SRC += ./utils/logger.cpp
 CXX_SRC += ./utils/splitString.cpp
+CXX_SRC += ./utils/threadName.cpp
 CXX_SRC += ./main.cpp
 
 

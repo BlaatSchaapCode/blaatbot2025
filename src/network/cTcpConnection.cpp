@@ -13,7 +13,8 @@
 #include <random>
 #include <vector>
 
-#include "../utils/logger.hpp"
+#include "logger.hpp"
+#include "threadName.hpp"
 #include "cTcpConnection.hpp"
 
 namespace network {
@@ -36,7 +37,7 @@ cTcpConnection::~cTcpConnection() {
 void cTcpConnection::send(std::vector<char> data) {
     size_t sent_bytes = ::send(m_socket, (const char *)data.data(), (int)data.size(), 0);
     if (sent_bytes == data.size()) {
-        LOG_INFO("Sent %d bytes", sent_bytes);
+    	LOG_DEBUG("Sent %d bytes", sent_bytes);
     } else {
         LOG_ERROR("Sent %d of %d bytes", sent_bytes, data.size());
     }
@@ -44,6 +45,7 @@ void cTcpConnection::send(std::vector<char> data) {
 
 void cTcpConnection::receiveThreadFunc(cTcpConnection *self) {
     LOG_INFO("Starting Receive Thread");
+    setThreadName("TcpRecv");
     char recv_buffer[8191] = {0};
     // TODO: exit conditions
     // Depends on:
@@ -55,7 +57,7 @@ void cTcpConnection::receiveThreadFunc(cTcpConnection *self) {
         bytes_received = recv(self->m_socket, recv_buffer, sizeof(recv_buffer), 0);
         if (bytes_received < 0) {
             // If there is any other error then timeout
-            if (EWOULDBLOCK != errno) {
+            if (EWOULDBLOCK != errno && errno != EINTR) {
 #ifdef _MSC_FULL_VER
                 char buffer[120];
                 strerror_s(buffer, sizeof(buffer), errno);
@@ -73,8 +75,7 @@ void cTcpConnection::receiveThreadFunc(cTcpConnection *self) {
             self->mProtocol->onDisconnected();
             break;
         } else {
-            // Todo: pass data to parser
-            LOG_INFO("Received %d bytes ", bytes_received);
+        	LOG_DEBUG("Received %d bytes ", bytes_received);
 
             // Please note: we want a copy of the data so the receive buffer is available for the next message
             std::vector<char> received_data(recv_buffer, recv_buffer + bytes_received);

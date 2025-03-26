@@ -20,7 +20,7 @@ class cProtocol;
 
 namespace network {
 
-class cConnection : public std::enable_shared_from_this<cConnection> {
+class cConnection {
 
   public:
     virtual ~cConnection();
@@ -29,10 +29,10 @@ class cConnection : public std::enable_shared_from_this<cConnection> {
         std::vector<char> v(s.begin(), s.end());
         send(v);
     }
-    void setProtocol(std::shared_ptr<::protocol::cProtocol> protocol) { mProtocol = protocol; }
+    void setProtocol(::protocol::cProtocol *protocol) { mProtocol = protocol; }
 
   protected:
-    std::shared_ptr<::protocol::cProtocol> mProtocol;
+    ::protocol::cProtocol *mProtocol;
 };
 
 } // namespace network
