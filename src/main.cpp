@@ -8,12 +8,10 @@
 // Library Includes
 #include <cxxopts.hpp>
 
+#include "clients/Client.hpp"
 
-#include "clients/cClient.hpp"
-
-// Game includes
 #include "network/network.hpp"
-#include "protocol/cIRC.hpp"
+#include "protocol/IRC.hpp"
 #include "utils/logger.hpp"
 #include "utils/version.hpp"
 
@@ -55,7 +53,7 @@ int main(int argc, char *argv[]) {
     if (result)
         return result;
 
-    client::cClient client;
+    client::Client client;
 
     LOG_INFO("press ENTER key to quit");
     std::cin.get();

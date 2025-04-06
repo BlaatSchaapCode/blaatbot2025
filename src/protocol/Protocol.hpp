@@ -6,19 +6,19 @@
  */
 
 #pragma once
-#include "cconnection.hpp"
 #include <memory>
 #include <vector>
+#include "../network/Connection.hpp"
 
 namespace network {
 class cConnection;
 }
 
 namespace protocol {
-class cProtocol {
+class Protocol {
 
   public:
-    virtual ~cProtocol() = 0;
+    virtual ~Protocol() = 0;
     virtual void onData(std::vector<char> data) = 0;
     virtual void onConnected() = 0;
     virtual void onDisconnected() = 0;

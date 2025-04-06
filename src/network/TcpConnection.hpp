@@ -7,9 +7,9 @@
 
 #include "network.hpp"
 
-#include "cconnection.hpp"
 #include <atomic>
 #include <thread>
+#include "Connection.hpp"
 
 namespace network {
 

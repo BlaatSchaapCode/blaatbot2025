@@ -7,8 +7,8 @@
 
 #include <cstring>
 
-#include "cTlsConnection.hpp"
 #include "threadName.hpp"
+#include "TlsConnection.hpp"
 
 namespace network {
 void cTlsConnection::connect(std::string ip_address, uint16_t port, bool ignoreBadCertificate, bool ignoreLegacyServer) {

@@ -5,7 +5,7 @@
  *      Author: andre
  */
 
-#include "cProtocol.hpp"
+#include "Protocol.hpp"
 namespace protocol {
-cProtocol::~cProtocol() {}
+Protocol::~Protocol() {}
 } // namespace protocol

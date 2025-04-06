@@ -5,6 +5,8 @@
  *      Author: andre
  */
 
+#include "TcpConnection.hpp"
+
 #include "network.hpp"
 
 #include <cstring>
@@ -15,7 +17,6 @@
 
 #include "logger.hpp"
 #include "threadName.hpp"
-#include "cTcpConnection.hpp"
 
 namespace network {
 

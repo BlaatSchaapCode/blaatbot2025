@@ -5,7 +5,7 @@
  *      Author: andre
  */
 
-#include "cIRC.hpp"
+#include "IRC.hpp"
 
 #include "splitString.hpp"
 #include <chrono>
@@ -36,7 +36,7 @@ namespace protocol {
  *
  */
 
-cIRC::cIRC() {
+IRC::IRC() {
     mMessageParsers["PING"] = [this](const IRCMessage message) { onPING(message); };
     mMessageParsers["PRIVMSG"] = [this](const IRCMessage message) { onPRIVMSG(message); };
     mMessageParsers["NOTICE"] = [this](const IRCMessage message) { onNOTICE(message); };
@@ -59,12 +59,12 @@ cIRC::cIRC() {
     mMessageParsers[Numeric::RPL_YOURHOST] = [this](const IRCMessage message) { onYourHost(message); };
 }
 
-cIRC::~cIRC() {
+IRC::~IRC() {
     // TODO Auto-generated destructor stub
     send("QUIT exited");
 }
 
-void cIRC::onCanRegister(void) {
+void IRC::onCanRegister(void) {
     if (mPass.length())
         send("PASS " + mPass);
 
@@ -75,7 +75,7 @@ void cIRC::onCanRegister(void) {
     send("NICK " + mNick);
 }
 
-void cIRC::onReady(void) {
+void IRC::onReady(void) {
 
     LOG_INFO("Ready");
     // To be called when the connection is ready.
@@ -89,7 +89,7 @@ void cIRC::onReady(void) {
     send("JOIN #bscp-test");
 }
 
-void cIRC::onConnected() {
+void IRC::onConnected() {
 
     // Probe for capabilities
     // Note: when the server does not support capabilities it may response
@@ -101,9 +101,9 @@ void cIRC::onConnected() {
     send("MODE ISIRCX");
 }
 
-void cIRC::onDisconnected() {}
+void IRC::onDisconnected() {}
 
-void cIRC::onUnknownCommand(const IRCMessage message) {
+void IRC::onUnknownCommand(const IRCMessage message) {
     if (message.command == Numeric::ERR_UNKNOWNCOMMAND) {
         if (!serverInfo.registrationComplete) {
             // Server replied unknown command to CAP LS
@@ -113,7 +113,7 @@ void cIRC::onUnknownCommand(const IRCMessage message) {
     }
 }
 
-void cIRC::onWelcome(const IRCMessage message) {
+void IRC::onWelcome(const IRCMessage message) {
     serverInfo.registrationComplete = true;
     // "<client> :Welcome to the <networkname> IRC Network, <nick>[!<user>@<host>]"
 
@@ -130,7 +130,7 @@ void cIRC::onWelcome(const IRCMessage message) {
     }
 }
 
-void cIRC::onYourHost(const IRCMessage message) {
+void IRC::onYourHost(const IRCMessage message) {
     // "<client> :Your host is <servername>, running version <version>"
 	// All of this is also part of the MYINFO message
 	// In a more machine-friendly manner
@@ -151,11 +151,11 @@ void cIRC::onYourHost(const IRCMessage message) {
 //    }
 }
 
-void cIRC::onCreated(const IRCMessage message) {
+void IRC::onCreated(const IRCMessage message) {
     // "<client> :This server was created <datetime>"
 }
 
-void cIRC::onMyInfo(const IRCMessage message) {
+void IRC::onMyInfo(const IRCMessage message) {
     //   "<client> <servername> <version> <available user modes>
     //   <available channel modes> [<channel modes with a parameter>]"
 
@@ -170,7 +170,7 @@ void cIRC::onMyInfo(const IRCMessage message) {
     LOG_INFO("Host : %s", serverInfo.host.c_str());
     LOG_INFO("IRCd : %s", serverInfo.software.c_str());
 }
-void cIRC::onISupport(const IRCMessage message) {
+void IRC::onISupport(const IRCMessage message) {
 
     // https://defs.ircdocs.horse/defs/isupport.html
     const std::string iSupport = "are supported by this server";
@@ -204,7 +204,7 @@ void cIRC::onISupport(const IRCMessage message) {
      Also ftp://ftp.funet.fi/pub/unix/irc/server/
      */
 }
-void cIRC::onCAP(const IRCMessage message) {
+void IRC::onCAP(const IRCMessage message) {
     if (message.command == "CAP") {
         serverInfo.hasCapabilities = true;
         if (message.parameters.size() > 2) {
@@ -226,7 +226,7 @@ void cIRC::onCAP(const IRCMessage message) {
         }
     }
 }
-void cIRC::onIRCX(const IRCMessage message) {
+void IRC::onIRCX(const IRCMessage message) {
     // >>> :irc.mysite.com 800 Anonymous 0 0 ANON 512 *
     // <state> <version> <package-list> <maxmsg> <option-list>
     serverInfo.hasExtensions = true;
@@ -258,14 +258,14 @@ void cIRC::onIRCX(const IRCMessage message) {
         onCanRegister();
 }
 
-void cIRC::onPING(const IRCMessage message) {
+void IRC::onPING(const IRCMessage message) {
     if (message.command == "PING") {
         if (message.parameters.size())
             send("PONG :" + message.parameters[0]);
     }
 }
 
-void cIRC::onCTCPQuery(const IRCMessage message, const CTCPMessage ctcp) {
+void IRC::onCTCPQuery(const IRCMessage message, const CTCPMessage ctcp) {
     if (ctcp.command == "ACTION") {
     } else if (ctcp.command == "CLIENTINFO") {
     } else if (ctcp.command == "DCC") {
@@ -284,7 +284,7 @@ void cIRC::onCTCPQuery(const IRCMessage message, const CTCPMessage ctcp) {
     }
 }
 
-void cIRC::onCTCPResponse(const IRCMessage message, const CTCPMessage ctcp) {
+void IRC::onCTCPResponse(const IRCMessage message, const CTCPMessage ctcp) {
     // TODO}
 
     if (message.source.nick == "NickServ") {
@@ -293,12 +293,12 @@ void cIRC::onCTCPResponse(const IRCMessage message, const CTCPMessage ctcp) {
     }
 }
 
-std::string cIRC::stripFormatting(std::string formattedString) {
+std::string IRC::stripFormatting(std::string formattedString) {
     // TODO strip all formatting
     return formattedString;
 }
 
-void cIRC::onPRIVMSG(const IRCMessage message) {
+void IRC::onPRIVMSG(const IRCMessage message) {
     if (message.parameters.size() == 2) {
         std::string recipient = message.parameters[0];
         std::string privmsg = message.parameters[1];
@@ -335,7 +335,7 @@ void cIRC::onPRIVMSG(const IRCMessage message) {
         // Malformed message?
     }
 }
-void cIRC::onNOTICE(const IRCMessage message) {
+void IRC::onNOTICE(const IRCMessage message) {
     if (message.parameters.size() == 2) {
         std::string recipient = message.parameters[0];
         std::string notice = message.parameters[1];
@@ -372,9 +372,9 @@ void cIRC::onNOTICE(const IRCMessage message) {
         // Malformed message?
     }
 }
-void cIRC::onERROR(const IRCMessage message) {}
+void IRC::onERROR(const IRCMessage message) {}
 
-void cIRC::onNicknameInUse(const IRCMessage message) {
+void IRC::onNicknameInUse(const IRCMessage message) {
     if (!serverInfo.registrationComplete && Numeric::ERR_NICKNAMEINUSE == message.command) {
         // TODO, limit retries, make configurable
         mNick += "_";
@@ -383,7 +383,7 @@ void cIRC::onNicknameInUse(const IRCMessage message) {
     }
 }
 
-void cIRC::onMessage(const IRCMessage message) {
+void IRC::onMessage(const IRCMessage message) {
 
     if (mMessageParsers[message.command]) {
         mMessageParsers[message.command](message);
@@ -391,7 +391,7 @@ void cIRC::onMessage(const IRCMessage message) {
         // Unknown message type
     }
 }
-void cIRC::parseMessage(std::string line) {
+void IRC::parseMessage(std::string line) {
     LOG_DEBUG((">>> " + line).c_str());
     IRCMessage message;
     message.raw = line;
@@ -462,7 +462,7 @@ void cIRC::parseMessage(std::string line) {
     onMessage(message);
 }
 
-void cIRC::onData(std::vector<char> data) {
+void IRC::onData(std::vector<char> data) {
     /*
      * IRCv3 "Modern IRC Client Protocol" states
      * When reading messages from a stream, read the incoming data into a
@@ -499,12 +499,12 @@ void cIRC::onData(std::vector<char> data) {
     }
 }
 
-void cIRC::send(std::string message) {
+void IRC::send(std::string message) {
     LOG_DEBUG(("<<< " + message).c_str());
     this->mConnection->send(message + "\r\n");
 }
 
-bool cIRC::validTarget(const std::string target) {
+bool IRC::validTarget(const std::string target) {
     // TODO verify against specs what is valid
     if (target.find(" ") != std::string::npos)
         return false;
@@ -515,7 +515,7 @@ bool cIRC::validTarget(const std::string target) {
 
     return true;
 }
-bool cIRC::validText(const std::string text) {
+bool IRC::validText(const std::string text) {
     // TODO verify against specs what is valid
     if (text.find("\r") != std::string::npos)
         return false;
@@ -525,23 +525,23 @@ bool cIRC::validText(const std::string text) {
     return true;
 }
 
-void cIRC::sendPRIVMSG(const std::string target, const std::string text) {
+void IRC::sendPRIVMSG(const std::string target, const std::string text) {
     if (validTarget(target) && validText(text)) {
         send("PRIVMSG " + target + " :" + text);
     }
 }
-void cIRC::sendNOTICE(const std::string target, const std::string text) {
+void IRC::sendNOTICE(const std::string target, const std::string text) {
     if (validTarget(target) && validText(text)) {
         send("NOTICE " + target + " :" + text);
     }
 }
-void cIRC::sendCTCPQuery(const std::string target, const std::string command, const std::string parameters) {
+void IRC::sendCTCPQuery(const std::string target, const std::string command, const std::string parameters) {
     if (parameters.length())
         sendPRIVMSG(target, "\01" + command + " " + parameters + "\01");
     else
         sendPRIVMSG(target, "\01" + command + "\01");
 }
-void cIRC::sendCTCPResponse(const std::string target, const std::string command, const std::string parameters) {
+void IRC::sendCTCPResponse(const std::string target, const std::string command, const std::string parameters) {
     if (parameters.length())
         sendNOTICE(target, "\01" + command + " " + parameters + "\01");
     else

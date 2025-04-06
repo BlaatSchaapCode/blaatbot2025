@@ -5,8 +5,8 @@
  *      Author: andre
  */
 
-#ifndef NETWORK_CTLSCONNECTION_HPP_
-#define NETWORK_CTLSCONNECTION_HPP_
+#ifndef NETWORK_TLSCONNECTION_HPP_
+#define NETWORK_TLSCONNECTION_HPP_
 
 #include "network.hpp"
 
@@ -17,7 +17,7 @@
 #include <tls.h>
 
 #include "../utils/logger.hpp"
-#include "cconnection.hpp"
+#include "Connection.hpp"
 
 namespace network {
 
@@ -45,4 +45,4 @@ class cTlsConnection : public cConnection {
 
 } // namespace network
 
-#endif /* NETWORK_CTLSCONNECTION_HPP_ */
+#endif /* NETWORK_TLSCONNECTION_HPP_ */

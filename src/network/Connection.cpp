@@ -5,13 +5,12 @@
  *      Author: andre
  */
 
-#include "cconnection.hpp"
-
 #include <iostream>
 #include <string>
 #include <vector>
 
-#include "cProtocol.hpp"
+#include "../protocol/Protocol.hpp"
+#include "Connection.hpp"
 namespace network {
 
 

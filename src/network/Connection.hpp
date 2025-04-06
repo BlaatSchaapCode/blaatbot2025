@@ -12,10 +12,10 @@
 #include <string>
 #include <vector>
 
-#include "cProtocol.hpp"
+#include "../protocol/Protocol.hpp"
 
 namespace protocol {
-class cProtocol;
+class Protocol;
 }
 
 namespace network {
@@ -29,10 +29,10 @@ class cConnection {
         std::vector<char> v(s.begin(), s.end());
         send(v);
     }
-    void setProtocol(::protocol::cProtocol *protocol) { mProtocol = protocol; }
+    void setProtocol(::protocol::Protocol *protocol) { mProtocol = protocol; }
 
   protected:
-    ::protocol::cProtocol *mProtocol;
+    ::protocol::Protocol *mProtocol;
 };
 
 } // namespace network

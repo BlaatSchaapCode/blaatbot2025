@@ -13,8 +13,8 @@
 #include <vector>
 
 #include "../utils/logger.hpp"
-#include "cTcpConnection.hpp"
-#include "cconnection.hpp"
+#include "Connection.hpp"
+#include "TcpConnection.hpp"
 
 namespace network {
 

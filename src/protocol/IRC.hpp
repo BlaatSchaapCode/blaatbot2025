@@ -5,11 +5,8 @@
  *      Author: andre
  */
 
-#ifndef PROTOCOL_CIRC_HPP_
-#define PROTOCOL_CIRC_HPP_
-
-#include "cProtocol.hpp"
-#include "cconnection.hpp"
+#ifndef PROTOCOL_IRC_HPP_
+#define PROTOCOL_IRC_HPP_
 
 #include <functional>
 #include <map>
@@ -17,9 +14,12 @@
 #include <string>
 #include <vector>
 
+#include "../network/Connection.hpp"
+#include "Protocol.hpp"
+
 namespace protocol {
 
-class cIRC : public cProtocol {
+class IRC : public Protocol {
   public:
     struct IRCMessage {
     	std::string raw;
@@ -224,8 +224,8 @@ class cIRC : public cProtocol {
         static constexpr std::string IRCERR_UNKNOWNERROR = "999";
     };
 
-    cIRC();
-    ~cIRC();
+    IRC();
+    ~IRC();
 
     void setNick(std::string nick) { mNick = nick; }
     void setUser(std::string user) { mUser = user; }
@@ -327,4 +327,4 @@ class cIRC : public cProtocol {
 };
 
 } // namespace protocol
-#endif /* PROTOCOL_CIRC_HPP_ */
+#endif /* PROTOCOL_IRC_HPP_ */
