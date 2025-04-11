@@ -38,7 +38,7 @@ cTcpConnection::~cTcpConnection() {
 void cTcpConnection::send(std::vector<char> data) {
     size_t sent_bytes = ::send(m_socket, (const char *)data.data(), (int)data.size(), 0);
     if (sent_bytes == data.size()) {
-    	LOG_DEBUG("Sent %d bytes", sent_bytes);
+        LOG_DEBUG("Sent %d bytes", sent_bytes);
     } else {
         LOG_ERROR("Sent %d of %d bytes", sent_bytes, data.size());
     }
@@ -76,7 +76,7 @@ void cTcpConnection::receiveThreadFunc(cTcpConnection *self) {
             self->mProtocol->onDisconnected();
             break;
         } else {
-        	LOG_DEBUG("Received %d bytes ", bytes_received);
+            LOG_DEBUG("Received %d bytes ", bytes_received);
 
             // Please note: we want a copy of the data so the receive buffer is available for the next message
             std::vector<char> received_data(recv_buffer, recv_buffer + bytes_received);

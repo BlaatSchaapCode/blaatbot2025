@@ -21,17 +21,19 @@ namespace protocol {
 
 class IRC : public Protocol {
   public:
+    struct IRCSource{
+		std::string raw;
+		// source is split up into nick, user and host
+		std::string nick;
+		std::string user;
+		std::string host;
+    };
+
+
     struct IRCMessage {
     	std::string raw;
-
     	std::string tags;
-        struct {
-			std::string raw;
-			// source is split up into nick, user and host
-			std::string nick;
-			std::string user;
-			std::string host;
-        } source;
+    	IRCSource source;
         std::string command;
         std::vector<std::string> parameters;
     };
@@ -224,6 +226,18 @@ class IRC : public Protocol {
         static constexpr std::string IRCERR_UNKNOWNERROR = "999";
     };
 
+
+    struct IRCChannel {
+    	bool joined;
+    	std::string topic;
+    	std::string topicStripped;
+    	std::string topicNick;
+    	time_t topicSetAt;
+    };
+    std::map<std::string, IRCChannel> mIRCChannels;
+
+
+
     IRC();
     ~IRC();
 
@@ -310,6 +324,13 @@ class IRC : public Protocol {
 
     void onPRIVMSG(const IRCMessage message);
     void onNOTICE(const IRCMessage message);
+
+    void onJOIN(const IRCMessage message);
+    void onTopic(const IRCMessage message);
+	void onTopicWhoTime(const IRCMessage message);
+	void onNamReply(const IRCMessage message);
+	void onEndOfNames(const IRCMessage message);
+
     void onCTCPQuery(const IRCMessage message, const CTCPMessage ctcp);
     void onCTCPResponse(const IRCMessage message, const CTCPMessage ctcp);
 
@@ -323,7 +344,11 @@ class IRC : public Protocol {
     bool validTarget(const std::string target);
     bool validText(const std::string text);
 
+    bool isEqual(const std::string first, const std::string seccond);
+    std::string toLower(std::string str);
+
     std::string stripFormatting(const std::string formattedString);
+    void splitUserNickHost(IRCSource & source);
 };
 
 } // namespace protocol

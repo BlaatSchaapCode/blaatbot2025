@@ -13,8 +13,6 @@
 #include "Connection.hpp"
 namespace network {
 
-
-
 cConnection::~cConnection() {}
 
 } // namespace network

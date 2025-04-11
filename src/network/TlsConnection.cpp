@@ -7,8 +7,8 @@
 
 #include <cstring>
 
-#include "threadName.hpp"
 #include "TlsConnection.hpp"
+#include "threadName.hpp"
 
 namespace network {
 void cTlsConnection::connect(std::string ip_address, uint16_t port, bool ignoreBadCertificate, bool ignoreLegacyServer) {
@@ -30,7 +30,7 @@ void cTlsConnection::connect(std::string ip_address, uint16_t port, bool ignoreB
 
         // libtls dropped support for older protocols,
         // I can't force it to use them if I try.
-		// "legacy" has no effect and selects 1.2 and 1.3
+        // "legacy" has no effect and selects 1.2 and 1.3
 
         rc = tls_config_parse_protocols(&protocols, "legacy");
         rc = tls_config_set_protocols(m_tls_config, protocols);
@@ -95,7 +95,7 @@ void cTlsConnection::receiveThreadFunc(cTlsConnection *self) {
             break;
         } else {
             // Todo: pass data to parser
-        	LOG_DEBUG("Received %d bytes ", bytes_received);
+            LOG_DEBUG("Received %d bytes ", bytes_received);
 
             // Please note: we want a copy of the data so the receive buffer is available for the next message
             std::vector<char> received_data(recv_buffer, recv_buffer + bytes_received);
@@ -107,7 +107,7 @@ void cTlsConnection::receiveThreadFunc(cTlsConnection *self) {
 void cTlsConnection::send(std::vector<char> data) {
     size_t sent_bytes = ::tls_write(m_tls_socket, (const char *)data.data(), (int)data.size());
     if (sent_bytes == data.size()) {
-    	LOG_DEBUG("Sent %d bytes", sent_bytes);
+        LOG_DEBUG("Sent %d bytes", sent_bytes);
     } else {
         LOG_ERROR("Sent %d of %d bytes", sent_bytes, data.size());
     }

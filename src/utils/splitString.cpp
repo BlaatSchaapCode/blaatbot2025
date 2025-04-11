@@ -30,32 +30,32 @@ std::vector<std::string> splitString(const std::string &str, const std::string &
     return tokens;
 }
 
-std::vector<std::string> parseNegation(const std::vector<std::string>&tokens){
-	std::vector<std::string> result;
-	for (auto & token : tokens) {
-		if (token.length() && token[0]=='-') {
-			result.push_back(token.substr(1));
-		}
-	}
-	return result;
+std::vector<std::string> parseNegation(const std::vector<std::string> &tokens) {
+    std::vector<std::string> result;
+    for (auto &token : tokens) {
+        if (token.length() && token[0] == '-') {
+            result.push_back(token.substr(1));
+        }
+    }
+    return result;
 }
 
-std::map<std::string,std::string> parseKeyValue(const std::vector<std::string>&tokens){
-	std::map<std::string,std::string> result;
+std::map<std::string, std::string> parseKeyValue(const std::vector<std::string> &tokens) {
+    std::map<std::string, std::string> result;
 
-	std::string key,value;
-	for (auto & token : tokens) {
-		auto issignpos = token.find('=');
+    std::string key, value;
+    for (auto &token : tokens) {
+        auto issignpos = token.find('=');
         if (issignpos == std::string::npos) {
-        	key = token;
-        	value = "";
+            key = token;
+            value = "";
         } else {
-        	key = token.substr(0, issignpos);
-        	value = token.substr(issignpos + 1);
+            key = token.substr(0, issignpos);
+            value = token.substr(issignpos + 1);
         }
         LOG_DEBUG("key %s value %s", key.c_str(), value.c_str());
         if (key.length() && key[0] != '-')
-        	result[key]=value;
-	}
-	return result;
+            result[key] = value;
+    }
+    return result;
 }

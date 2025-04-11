@@ -8,6 +8,7 @@
 #include "IRC.hpp"
 
 #include "splitString.hpp"
+#include <algorithm>
 #include <chrono>
 #include <cstring>
 #include <format>
@@ -37,6 +38,7 @@ namespace protocol {
  */
 
 IRC::IRC() {
+
     mMessageParsers["PING"] = [this](const IRCMessage message) { onPING(message); };
     mMessageParsers["PRIVMSG"] = [this](const IRCMessage message) { onPRIVMSG(message); };
     mMessageParsers["NOTICE"] = [this](const IRCMessage message) { onNOTICE(message); };
@@ -57,6 +59,12 @@ IRC::IRC() {
 
     mMessageParsers[Numeric::RPL_WELCOME] = [this](const IRCMessage message) { onWelcome(message); };
     mMessageParsers[Numeric::RPL_YOURHOST] = [this](const IRCMessage message) { onYourHost(message); };
+
+    mMessageParsers["JOIN"] = [this](const IRCMessage message) { onJOIN(message); };
+    mMessageParsers[Numeric::RPL_TOPIC] = [this](const IRCMessage message) { onTopic(message); };
+    mMessageParsers[Numeric::RPL_TOPICWHOTIME] = [this](const IRCMessage message) { onTopicWhoTime(message); };
+    mMessageParsers[Numeric::RPL_NAMREPLY] = [this](const IRCMessage message) { onNamReply(message); };
+    mMessageParsers[Numeric::RPL_ENDOFNAMES] = [this](const IRCMessage message) { onEndOfNames(message); };
 }
 
 IRC::~IRC() {
@@ -64,6 +72,151 @@ IRC::~IRC() {
     send("QUIT exited");
 }
 
+std::string IRC::toLower(std::string s) {
+    /*
+     The value MUST be specified and is a string. Servers MAY advertise
+     alternate casemappings to those above, but clients MAY NOT be able to
+     understand or perform them. If the parameter is not published by the
+     server at all, clients SHOULD assume CASEMAPPING=rfc1459.
+     */
+    std::string caseMapping = "rfc1459";
+    if (serverInfo.features.count("CASEMAPPING"))
+        caseMapping = serverInfo.features["CASEMAPPING"];
+
+    if (caseMapping == "ascii") {
+        // ascii: Defines the characters a to z to be considered the lower-case
+        // equivalents of the characters A to Z only.
+
+        // We could simple use something in the C++ library
+        // but to make sure we adhere to the definition above
+        // it is implemented manually
+        std::replace(s.begin(), s.end(), 'A', 'a');
+        std::replace(s.begin(), s.end(), 'B', 'b');
+        std::replace(s.begin(), s.end(), 'C', 'c');
+        std::replace(s.begin(), s.end(), 'D', 'd');
+        std::replace(s.begin(), s.end(), 'E', 'e');
+        std::replace(s.begin(), s.end(), 'F', 'f');
+        std::replace(s.begin(), s.end(), 'G', 'g');
+        std::replace(s.begin(), s.end(), 'H', 'h');
+        std::replace(s.begin(), s.end(), 'I', 'i');
+        std::replace(s.begin(), s.end(), 'J', 'j');
+        std::replace(s.begin(), s.end(), 'K', 'k');
+        std::replace(s.begin(), s.end(), 'L', 'l');
+        std::replace(s.begin(), s.end(), 'M', 'm');
+        std::replace(s.begin(), s.end(), 'N', 'n');
+        std::replace(s.begin(), s.end(), 'O', 'o');
+        std::replace(s.begin(), s.end(), 'P', 'p');
+        std::replace(s.begin(), s.end(), 'Q', 'q');
+        std::replace(s.begin(), s.end(), 'R', 'r');
+        std::replace(s.begin(), s.end(), 'S', 's');
+        std::replace(s.begin(), s.end(), 'T', 't');
+        std::replace(s.begin(), s.end(), 'U', 'u');
+        std::replace(s.begin(), s.end(), 'V', 'v');
+        std::replace(s.begin(), s.end(), 'W', 'w');
+        std::replace(s.begin(), s.end(), 'X', 'x');
+        std::replace(s.begin(), s.end(), 'Y', 'y');
+        std::replace(s.begin(), s.end(), 'Z', 'z');
+
+    } else if (caseMapping == "rfc1459") {
+        // rfc1459: Same as 'ascii', with the addition of the characters
+        // '{', '}', '|', and '^' being considered the lower-case equivalents
+        // of the characters '[', ']', '\', and '~' respectively.
+
+        std::replace(s.begin(), s.end(), '{', '[');
+        std::replace(s.begin(), s.end(), '}', ']');
+        std::replace(s.begin(), s.end(), '|', '\\');
+        std::replace(s.begin(), s.end(), '^', '~');
+
+        std::replace(s.begin(), s.end(), 'A', 'a');
+        std::replace(s.begin(), s.end(), 'B', 'b');
+        std::replace(s.begin(), s.end(), 'C', 'c');
+        std::replace(s.begin(), s.end(), 'D', 'd');
+        std::replace(s.begin(), s.end(), 'E', 'e');
+        std::replace(s.begin(), s.end(), 'F', 'f');
+        std::replace(s.begin(), s.end(), 'G', 'g');
+        std::replace(s.begin(), s.end(), 'H', 'h');
+        std::replace(s.begin(), s.end(), 'I', 'i');
+        std::replace(s.begin(), s.end(), 'J', 'j');
+        std::replace(s.begin(), s.end(), 'K', 'k');
+        std::replace(s.begin(), s.end(), 'L', 'l');
+        std::replace(s.begin(), s.end(), 'M', 'm');
+        std::replace(s.begin(), s.end(), 'N', 'n');
+        std::replace(s.begin(), s.end(), 'O', 'o');
+        std::replace(s.begin(), s.end(), 'P', 'p');
+        std::replace(s.begin(), s.end(), 'Q', 'q');
+        std::replace(s.begin(), s.end(), 'R', 'r');
+        std::replace(s.begin(), s.end(), 'S', 's');
+        std::replace(s.begin(), s.end(), 'T', 't');
+        std::replace(s.begin(), s.end(), 'U', 'u');
+        std::replace(s.begin(), s.end(), 'V', 'v');
+        std::replace(s.begin(), s.end(), 'W', 'w');
+        std::replace(s.begin(), s.end(), 'X', 'x');
+        std::replace(s.begin(), s.end(), 'Y', 'y');
+        std::replace(s.begin(), s.end(), 'Z', 'z');
+
+    } else if (caseMapping == "rfc1459-strict") {
+        // rfc1459-strict: Same casemapping as 'ascii', with the characters
+        // '{', '}', and '|' being the lower-case equivalents of
+        // '[', ']', and '\', respectively. Note that the difference between
+        // this and rfc1459 above is that in rfc1459-strict, '^' and '~' are not casefolded.
+
+        std::replace(s.begin(), s.end(), '{', '[');
+        std::replace(s.begin(), s.end(), '}', ']');
+        std::replace(s.begin(), s.end(), '|', '\\');
+
+        std::replace(s.begin(), s.end(), 'A', 'a');
+        std::replace(s.begin(), s.end(), 'B', 'b');
+        std::replace(s.begin(), s.end(), 'C', 'c');
+        std::replace(s.begin(), s.end(), 'D', 'd');
+        std::replace(s.begin(), s.end(), 'E', 'e');
+        std::replace(s.begin(), s.end(), 'F', 'f');
+        std::replace(s.begin(), s.end(), 'G', 'g');
+        std::replace(s.begin(), s.end(), 'H', 'h');
+        std::replace(s.begin(), s.end(), 'I', 'i');
+        std::replace(s.begin(), s.end(), 'J', 'j');
+        std::replace(s.begin(), s.end(), 'K', 'k');
+        std::replace(s.begin(), s.end(), 'L', 'l');
+        std::replace(s.begin(), s.end(), 'M', 'm');
+        std::replace(s.begin(), s.end(), 'N', 'n');
+        std::replace(s.begin(), s.end(), 'O', 'o');
+        std::replace(s.begin(), s.end(), 'P', 'p');
+        std::replace(s.begin(), s.end(), 'Q', 'q');
+        std::replace(s.begin(), s.end(), 'R', 'r');
+        std::replace(s.begin(), s.end(), 'S', 's');
+        std::replace(s.begin(), s.end(), 'T', 't');
+        std::replace(s.begin(), s.end(), 'U', 'u');
+        std::replace(s.begin(), s.end(), 'V', 'v');
+        std::replace(s.begin(), s.end(), 'W', 'w');
+        std::replace(s.begin(), s.end(), 'X', 'x');
+        std::replace(s.begin(), s.end(), 'Y', 'y');
+        std::replace(s.begin(), s.end(), 'Z', 'z');
+    } else if (caseMapping == "rfc7613") {
+        // rfc7613: Proposed casemapping which defines a method based on PRECIS,
+        // allowing additional Unicode characters to be correctly casemapped.
+        //
+        // But that links to something discussing rfc7700 instead
+        //
+        // Note: looking for a library or something to handle this case.
+        // While there are several libraries that do unicode case mapping
+        // We should be doing something standardised.
+        // rfc7613 mentions "Unicode Default Case Folding as defined in
+        // the Unicode Standard", which appears to be implemented by the ICU library
+        // Suppose we could use that here.
+        //
+        // TODO
+    } else {
+        // Unknown case mapping?
+    }
+    return s;
+}
+bool IRC::isEqual(const std::string first, const std::string seccond) {
+
+    // If the length differ, then they are not equal, we don't have to
+    // look further.
+    if (first.length() != seccond.length())
+        return false;
+    return toLower(first) == toLower(seccond);
+}
 void IRC::onCanRegister(void) {
     if (mPass.length())
         send("PASS " + mPass);
@@ -271,6 +424,7 @@ void IRC::onPING(const IRCMessage message) {
 
 void IRC::onCTCPQuery(const IRCMessage message, const CTCPMessage ctcp) {
     if (ctcp.command == "ACTION") {
+        LOG_DEBUG("Action: %s", ctcp.parameters.c_str());
     } else if (ctcp.command == "CLIENTINFO") {
     } else if (ctcp.command == "DCC") {
     } else if (ctcp.command == "FINGER") {
@@ -475,6 +629,35 @@ void IRC::onNOTICE(const IRCMessage message) {
 }
 void IRC::onERROR(const IRCMessage message) {}
 
+void IRC::onJOIN(const IRCMessage message) {
+    if (isEqual(mNick, message.source.nick)) {
+        // We have joined a channel
+        mIRCChannels[toLower(message.parameters[0])].joined = true;
+    } else {
+        // Someone else has joined a channel we are in
+        // --> Update channel member list
+    }
+}
+
+void IRC::onTopic(const IRCMessage message) {
+    // <client> <channel> :<topic>"
+    // Do we have to care about the client in the message?
+    if (message.parameters.size() >= 3) {
+        mIRCChannels[toLower(message.parameters[1])].topic = message.parameters[2];
+        mIRCChannels[toLower(message.parameters[1])].topicStripped = stripFormatting(message.parameters[2]);
+    }
+}
+
+void IRC::onTopicWhoTime(const IRCMessage message) {
+    if (message.parameters.size() >= 4) {
+        mIRCChannels[toLower(message.parameters[1])].topicNick = message.parameters[2];
+        mIRCChannels[toLower(message.parameters[1])].topicSetAt = atoi(message.parameters[3].c_str());
+    }
+}
+
+void IRC::onNamReply(const IRCMessage message) {}
+void IRC::onEndOfNames(const IRCMessage message) {}
+
 void IRC::onNicknameInUse(const IRCMessage message) {
     if (!serverInfo.registrationComplete && Numeric::ERR_NICKNAMEINUSE == message.command) {
         // TODO, limit retries, make configurable
@@ -492,6 +675,24 @@ void IRC::onMessage(const IRCMessage message) {
         // Unknown message type
     }
 }
+
+void IRC::splitUserNickHost(IRCSource &source) {
+    auto userPos = source.raw.find("!");
+    auto hostPos = source.raw.find("@");
+    if (userPos != std::string::npos) {
+        source.nick = source.raw.substr(0, userPos);
+    } else {
+        userPos = 0;
+    }
+    if (hostPos != std::string::npos) {
+        source.user = source.raw.substr(userPos + 1, hostPos - userPos - 1);
+        hostPos++;
+    } else {
+        hostPos = 0;
+    }
+    source.host = source.raw.substr(hostPos);
+}
+
 void IRC::parseMessage(std::string line) {
     LOG_DEBUG((">>> " + line).c_str());
     IRCMessage message;
@@ -534,20 +735,7 @@ void IRC::parseMessage(std::string line) {
             message.source.raw.erase(0, 1); // remove the ':'
             tokens.erase(tokens.begin());
 
-            auto userPos = message.source.raw.find("!");
-            auto hostPos = message.source.raw.find("@");
-            if (userPos != std::string::npos) {
-                message.source.nick = message.source.raw.substr(0, userPos);
-            } else {
-                userPos = 0;
-            }
-            if (hostPos != std::string::npos) {
-                message.source.user = message.source.raw.substr(userPos + 1, hostPos - userPos - 1);
-                hostPos++;
-            } else {
-                hostPos = 0;
-            }
-            message.source.host = message.source.raw.substr(hostPos);
+            splitUserNickHost(message.source);
         }
     }
 
