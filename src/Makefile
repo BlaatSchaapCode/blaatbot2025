@@ -6,6 +6,8 @@ OUT_DIR      = ../out
 #LIBS += tls
 LDFLAGS += -ltls
 
+CXXFLAGS += -DENABLE_LOG_DEBUG
+
 CXX_INCLUDES += network
 CXX_INCLUDES += protocol
 CXX_INCLUDES += utils

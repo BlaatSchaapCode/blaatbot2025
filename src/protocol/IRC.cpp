@@ -132,23 +132,23 @@ void IRC::onWelcome(const IRCMessage message) {
 
 void IRC::onYourHost(const IRCMessage message) {
     // "<client> :Your host is <servername>, running version <version>"
-	// All of this is also part of the MYINFO message
-	// In a more machine-friendly manner
+    // All of this is also part of the MYINFO message
+    // In a more machine-friendly manner
 
-//    std::string preHostStr = "Your host is ";
-//    std::string postHostStr = ", running version";
-//    auto preHostPos = message.parameters[1].find(preHostStr);
-//    auto postHostPos = message.parameters[1].find(postHostStr);
-//    if (preHostPos != std::string::npos && postHostPos != std::string::npos) {
-//        serverInfo.host =
-//            message.parameters[1].substr(preHostStr.length() + preHostPos, postHostPos - preHostPos - preHostStr.length());
-//        LOG_INFO("Host : %s", serverInfo.host.c_str());
-//
-//
-//		serverInfo.software = message.parameters[1].substr(postHostStr.length() + postHostPos + 1);
-//		LOG_INFO("Software : %s", serverInfo.software.c_str());
-//
-//    }
+    //    std::string preHostStr = "Your host is ";
+    //    std::string postHostStr = ", running version";
+    //    auto preHostPos = message.parameters[1].find(preHostStr);
+    //    auto postHostPos = message.parameters[1].find(postHostStr);
+    //    if (preHostPos != std::string::npos && postHostPos != std::string::npos) {
+    //        serverInfo.host =
+    //            message.parameters[1].substr(preHostStr.length() + preHostPos, postHostPos - preHostPos - preHostStr.length());
+    //        LOG_INFO("Host : %s", serverInfo.host.c_str());
+    //
+    //
+    //		serverInfo.software = message.parameters[1].substr(postHostStr.length() + postHostPos + 1);
+    //		LOG_INFO("Software : %s", serverInfo.software.c_str());
+    //
+    //    }
 }
 
 void IRC::onCreated(const IRCMessage message) {
@@ -180,7 +180,6 @@ void IRC::onISupport(const IRCMessage message) {
             // with RFC 2812  where 005 was RPL_BOUNCE instead
             // mServerISupport
 
-            // TODO: support negating features
             /*
              * Tokens of the form -PARAMETER are used to negate a previously
              * specified parameter. If the client receives a token like this,
@@ -194,6 +193,11 @@ void IRC::onISupport(const IRCMessage message) {
             std::vector<std::string> isupprt;
             isupprt.insert(isupprt.end(), message.parameters.begin() + 1, message.parameters.end() - 1);
             serverInfo.features.merge(parseKeyValue(isupprt));
+            auto negations = parseNegation(isupprt);
+            for (auto &negation : negations) {
+                serverInfo.features.erase(negation);
+            }
+
             return;
         }
     }
@@ -285,9 +289,9 @@ void IRC::onCTCPQuery(const IRCMessage message, const CTCPMessage ctcp) {
 }
 
 void IRC::onCTCPResponse(const IRCMessage message, const CTCPMessage ctcp) {
-    // TODO}
+    // TODO
 
-    if (message.source.nick == "NickServ") {
+    if (message.source.nick == "NickServ" && ctcp.command == "VERSION") {
         serverInfo.services = splitString(ctcp.parameters)[0];
         LOG_INFO("Services : %s", serverInfo.services.c_str());
     }
@@ -295,7 +299,102 @@ void IRC::onCTCPResponse(const IRCMessage message, const CTCPMessage ctcp) {
 
 std::string IRC::stripFormatting(std::string formattedString) {
     // TODO strip all formatting
-    return formattedString;
+    // https://modern.ircdocs.horse/formatting
+
+    std::string strippedString;
+
+    enum code {
+        bold = 0x02,
+        color = 0x03,
+        hexcolor = 0x04,
+        reset = 0x0f,
+        reversedcolor = 0x16,
+
+        texticon = 0x1c,
+        italics = 0x1d,
+        underline = 0x1f,
+        strikethrough = 0x1e,
+        monospace = 0x11,
+    };
+
+    for (unsigned i = 0; i < formattedString.length(); i++) {
+
+        switch ((unsigned char)formattedString[i]) {
+        default:
+            // Characters in the ASCII control range are used for
+            // formatting and are stripped from the string
+            // Special handling is only needed when they take parameters
+            break;
+        case 0x20 ... 0xFF:
+            // Characters above the ASCII control range are considered text,
+            // unless we are in a special case handling of parameters, below.
+            strippedString += formattedString[i];
+            break;
+        case color:
+            // needs special handling to consume its parameters
+            /*
+Forms of Color Codes
+
+In the following list, <CODE> represents the color formatting character (0x03), <COLOR> represents one or two ASCII digits (either
+0-9 or 00-99).
+
+The use of this code can take on the following forms:
+
+<CODE> - Reset foreground and background colors.
+<CODE>, - Reset foreground and background colors and display the , character as text.
+<CODE><COLOR> - Set the foreground color.
+<CODE><COLOR>, - Set the foreground color and display the , character as text.
+<CODE><COLOR>,<COLOR> - Set the foreground and background color.
+*/
+            // Eat the "CODE"
+            if (i + 1 < formattedString.length())
+                i++;
+
+            // If digit, eat digit
+            if (i + 1 < formattedString.length() && formattedString[i] >= '0' && formattedString[i] <= '9')
+                i++;
+            // If digit, eat digit
+            if (i + 1 < formattedString.length() && formattedString[i] >= '0' && formattedString[i] <= '9')
+                i++;
+            // If comma, eat comma
+            if (i + 1 < formattedString.length() && formattedString[i] == ',') {
+                i++;
+                // We are after a comma, we could eat two more digits.
+                if (i + 1 < formattedString.length() && formattedString[i] >= '0' && formattedString[i] <= '9')
+                    i++;
+                if (i + 1 < formattedString.length() && formattedString[i] >= '0' && formattedString[i] <= '9')
+                    i++;
+            }
+            // With above processing, we have eaten one byte too many, so give it back
+            i--;
+
+            break;
+        case hexcolor:
+            // needs special handling to consume its parameters
+            /*
+            Keep the Forms of Color Codes section above in mind, as this method of formatting keeps these same rules –
+            the exceptions being that <CODE> represents the hex color character (0x04) and <COLOR> represents a
+            six-digit hex value as RRGGBB.
+            */
+            // Length is fixed, we eat the next 6 bytes without further checking.
+            if (i + 6 < formattedString.length())
+                i += 6;
+            break;
+        case texticon:
+            // needs special handling to consume its parameters
+            // KvIRC extension, read till space
+            if (formattedString.find(' ') != std::string::npos) {
+                i += formattedString.find(' ');
+            } else {
+                // if there is no space, eg. the texticon appears at the
+                // end of the string, we are done parsing, put i to the end
+                i = formattedString.length();
+            }
+            break;
+        }
+    }
+
+    return strippedString;
 }
 
 void IRC::onPRIVMSG(const IRCMessage message) {
@@ -331,6 +430,8 @@ void IRC::onPRIVMSG(const IRCMessage message) {
             }
         }
         auto cleanMessage = stripFormatting(privmsg);
+        LOG_DEBUG("Message      : %s", privmsg.c_str());
+        LOG_DEBUG("Clean Message: %s", cleanMessage.c_str());
     } else {
         // Malformed message?
     }

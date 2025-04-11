@@ -15,5 +15,6 @@ std::vector<std::string> splitString(const std::string &str, const std::string &
                                      const unsigned int max_elements = 0);
 
 std::map<std::string,std::string> parseKeyValue(const std::vector<std::string>&);
+std::vector<std::string> parseNegation(const std::vector<std::string>&);
 
 #endif /* UTILS_SPLITSTRING_HPP_ */
