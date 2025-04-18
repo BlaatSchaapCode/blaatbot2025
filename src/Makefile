@@ -6,6 +6,11 @@ OUT_DIR      = ../out
 #LIBS += tls
 LDFLAGS += -ltls
 
+
+#which do I need for ICU?
+LIBS +=  icu-uc 
+
+
 CXXFLAGS += -DENABLE_LOG_DEBUG
 
 CXX_INCLUDES += network

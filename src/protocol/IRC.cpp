@@ -17,6 +17,10 @@
 #include <sstream>
 #include <string>
 
+#include <unicode/normalizer2.h>
+#include <unicode/translit.h>
+#include <unicode/unistr.h>
+
 #include "logger.hpp"
 #include "version.hpp"
 
@@ -34,6 +38,8 @@ namespace protocol {
  *   Channels with '!' as prefix are safe channels.
  *
  * Server lists supported channel types in CHANTYPES=# in "005"
+ *
+ *
  *
  */
 
@@ -61,10 +67,17 @@ IRC::IRC() {
     mMessageParsers[Numeric::RPL_YOURHOST] = [this](const IRCMessage message) { onYourHost(message); };
 
     mMessageParsers["JOIN"] = [this](const IRCMessage message) { onJOIN(message); };
+    mMessageParsers["MODE"] = [this](const IRCMessage message) { onMODE(message); };
     mMessageParsers[Numeric::RPL_TOPIC] = [this](const IRCMessage message) { onTopic(message); };
     mMessageParsers[Numeric::RPL_TOPICWHOTIME] = [this](const IRCMessage message) { onTopicWhoTime(message); };
     mMessageParsers[Numeric::RPL_NAMREPLY] = [this](const IRCMessage message) { onNamReply(message); };
     mMessageParsers[Numeric::RPL_ENDOFNAMES] = [this](const IRCMessage message) { onEndOfNames(message); };
+
+    mMessageParsers[Numeric::RPL_WHOREPLY] = [this](const IRCMessage message) { onWhoReply(message); };
+    mMessageParsers[Numeric::RPL_WHOSPCRPL] = [this](const IRCMessage message) { onWhoSpcReply(message); };
+    mMessageParsers[Numeric::RPL_ENDOFWHO] = [this](const IRCMessage message) { onEndOfWho(message); };
+    //
+    //
 }
 
 IRC::~IRC() {
@@ -83,76 +96,72 @@ std::string IRC::toLower(std::string s) {
     if (serverInfo.features.count("CASEMAPPING"))
         caseMapping = serverInfo.features["CASEMAPPING"];
 
+    bool utf8Mapping = false;
+    if (serverInfo.features.count("UTF8MAPPING")) {
+
+        LOG_DEBUG("UTF8MAPPING: %s", serverInfo.features["UTF8MAPPING"].c_str());
+
+        // See also
+        // https://github.com/DanielOaks/ircv3-specifications/blob/master+rfc7700/documentation/rfc8265.md
+        // suggesting
+
+        // CASEMAPPING=ascii UTF8MAPPING=rfc8265
+
+        // https://github.com/ircv3/ircv3-specifications/pull/272/commits/807e084fba9634084054def193424b9589f2a56b
+        // https://github.com/DanielOaks/ircv3-specifications/blob/master%2Brfc7700/documentation/rfc8265.md
+
+        // Changed casemapping from "rfc7700" to "rfc7613", to match new draft spec.
+        // The recommended value of `server.casemapping` is now `ascii` instead of `precis`.
+
+        // rfc7613 mentioned in https://modern.ircdocs.horse/
+        // rfc3454 mentioned in https://defs.ircdocs.horse/defs/isupport
+
+        // Many possible values for utf8 mapping, for now, we only have one casemapping case for utf8
+        utf8Mapping = true;
+    }
+
+    // As some point, it was decided, when UTF8 case mapping is in use, rather then
+    // putting some RFC in the casemapping, put ascii and create a new UTF8MAPPING
+    // feature.
+    // However, older specs mention some values in casemapping to indicate UTF8 mapping
+    // *  rfc7613 mentioned in https://modern.ircdocs.horse/
+    // *  rfc3454 mentioned in https://defs.ircdocs.horse/defs/isupport
+    // If we encounter such, we use the, to my knowledge, latest approach:
+    // First apply ASCII mapping, then apply UTF mapping.
+    if ((caseMapping == "rfc3454") || (caseMapping == "rfc7700") || (caseMapping == "rfc7613") || (caseMapping == "rfc8265") ||
+        (caseMapping == "precis") || (caseMapping == "utf8")) {
+        caseMapping = "ascii";
+        utf8Mapping = true;
+    }
+
     if (caseMapping == "ascii") {
         // ascii: Defines the characters a to z to be considered the lower-case
         // equivalents of the characters A to Z only.
 
-        // We could simple use something in the C++ library
-        // but to make sure we adhere to the definition above
-        // it is implemented manually
-        std::replace(s.begin(), s.end(), 'A', 'a');
-        std::replace(s.begin(), s.end(), 'B', 'b');
-        std::replace(s.begin(), s.end(), 'C', 'c');
-        std::replace(s.begin(), s.end(), 'D', 'd');
-        std::replace(s.begin(), s.end(), 'E', 'e');
-        std::replace(s.begin(), s.end(), 'F', 'f');
-        std::replace(s.begin(), s.end(), 'G', 'g');
-        std::replace(s.begin(), s.end(), 'H', 'h');
-        std::replace(s.begin(), s.end(), 'I', 'i');
-        std::replace(s.begin(), s.end(), 'J', 'j');
-        std::replace(s.begin(), s.end(), 'K', 'k');
-        std::replace(s.begin(), s.end(), 'L', 'l');
-        std::replace(s.begin(), s.end(), 'M', 'm');
-        std::replace(s.begin(), s.end(), 'N', 'n');
-        std::replace(s.begin(), s.end(), 'O', 'o');
-        std::replace(s.begin(), s.end(), 'P', 'p');
-        std::replace(s.begin(), s.end(), 'Q', 'q');
-        std::replace(s.begin(), s.end(), 'R', 'r');
-        std::replace(s.begin(), s.end(), 'S', 's');
-        std::replace(s.begin(), s.end(), 'T', 't');
-        std::replace(s.begin(), s.end(), 'U', 'u');
-        std::replace(s.begin(), s.end(), 'V', 'v');
-        std::replace(s.begin(), s.end(), 'W', 'w');
-        std::replace(s.begin(), s.end(), 'X', 'x');
-        std::replace(s.begin(), s.end(), 'Y', 'y');
-        std::replace(s.begin(), s.end(), 'Z', 'z');
+        // https://datatracker.ietf.org/doc/html/draft-hardy-irc-isupport-00#section-4.1
+        // "ascii": The ASCII characters 97 to 122 (decimal) are defined as
+        // the lower-case characters of ASCII 65 to 90 (decimal).  No other
+        // character equivalency is defined.
+
+        for (unsigned int i = 0; i < s.length(); i++) {
+            if (s[i] >= 65 && s[i] <= 90)
+                s[i] += 32;
+        }
 
     } else if (caseMapping == "rfc1459") {
         // rfc1459: Same as 'ascii', with the addition of the characters
         // '{', '}', '|', and '^' being considered the lower-case equivalents
         // of the characters '[', ']', '\', and '~' respectively.
 
-        std::replace(s.begin(), s.end(), '{', '[');
-        std::replace(s.begin(), s.end(), '}', ']');
-        std::replace(s.begin(), s.end(), '|', '\\');
-        std::replace(s.begin(), s.end(), '^', '~');
+        // https://datatracker.ietf.org/doc/html/draft-hardy-irc-isupport-00#section-4.1
+        // "rfc1459": The ASCII characters 97 to 126 (decimal) are defined as
+        // the lower-case characters of ASCII 65 to 94 (decimal).  No other
+        // character equivalency is defined.
 
-        std::replace(s.begin(), s.end(), 'A', 'a');
-        std::replace(s.begin(), s.end(), 'B', 'b');
-        std::replace(s.begin(), s.end(), 'C', 'c');
-        std::replace(s.begin(), s.end(), 'D', 'd');
-        std::replace(s.begin(), s.end(), 'E', 'e');
-        std::replace(s.begin(), s.end(), 'F', 'f');
-        std::replace(s.begin(), s.end(), 'G', 'g');
-        std::replace(s.begin(), s.end(), 'H', 'h');
-        std::replace(s.begin(), s.end(), 'I', 'i');
-        std::replace(s.begin(), s.end(), 'J', 'j');
-        std::replace(s.begin(), s.end(), 'K', 'k');
-        std::replace(s.begin(), s.end(), 'L', 'l');
-        std::replace(s.begin(), s.end(), 'M', 'm');
-        std::replace(s.begin(), s.end(), 'N', 'n');
-        std::replace(s.begin(), s.end(), 'O', 'o');
-        std::replace(s.begin(), s.end(), 'P', 'p');
-        std::replace(s.begin(), s.end(), 'Q', 'q');
-        std::replace(s.begin(), s.end(), 'R', 'r');
-        std::replace(s.begin(), s.end(), 'S', 's');
-        std::replace(s.begin(), s.end(), 'T', 't');
-        std::replace(s.begin(), s.end(), 'U', 'u');
-        std::replace(s.begin(), s.end(), 'V', 'v');
-        std::replace(s.begin(), s.end(), 'W', 'w');
-        std::replace(s.begin(), s.end(), 'X', 'x');
-        std::replace(s.begin(), s.end(), 'Y', 'y');
-        std::replace(s.begin(), s.end(), 'Z', 'z');
+        for (unsigned int i = 0; i < s.length(); i++) {
+            if (s[i] >= 65 && s[i] <= 94)
+                s[i] += 32;
+        }
 
     } else if (caseMapping == "rfc1459-strict") {
         // rfc1459-strict: Same casemapping as 'ascii', with the characters
@@ -160,55 +169,83 @@ std::string IRC::toLower(std::string s) {
         // '[', ']', and '\', respectively. Note that the difference between
         // this and rfc1459 above is that in rfc1459-strict, '^' and '~' are not casefolded.
 
-        std::replace(s.begin(), s.end(), '{', '[');
-        std::replace(s.begin(), s.end(), '}', ']');
-        std::replace(s.begin(), s.end(), '|', '\\');
+        // https://datatracker.ietf.org/doc/html/draft-hardy-irc-isupport-00#section-4.1
+        // "strict-rfc1459": The ASCII characters 97 to 125 (decimal) are
+        // defined as the lower-case characters of ASCII 65 to 93 (decimal).
+        // no other character equivalency is defined.
 
-        std::replace(s.begin(), s.end(), 'A', 'a');
-        std::replace(s.begin(), s.end(), 'B', 'b');
-        std::replace(s.begin(), s.end(), 'C', 'c');
-        std::replace(s.begin(), s.end(), 'D', 'd');
-        std::replace(s.begin(), s.end(), 'E', 'e');
-        std::replace(s.begin(), s.end(), 'F', 'f');
-        std::replace(s.begin(), s.end(), 'G', 'g');
-        std::replace(s.begin(), s.end(), 'H', 'h');
-        std::replace(s.begin(), s.end(), 'I', 'i');
-        std::replace(s.begin(), s.end(), 'J', 'j');
-        std::replace(s.begin(), s.end(), 'K', 'k');
-        std::replace(s.begin(), s.end(), 'L', 'l');
-        std::replace(s.begin(), s.end(), 'M', 'm');
-        std::replace(s.begin(), s.end(), 'N', 'n');
-        std::replace(s.begin(), s.end(), 'O', 'o');
-        std::replace(s.begin(), s.end(), 'P', 'p');
-        std::replace(s.begin(), s.end(), 'Q', 'q');
-        std::replace(s.begin(), s.end(), 'R', 'r');
-        std::replace(s.begin(), s.end(), 'S', 's');
-        std::replace(s.begin(), s.end(), 'T', 't');
-        std::replace(s.begin(), s.end(), 'U', 'u');
-        std::replace(s.begin(), s.end(), 'V', 'v');
-        std::replace(s.begin(), s.end(), 'W', 'w');
-        std::replace(s.begin(), s.end(), 'X', 'x');
-        std::replace(s.begin(), s.end(), 'Y', 'y');
-        std::replace(s.begin(), s.end(), 'Z', 'z');
-    } else if (caseMapping == "rfc7613") {
-        // rfc7613: Proposed casemapping which defines a method based on PRECIS,
-        // allowing additional Unicode characters to be correctly casemapped.
-        //
-        // But that links to something discussing rfc7700 instead
-        //
-        // Note: looking for a library or something to handle this case.
-        // While there are several libraries that do unicode case mapping
-        // We should be doing something standardised.
+        for (unsigned int i = 0; i < s.length(); i++) {
+            if (s[i] >= 65 && s[i] <= 93)
+                s[i] += 32;
+        }
+
+    } else {
+        // Unknown case mapping? What should we do in this case?
+        // Safe to assume at least ASCII should map?
+        for (unsigned int i = 0; i < s.length(); i++) {
+            if (s[i] >= 65 && s[i] <= 90)
+                s[i] += 32;
+        }
+    }
+
+    if (utf8Mapping) {
+        // UTF8 case mapping
+
         // rfc7613 mentions "Unicode Default Case Folding as defined in
         // the Unicode Standard", which appears to be implemented by the ICU library
-        // Suppose we could use that here.
-        //
-        // TODO
-    } else {
-        // Unknown case mapping?
+        // Should we use that library?
+
+        // https://datatracker.ietf.org/doc/html/rfc8265#section-3.3
+
+        // However, I think the most important parts are covered, for now.
+
+        // Convert string to icu's datatype
+        icu::UnicodeString u;
+        u.fromUTF8(s);
+
+        //    1.  Width Mapping Rule: Map fullwidth and halfwidth code points to
+        //        their decomposition mappings (see Unicode Standard Annex #11
+        //        [UAX11]).
+
+        // I have trouble finding the calls into ICU for the first step.
+        // Case mapping and normalisation, that looks ok
+
+        //    2.  Additional Mapping Rule: There is no additional mapping rule.
+
+        // Trivial ;)
+
+        //    3.  Case Mapping Rule: Map uppercase and titlecase code points to
+        //        their lowercase equivalents, preferably using the Unicode
+        //        toLowerCase() operation as defined in the Unicode Standard
+        //        [Unicode]; see further discussion in Section 3.2.
+
+        u.toLower();
+
+        //    4.  Normalization Rule: Apply Unicode Normalization Form C (NFC) to
+        //        all strings.
+
+        UErrorCode errorCode;
+        auto normalizer = icu::Normalizer2::getNFCInstance(errorCode);
+        // TODO error checking
+        u = normalizer->normalize(u, errorCode);
+        // TODO error checking
+
+        //    5.  Directionality Rule: Apply the "Bidi Rule" defined in [RFC5893]
+        //        to strings that contain right-to-left code points (i.e., each of
+        //        the six conditions of the Bidi Rule must be satisfied); for
+        //        strings that do not contain right-to-left code points, there is
+        //        no special processing for directionality.
+
+        // There is some bidi functionality in the ICU library, but I do not
+        // understand how any of that maps to any of the rules.
+
+        // Processing done: Convert it back to a std::string
+        u.toUTF8String(s);
     }
+
     return s;
 }
+
 bool IRC::isEqual(const std::string first, const std::string seccond) {
 
     // If the length differ, then they are not equal, we don't have to
@@ -228,11 +265,101 @@ void IRC::onCanRegister(void) {
     send("NICK " + mNick);
 }
 
+void IRC::applyServerQuirks(void) {
+    // Here we apply server quirks.
+
+    // Please note: development is mainly done against
+    // UnrealIRCd-6.1.9.1 and Anope-2.0.17
+
+    //------------------------------------------------------------------------
+    // IRCd
+    //------------------------------------------------------------------------
+    // IRC Daemon quirck. Determine the Daemon type, so we can handle daemon-
+    // specific behaviours. Eg. supporing daemon specific commands and
+    // responses, and adding features not being advertised but known supported
+    // (mostly old versions of a daemon)
+    //------------------------------------------------------------------------
+
+    serverInfo.daemonFamily = "Other";
+    //------------------------------------------------------------------------
+    // UnrealIRCd
+    //------------------------------------------------------------------------
+    // TODO: Unreal3 does not advertise the Bot Mode support
+    // Unreal6 does, but what about 4 and 5
+    // Also note the string changed slightly, for version 3 we might get "Unreal3.2.9"
+    // while version 6 says "UnrealIRCd-6.1.9.1"
+    if (serverInfo.daemon.find("Unreal") == 0) {
+        serverInfo.daemonFamily = "Unreal";
+    }
+    if (serverInfo.daemon.find("Unreal3") == 0) {
+        // Running Unreal3.x.x
+        // This version of Unreal supports Bot mode but does not advertise it
+        // in its ISUPPORT messages. We inject it here.
+        serverInfo.features["BOT"] = "B";
+    }
+
+    //------------------------------------------------------------------------
+    // InspIRCd
+    //------------------------------------------------------------------------
+    // Observed string "InspIRCd-4"
+    if (serverInfo.daemon.find("InspIRCd") == 0) {
+        serverInfo.daemonFamily = "InspIRCd";
+    }
+
+    //------------------------------------------------------------------------
+    // Services
+    //------------------------------------------------------------------------
+    // Services quircks. Determine the Services type, so we can handle
+    // services-specific behaviours. Services have some variations around them.
+    // For the time being we only consider NickServ/ChanServ style services.
+    // We send a CTCP VERSION to NickServ to attempt to detect services.
+    // If we ever wish to create an IRC client supporting handling services,
+    // eg. supporting auto-ghosting, we need to know how to handle this.
+    // Some services may use GHOST (Anope 1.x) while others use
+    // RECOVER (Anope 2.x) for this.
+    //------------------------------------------------------------------------
+
+    // Anope 2.x (Anope-2.0.17)
+    // Atheme  (atheme-7.3.0-rc2)
+
+    // Anope 1.x (probably) (Services on Chat4All don't support CTCP VERSION)
+}
+
+void IRC::applyFeatures() {
+    auto channelModes = splitString(serverInfo.features["CHANMODES"], ",");
+    serverInfo.channelTypeAModes = channelModes[0];
+    serverInfo.channelTypeBModes = channelModes[1];
+    serverInfo.channelTypeCModes = channelModes[2];
+    serverInfo.channelTypeDModes = channelModes[3];
+
+    auto prefix = serverInfo.features["PREFIX"];
+
+    // We have to parse a string like "(qaohv)~&@%+"
+
+    auto haakjeopen = prefix.find("(");
+    auto haakjesluit = prefix.find(")");
+    if (haakjeopen != 0)
+        return; // Error: Expect '(' at position 0,
+    if (haakjesluit == std::string::npos)
+        return; // ')' not found
+    auto len = haakjesluit - 1;
+    std::string modes, prefixes;
+    modes = prefix.substr(1, len);
+    if (prefix.length() == (2 * len) + 2) {
+        prefixes = prefix.substr(len + 2);
+        for (unsigned i = 0; i < len; i++) {
+            serverInfo.channelMembershipPrefixes[modes[i]] = prefixes[i];
+        }
+    }
+}
+
 void IRC::onReady(void) {
+    applyServerQuirks();
+    applyFeatures();
 
     LOG_INFO("Ready");
     // To be called when the connection is ready.
-    // called after either end of motd pr motd missing message.
+    // called after either end of motd or motd missing message.
 
     sendCTCPQuery("NickServ", "VERSION");
 
@@ -240,9 +367,19 @@ void IRC::onReady(void) {
         send("MODE " + mNick + " +" + serverInfo.features["BOT"]);
 
     send("JOIN #bscp-test");
+    //    send("JOIN #blaatschaap");
 }
 
 void IRC::onConnected() {
+    // Set defaults
+    serverInfo.hasCapabilities = false;
+    serverInfo.capabilities.clear();
+    serverInfo.hasExtensions = false;
+    serverInfo.features.clear();
+    serverInfo.features["CASEMAPPING"] = "rfc1459";
+    serverInfo.features["CHANTYPES"] = "#&";
+    serverInfo.features["MODES"] = "3";
+    serverInfo.features["PREFIX"] = "(ov)@+";
 
     // Probe for capabilities
     // Note: when the server does not support capabilities it may response
@@ -299,7 +436,7 @@ void IRC::onYourHost(const IRCMessage message) {
     //
     //
     //		serverInfo.software = message.parameters[1].substr(postHostStr.length() + postHostPos + 1);
-    //		LOG_INFO("Software : %s", serverInfo.software.c_str());
+    //		LOG_INFO("Software : %s", serverInfo.daemon.c_str());
     //
     //    }
 }
@@ -312,16 +449,28 @@ void IRC::onMyInfo(const IRCMessage message) {
     //   "<client> <servername> <version> <available user modes>
     //   <available channel modes> [<channel modes with a parameter>]"
 
-    serverInfo.host = message.parameters[1];
-    serverInfo.software = message.parameters[2];
+    if (message.parameters.size() > 1)
+        serverInfo.host = message.parameters[1];
 
-    serverInfo.userModes = message.parameters[3];
-    serverInfo.channelModes = message.parameters[4];
+    if (message.parameters.size() > 2)
+        serverInfo.daemon = message.parameters[2];
+
+    // Clients SHOULD discover available features using RPL_ISUPPORT
+    // tokens rather than the mode letters listed in this reply.
+    // There is CHANMODES in ISUPPORT, but I don't see a USERMODES
+    // Thus I suppose we should look at the usermodes advertised here
+
+    if (message.parameters.size() > 3)
+        serverInfo.userModes = message.parameters[3];
+
+    if (message.parameters.size() > 4)
+        serverInfo.channelModes = message.parameters[4];
     // Optional available
-    serverInfo.channelModesWithParameters = message.parameters[5];
+    if (message.parameters.size() > 5)
+        serverInfo.channelModesWithParameters = message.parameters[5];
 
     LOG_INFO("Host : %s", serverInfo.host.c_str());
-    LOG_INFO("IRCd : %s", serverInfo.software.c_str());
+    LOG_INFO("IRCd : %s", serverInfo.daemon.c_str());
 }
 void IRC::onISupport(const IRCMessage message) {
 
@@ -345,10 +494,19 @@ void IRC::onISupport(const IRCMessage message) {
              */
             std::vector<std::string> isupprt;
             isupprt.insert(isupprt.end(), message.parameters.begin() + 1, message.parameters.end() - 1);
-            serverInfo.features.merge(parseKeyValue(isupprt));
+
+            // Merge doesn't replace the new values
+            // serverInfo.features.merge(parseKeyValue(isupprt));
+
+            for (auto &feature : parseNewFeatures(isupprt)) {
+                serverInfo.features[feature.first] = feature.second;
+            }
+
             auto negations = parseNegation(isupprt);
             for (auto &negation : negations) {
                 serverInfo.features.erase(negation);
+                // TODO: any processing for negated features.
+                // TODO: in what case such negation would occur?
             }
 
             return;
@@ -371,14 +529,25 @@ void IRC::onCAP(const IRCMessage message) {
 
             if (subCommand == "LS") {
                 bool moreCapabilitiesComing = message.parameters[2] == "*";
-                serverInfo.capabilities.merge(parseKeyValue(splitString(message.parameters[2 + moreCapabilitiesComing])));
+                serverInfo.capabilities.merge(parseNewFeatures(splitString(message.parameters[2 + moreCapabilitiesComing])));
 
                 if (!serverInfo.registrationComplete && !moreCapabilitiesComing) {
+
                     if (serverInfo.capabilities.count("message-tags"))
                         send("CAP REQ :message-tags");
+
+                    if (serverInfo.capabilities.count("account-notify"))
+                        send("CAP REQ :account-notify");
+
+                    if (serverInfo.capabilities.count("extended-join"))
+                        send("CAP REQ :extended-join");
+
                     send("CAP END");
                     onCanRegister();
                 }
+            }
+
+            if (subCommand == "ACK") {
             }
         }
     }
@@ -446,7 +615,19 @@ void IRC::onCTCPResponse(const IRCMessage message, const CTCPMessage ctcp) {
     // TODO
 
     if (message.source.nick == "NickServ" && ctcp.command == "VERSION") {
-        serverInfo.services = splitString(ctcp.parameters)[0];
+        // Note... we might need to analyse some services
+        // ergo responds "NickServ (ergo-v2.15.0)"
+        if (splitString(ctcp.parameters)[0] == "NickServ") {
+            serverInfo.services = splitString(ctcp.parameters)[1];
+        } else {
+            serverInfo.services = splitString(ctcp.parameters)[0];
+        }
+
+        if (serverInfo.services[0] == '(')
+            serverInfo.services.erase(0, 1);
+        if (serverInfo.services[serverInfo.services.length() - 1] == ')')
+            serverInfo.services.erase(serverInfo.services.length() - 1, 1);
+
         LOG_INFO("Services : %s", serverInfo.services.c_str());
     }
 }
@@ -630,12 +811,53 @@ void IRC::onNOTICE(const IRCMessage message) {
 void IRC::onERROR(const IRCMessage message) {}
 
 void IRC::onJOIN(const IRCMessage message) {
+    auto channel = toLower(message.parameters[0]);
     if (isEqual(mNick, message.source.nick)) {
         // We have joined a channel
-        mIRCChannels[toLower(message.parameters[0])].joined = true;
+        mIRCChannels[channel].joined = true;
+        // We index on the lowe case string, we store the string with case preserved
+        // for displaying purposes
+        mIRCChannels[toLower(message.parameters[0])].name = message.parameters[0];
     } else {
         // Someone else has joined a channel we are in
         // --> Update channel member list
+        IRCUser joined;
+        joined.nick = message.source.nick;
+        joined.user = message.source.user;
+        joined.host = message.source.host;
+
+        if (message.parameters.size() > 2) {
+            // extended join
+            joined.account = message.parameters[1];
+            joined.realname = message.parameters[2];
+        }
+        mIRCChannels[channel].nicks[toLower(message.source.nick)] = joined;
+    }
+}
+
+void IRC::onMODE(const IRCMessage message) {
+    auto target = message.parameters[0];
+    if (isChannel(target)) {
+        /*
+                Channel Membership:
+                Server MUST NOT list modes in this parameter that are also advertised in the PREFIX parameter. However, modes within
+           the PREFIX parameter may be treated as type B modes.
+
+
+            Type A: Modes that add or remove an address to or from a list. These modes MUST always have a parameter when sent from
+           the server to a client. A client MAY issue this type of mode without an argument to obtain the current contents of the
+           list. The numerics used to retrieve contents of Type A modes depends on the specific mode. Also see the EXTBAN parameter.
+
+            Type B: Modes that change a setting on a channel. These modes MUST always have a parameter.
+
+            Type C: Modes that change a setting on a channel. These modes MUST have a parameter when being set, and MUST NOT have a
+           parameter when being unset.
+
+            Type D: Modes that change a setting on a channel. These modes MUST NOT have a parameter.
+        */
+
+    } else {
+        // Mode on user.
     }
 }
 
@@ -655,8 +877,91 @@ void IRC::onTopicWhoTime(const IRCMessage message) {
     }
 }
 
-void IRC::onNamReply(const IRCMessage message) {}
-void IRC::onEndOfNames(const IRCMessage message) {}
+void IRC::onNamReply(const IRCMessage message) {
+    // But I suppose, don't bother, send a WHO command instead
+    // "<client> <symbol> <channel> :[prefix]<nick>{ [prefix]<nick>}"
+    //	if (message.parameters.size() >= 4) {
+    //		auto symbol = toLower(message.parameters[1]);
+    //
+    //		auto names = splitString(message.parameters[3]);
+    //		for (auto &name : names) {
+    //			// look up and process prefix
+    //			// PREFIX=(qaohv)~&@%+
+    //
+    //
+    //			if (serverInfo.features.count("PREFIX")) {
+    //			}
+    //		}
+    //		mIRCChannels[toLower(message.parameters[2])];
+    //	}
+}
+void IRC::onEndOfNames(const IRCMessage message) {
+    if (message.parameters.size() >= 3) {
+        if (serverInfo.features.count("WHOX")) {
+            unsigned token = rand() % 100;
+            mIRCChannels[toLower(message.parameters[1])].token = token;
+            send("WHO " + toLower(message.parameters[1]) + " %t%c%u%i%h%s%n%f%d%l%a%o%r," + std::to_string(token));
+        } else {
+            send("WHO " + toLower(message.parameters[1]));
+        }
+    }
+}
+
+void IRC::onWhoSpcReply(const IRCMessage message) {
+    // WHOX Response
+    // https://ircv3.net/specs/extensions/whox
+    // <client> [token] [channel] [user] [ip] [host] [server] [nick] [flags] [hopcount] [idle] [account] [oplevel] [:realname]
+
+    IRCUser user = {};
+
+    auto client = message.parameters[0];
+    auto token = message.parameters[1];
+    auto channel = message.parameters[2];
+    user.user = message.parameters[3];
+    user.ip = message.parameters[4];
+    user.host = message.parameters[5];
+    user.server = message.parameters[6];
+    user.nick = message.parameters[7];
+    user.flags = message.parameters[8];
+    user.hopcount = message.parameters[9];
+    user.idle = message.parameters[10];
+    user.account = message.parameters[11];
+    user.oplevel = message.parameters[12];
+    user.realname = message.parameters[13];
+
+    if (isChannel(channel))
+        mIRCChannels[toLower(channel)].nicks[toLower(user.nick)] = user;
+}
+void IRC::onWhoReply(const IRCMessage message) {
+    //   "<client> <channel> <username> <host> <server> <nick> <flags> :<hopcount> <realname>"
+
+    IRCUser user = {};
+    auto client = message.parameters[0];
+    auto channel = message.parameters[1];
+    user.user = message.parameters[2];
+    user.host = message.parameters[3];
+    user.server = message.parameters[4];
+    user.nick = message.parameters[5];
+    user.flags = message.parameters[6];
+    user.hopcount = message.parameters[7];
+    user.realname = message.parameters[8];
+
+    if (isChannel(channel))
+        mIRCChannels[toLower(channel)].nicks[toLower(user.nick)] = user;
+}
+
+void IRC::onEndOfWho(const IRCMessage message) {
+
+    // "<client> <mask> :End of WHO list"
+    auto channel = toLower(message.parameters[1]);
+    if (isChannel(channel)) {
+        LOG_DEBUG("Channel: %s", channel.c_str());
+        for (auto &nick : mIRCChannels[toLower(channel)].nicks) {
+            LOG_DEBUG("Nick: %s", nick.second.nick.c_str());
+        }
+    }
+}
+//
 
 void IRC::onNicknameInUse(const IRCMessage message) {
     if (!serverInfo.registrationComplete && Numeric::ERR_NICKNAMEINUSE == message.command) {
@@ -694,7 +999,7 @@ void IRC::splitUserNickHost(IRCSource &source) {
 }
 
 void IRC::parseMessage(std::string line) {
-    LOG_DEBUG((">>> " + line).c_str());
+    LOG_DEBUG("%s", (">>> " + line).c_str());
     IRCMessage message;
     message.raw = line;
 
@@ -707,13 +1012,19 @@ void IRC::parseMessage(std::string line) {
             // when a source parameter is available
             auto falsePositive = line.find(" ");
             if (falsePositive == trailingParameterPos) {
-                auto lineWithoutPag = line.substr(trailingParameterPos + 2);
-                trailingParameterPos += 2 + lineWithoutPag.find(" :");
+                auto lineWithoutTag = line.substr(trailingParameterPos + 2);
+                auto trainlingParameterPosWithoutTag = lineWithoutTag.find(" :");
+                if (trainlingParameterPosWithoutTag != std::string::npos)
+                    trailingParameterPos += 2 + lineWithoutTag.find(" :");
+                else
+                    trailingParameterPos = std::string::npos;
             }
         }
 
-        trailingParameter = line.substr(trailingParameterPos + 2);
-        line = line.substr(0, trailingParameterPos);
+        if (trailingParameterPos != std::string::npos) {
+            trailingParameter = line.substr(trailingParameterPos + 2);
+            line = line.substr(0, trailingParameterPos);
+        }
     }
 
     auto tokens = splitString(line);
@@ -747,7 +1058,8 @@ void IRC::parseMessage(std::string line) {
         // Error, incorrectly formatted message
     }
     message.parameters = tokens;
-    message.parameters.push_back(trailingParameter);
+    if (trailingParameter.length())
+        message.parameters.push_back(trailingParameter);
     onMessage(message);
 }
 
@@ -791,6 +1103,40 @@ void IRC::onData(std::vector<char> data) {
 void IRC::send(std::string message) {
     LOG_DEBUG(("<<< " + message).c_str());
     this->mConnection->send(message + "\r\n");
+}
+
+bool IRC::isChannel(const std::string target) {
+    // stub, TODO
+    return target[0] == '#';
+}
+
+bool IRC::isNick(const std::string target) {
+    /*
+
+
+     Nickname grammar in rfc2812
+     nickname   =  ( letter / special ) *8( letter / digit / special / "-" )
+
+            letter     =  %x41-5A / %x61-7A       ; A-Z / a-z
+            special    =  %x5B-60 / %x7B-7D
+                       ; "[", "]", "\", "`", "_", "^", "{", "|", "}"
+    */
+
+    /*
+    https://github.com/DanielOaks/ircv3-specifications/blob/master%2Brfc7700/documentation/rfc8265.md
+    has some nice rules
+
+    */
+    if (target.length()) {
+        // Please note... this is for ascii mapping,
+        // but what when we have utf8 mapping?
+
+    } else {
+        // empty String?
+        return false;
+    }
+
+    return false;
 }
 
 bool IRC::validTarget(const std::string target) {

@@ -21,19 +21,18 @@ namespace protocol {
 
 class IRC : public Protocol {
   public:
-    struct IRCSource{
-		std::string raw;
-		// source is split up into nick, user and host
-		std::string nick;
-		std::string user;
-		std::string host;
+    struct IRCSource {
+        std::string raw;
+        // source is split up into nick, user and host
+        std::string nick;
+        std::string user;
+        std::string host;
     };
 
-
     struct IRCMessage {
-    	std::string raw;
-    	std::string tags;
-    	IRCSource source;
+        std::string raw;
+        std::string tags;
+        IRCSource source;
         std::string command;
         std::vector<std::string> parameters;
     };
@@ -102,6 +101,7 @@ class IRC : public Protocol {
         static constexpr std::string RPL_VERSION = "351";
         static constexpr std::string RPL_WHOREPLY = "352";
         static constexpr std::string RPL_NAMREPLY = "353";
+        static constexpr std::string RPL_WHOSPCRPL = "354";
         static constexpr std::string RPL_LINKS = "364";
         static constexpr std::string RPL_ENDOFLINKS = "365";
         static constexpr std::string RPL_ENDOFNAMES = "366";
@@ -226,17 +226,31 @@ class IRC : public Protocol {
         static constexpr std::string IRCERR_UNKNOWNERROR = "999";
     };
 
+    struct IRCUser {
+        std::string user;
+        std::string ip;
+        std::string host;
+        std::string server;
+        std::string nick;
+        std::string flags;
+        std::string hopcount;
+        std::string idle;
+        std::string account;
+        std::string oplevel;
+        std::string realname;
+    };
 
     struct IRCChannel {
-    	bool joined;
-    	std::string topic;
-    	std::string topicStripped;
-    	std::string topicNick;
-    	time_t topicSetAt;
+        bool joined;
+        std::string name; // preserves case
+        std::string topic;
+        std::string topicStripped;
+        std::string topicNick;
+        time_t topicSetAt;
+        unsigned token;
+        std::map<std::string,IRCUser> nicks;
     };
     std::map<std::string, IRCChannel> mIRCChannels;
-
-
 
     IRC();
     ~IRC();
@@ -284,20 +298,29 @@ class IRC : public Protocol {
 
         std::string network;
         std::string host;
-        std::string software;
+        std::string daemon;
+        std::string daemonFamily;
 
-        // For now. Will parse them later
+        // From RPL_MYINFO. Might not use there, but info from MYINFO instead
         std::string userModes, channelModes, channelModesWithParameters;
 
+        //
+        std::string channelTypeAModes;
+        std::string channelTypeBModes;
+        std::string channelTypeCModes;
+        std::string channelTypeDModes;
+        std::map <char,char> channelMembershipPrefixes;
+
         std::string services;
+        std::string servicesFamily;
 
         std::map<std::string, std::string> features;
         std::map<std::string, std::string> capabilities;
         struct {
-			int version;
-			bool enabled;
-        	std::vector<std::string> packages;
-        	std::vector<std::string> options;
+            int version;
+            bool enabled;
+            std::vector<std::string> packages;
+            std::vector<std::string> options;
         } extensions;
     } serverInfo;
 
@@ -312,24 +335,29 @@ class IRC : public Protocol {
     void onCreated(const IRCMessage message);
     void onMyInfo(const IRCMessage message);
 
-
     void onPING(const IRCMessage message);
     void onCAP(const IRCMessage message);
     void onIRCX(const IRCMessage message);
     void onERROR(const IRCMessage message);
     void onUnknownCommand(const IRCMessage message);
 
+    void applyFeatures(void);
+    void applyServerQuirks(void);
     void onReady(void);
     void onCanRegister(void);
 
     void onPRIVMSG(const IRCMessage message);
     void onNOTICE(const IRCMessage message);
-
     void onJOIN(const IRCMessage message);
+    void onMODE(const IRCMessage message);
+
     void onTopic(const IRCMessage message);
-	void onTopicWhoTime(const IRCMessage message);
-	void onNamReply(const IRCMessage message);
-	void onEndOfNames(const IRCMessage message);
+    void onTopicWhoTime(const IRCMessage message);
+    void onNamReply(const IRCMessage message);
+    void onEndOfNames(const IRCMessage message);
+    void onWhoReply(const IRCMessage message);
+    void onWhoSpcReply(const IRCMessage message);
+    void onEndOfWho(const IRCMessage message);
 
     void onCTCPQuery(const IRCMessage message, const CTCPMessage ctcp);
     void onCTCPResponse(const IRCMessage message, const CTCPMessage ctcp);
@@ -341,6 +369,9 @@ class IRC : public Protocol {
     void sendCTCPQuery(const std::string target, const std::string command, const std::string parameters = "");
     void sendCTCPResponse(const std::string target, const std::string command, const std::string parameters = "");
 
+    bool isNick(const std::string target);
+    bool isChannel(const std::string target);
+
     bool validTarget(const std::string target);
     bool validText(const std::string text);
 
@@ -348,7 +379,7 @@ class IRC : public Protocol {
     std::string toLower(std::string str);
 
     std::string stripFormatting(const std::string formattedString);
-    void splitUserNickHost(IRCSource & source);
+    void splitUserNickHost(IRCSource &source);
 };
 
 } // namespace protocol
