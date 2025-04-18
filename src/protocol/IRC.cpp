@@ -498,7 +498,7 @@ void IRC::onISupport(const IRCMessage message) {
             // Merge doesn't replace the new values
             // serverInfo.features.merge(parseKeyValue(isupprt));
 
-            for (auto &feature : parseNewFeatures(isupprt)) {
+            for (auto &feature : parseKeyValue(isupprt)) {
                 serverInfo.features[feature.first] = feature.second;
             }
 
@@ -529,7 +529,7 @@ void IRC::onCAP(const IRCMessage message) {
 
             if (subCommand == "LS") {
                 bool moreCapabilitiesComing = message.parameters[2] == "*";
-                serverInfo.capabilities.merge(parseNewFeatures(splitString(message.parameters[2 + moreCapabilitiesComing])));
+                serverInfo.capabilities.merge(parseKeyValue(splitString(message.parameters[2 + moreCapabilitiesComing])));
 
                 if (!serverInfo.registrationComplete && !moreCapabilitiesComing) {
 

@@ -40,7 +40,7 @@ std::vector<std::string> parseNegation(const std::vector<std::string> &tokens) {
     return result;
 }
 
-std::map<std::string, std::string> parseNewFeatures(const std::vector<std::string> &tokens) {
+std::map<std::string, std::string> parseKeyValue(const std::vector<std::string> &tokens) {
     std::map<std::string, std::string> result;
 
     std::string key, value;
