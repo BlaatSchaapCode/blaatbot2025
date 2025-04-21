@@ -16,8 +16,10 @@ namespace network {
 class cTcpConnection : public cConnection {
   public:
     ~cTcpConnection();
+    cTcpConnection();
 
-    void connect(std::string ip_address, uint16_t port = 6667);
+    //void connect(std::string ip_address, uint16_t port = 6667);
+    int connect(void) override;
 
     void send(std::vector<char> data) override;
 

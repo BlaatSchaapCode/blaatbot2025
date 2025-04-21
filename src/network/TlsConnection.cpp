@@ -11,21 +11,26 @@
 #include "threadName.hpp"
 
 namespace network {
-void cTlsConnection::connect(std::string ip_address, uint16_t port, bool ignoreBadCertificate, bool ignoreLegacyServer) {
+// void cTlsConnection::connect(std::string ip_address, uint16_t port, bool ignoreBadCertificate, bool ignoreLegacyServer) {
+int cTlsConnection::connect(void) {
     int rc;
     rc = tls_init();
     m_tls_config = tls_config_new();
 
-    if (ignoreBadCertificate) {
+    if (ignoreInvalidCerficiate) {
         tls_config_insecure_noverifycert(m_tls_config);
         tls_config_insecure_noverifyname(m_tls_config);
         tls_config_insecure_noverifytime(m_tls_config);
     } else {
         rc = tls_config_set_ca_file(m_tls_config, tls_default_ca_cert_file());
+        if (rc < 0) {
+            LOG_ERROR("tls_config_set_ca_file: %s", tls_error(m_tls_socket));
+            return rc;
+        }
         tls_config_verify(m_tls_config);
     }
 
-    if (ignoreLegacyServer) {
+    if (ignoreInsecureProtocol) {
         uint32_t protocols = 0;
 
         // libtls dropped support for older protocols,
@@ -33,35 +38,70 @@ void cTlsConnection::connect(std::string ip_address, uint16_t port, bool ignoreB
         // "legacy" has no effect and selects 1.2 and 1.3
 
         rc = tls_config_parse_protocols(&protocols, "legacy");
+        if (rc < 0) {
+            LOG_ERROR("tls_config_parse_protocols: %s", tls_error(m_tls_socket));
+            return rc;
+        }
+
         rc = tls_config_set_protocols(m_tls_config, protocols);
+        if (rc < 0) {
+            LOG_ERROR("tls_config_set_protocols: %s", tls_error(m_tls_socket));
+            return rc;
+        }
 
         rc = tls_config_set_ciphers(m_tls_config, "insecure");
+        if (rc < 0) {
+            LOG_ERROR("tls_config_set_ciphers: %s", tls_error(m_tls_socket));
+            return rc;
+        }
     } else {
         uint32_t protocols = 0;
         rc = tls_config_parse_protocols(&protocols, "secure");
+        if (rc < 0) {
+            LOG_ERROR("tls_config_parse_protocols: %s", tls_error(m_tls_socket));
+            return rc;
+        }
         rc = tls_config_set_protocols(m_tls_config, protocols);
-
+        if (rc < 0) {
+            LOG_ERROR("tls_config_set_protocols: %s", tls_error(m_tls_socket));
+            return rc;
+        }
         rc = tls_config_set_ciphers(m_tls_config, "secure");
+        if (rc < 0) {
+            LOG_ERROR("tls_config_set_ciphers: %s", tls_error(m_tls_socket));
+            return rc;
+        }
     }
 
     rc = tls_config_set_dheparams(m_tls_config, "auto");
+    if (rc < 0) {
+        LOG_ERROR("tls_config_set_dheparams: %s", tls_error(m_tls_socket));
+        return rc;
+    }
+
     rc = tls_config_set_ecdhecurves(m_tls_config, "default");
+    if (rc < 0) {
+        LOG_ERROR("tls_config_set_ecdhecurves: %s", tls_error(m_tls_socket));
+        return rc;
+    }
 
     m_tls_socket = tls_client();
     rc = tls_configure(m_tls_socket, m_tls_config);
+    if (rc < 0) {
+        LOG_ERROR("tls_configure: %s", tls_error(m_tls_socket));
+        return rc;
+    }
 
-    rc = tls_connect(m_tls_socket, ip_address.c_str(), std::to_string(port).c_str());
-    if (rc) {
+    rc = tls_connect(m_tls_socket, mHostName.c_str(), std::to_string(mPort).c_str());
+    if (rc < 0) {
         LOG_ERROR("tls_connect: %s", tls_error(m_tls_socket));
-        // TODO
-        return;
+        return rc;
     }
 
     rc = tls_handshake(m_tls_socket);
     if (rc < 0) {
         LOG_ERROR("tls_handshake: %s", tls_error(m_tls_socket));
-        // TODO
-        return;
+        return rc;
     }
 
     printf("tls_conn_cipher = %s\n", tls_conn_cipher(m_tls_socket));
@@ -70,6 +110,7 @@ void cTlsConnection::connect(std::string ip_address, uint16_t port, bool ignoreB
     m_receiveThreadActive = true;
     m_receiveThread = new std::thread(cTlsConnection::receiveThreadFunc, this);
     this->mProtocol->onConnected();
+    return 0;
 }
 
 void cTlsConnection::receiveThreadFunc(cTlsConnection *self) {
@@ -113,5 +154,15 @@ void cTlsConnection::send(std::vector<char> data) {
     }
 }
 
+int cTlsConnection::setIgnoreInvalidCerficiate(bool ignoreInvalidCerficiate) {
+    this->ignoreInvalidCerficiate = ignoreInvalidCerficiate;
+    return 0;
+}
+int cTlsConnection::setIgnoreInsecureProtocol(bool ignoreInsecureProtocol) {
+    this->ignoreInsecureProtocol = ignoreInsecureProtocol;
+    return 0;
+}
+
+cTlsConnection::cTlsConnection() { mPort = 6697; }
 cTlsConnection::~cTlsConnection() {}
 } // namespace network

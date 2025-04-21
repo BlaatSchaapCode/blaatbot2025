@@ -2,14 +2,7 @@ TARGET      = blaatbot2025
 PCDEV_ROOT   = ../pcdev
 OUT_DIR      = ../out
 
-# adding tls to LIBS ain't working?
-#LIBS += tls
-LDFLAGS += -ltls
-
-
-#which do I need for ICU?
-LIBS +=  icu-uc 
-
+LIBS +=  icu-uc nlohmann_json libtls
 
 CXXFLAGS += -DENABLE_LOG_DEBUG
 

@@ -384,7 +384,7 @@ void IRC::onReady(void) {
 
     // TODO
     send("JOIN #bscp-test");
-    //    send("JOIN #blaatschaap");
+//	send("JOIN #blaatschaap");
 }
 
 void IRC::onConnected() {

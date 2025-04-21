@@ -12,8 +12,9 @@
 #include <string>
 #include <vector>
 
-#include "../protocol/Protocol.hpp"
+#include <cerrno>
 
+#include "../protocol/Protocol.hpp"
 namespace protocol {
 class Protocol;
 }
@@ -25,14 +26,22 @@ class cConnection {
   public:
     virtual ~cConnection();
     virtual void send(std::vector<char> data) = 0;
-    void send(std::string s) {
-        std::vector<char> v(s.begin(), s.end());
-        send(v);
-    }
-    void setProtocol(::protocol::Protocol *protocol) { mProtocol = protocol; }
+    void send(std::string s);
+    void setProtocol(::protocol::Protocol *protocol);
+
+    int setHostName(std::string hostName);
+    int setPort(uint16_t port);
+
+    virtual int setSecure(bool secure) { return -ENOTSUP; }
+    virtual int setIgnoreInvalidCerficiate(bool ignoreInvalidCerficiate) { return -ENOTSUP; }
+    virtual int setIgnoreInsecureProtocol(bool ignoreInsecureProtocol) { return -ENOTSUP; }
+
+    virtual int connect(void) { return -ENOSYS; }
 
   protected:
     ::protocol::Protocol *mProtocol;
+    std::string mHostName;
+    uint16_t mPort;
 };
 
 } // namespace network

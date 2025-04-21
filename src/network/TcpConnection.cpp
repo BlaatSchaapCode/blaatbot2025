@@ -20,6 +20,11 @@
 
 namespace network {
 
+
+cTcpConnection::cTcpConnection() {
+	mPort = 6667;
+}
+
 cTcpConnection::~cTcpConnection() {
     m_receiveThreadActive = false;
     LOG_INFO("Stopping receive thread ", 0);
@@ -85,8 +90,8 @@ void cTcpConnection::receiveThreadFunc(cTcpConnection *self) {
     }
 }
 
-void cTcpConnection::connect(std::string host, uint16_t port) {
-    LOG_INFO("Requested to connect to %s:%d", host.c_str(), port);
+int cTcpConnection::connect(void) {
+    LOG_INFO("Requested to connect to %s:%d", mHostName.c_str(), mPort);
 
     m_socket = 0;
 
@@ -98,10 +103,10 @@ void cTcpConnection::connect(std::string host, uint16_t port) {
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags |= AI_CANONNAME;
 
-    errcode = getaddrinfo(host.c_str(), NULL, &hints, &result);
+    errcode = getaddrinfo(mHostName.c_str(), NULL, &hints, &result);
     if (errcode != 0) {
         LOG_ERROR("getaddrinfo");
-        return;
+        return errcode;
     }
 
     res = result;
@@ -113,15 +118,15 @@ void cTcpConnection::connect(std::string host, uint16_t port) {
         switch (res->ai_family) {
         case AF_INET: {
             in = *(struct sockaddr_in *)res->ai_addr;
-            in.sin_port = htons(port);
+            in.sin_port = htons(mPort);
 
             char temp[INET_ADDRSTRLEN];
-            LOG_INFO("%s resolved to %s", host.c_str(), inet_ntop(AF_INET, &in.sin_addr, temp, INET_ADDRSTRLEN));
+            LOG_INFO("%s resolved to %s", mHostName.c_str(), inet_ntop(AF_INET, &in.sin_addr, temp, INET_ADDRSTRLEN));
 
             m_socket = ::socket(AF_INET, SOCK_STREAM, 0);
             if (m_socket < 0) {
                 LOG_ERROR("Error creating socket");
-                return;
+                return m_socket;
             }
             if (::connect(m_socket, (const sockaddr *)&in, sizeof(sockaddr_in)) < 0) {
                 LOG_INFO("Failed to connect");
@@ -134,14 +139,14 @@ void cTcpConnection::connect(std::string host, uint16_t port) {
         } break;
         case AF_INET6: {
             in6 = *(struct sockaddr_in6 *)res->ai_addr;
-            in6.sin6_port = htons(port);
+            in6.sin6_port = htons(mPort);
             char temp[INET6_ADDRSTRLEN];
-            LOG_INFO("%s resolved to %s", host.c_str(), inet_ntop(AF_INET6, &in6.sin6_addr, temp, INET6_ADDRSTRLEN));
+            LOG_INFO("%s resolved to %s", mHostName.c_str(), inet_ntop(AF_INET6, &in6.sin6_addr, temp, INET6_ADDRSTRLEN));
 
             m_socket = ::socket(AF_INET6, SOCK_STREAM, 0);
             if (m_socket < 0) {
                 LOG_ERROR("Error creating socket");
-                return;
+                return m_socket;
             }
             if (::connect(m_socket, (const sockaddr *)&in6, sizeof(sockaddr_in6)) < 0) {
                 LOG_INFO("Failed to connect");
@@ -161,7 +166,7 @@ void cTcpConnection::connect(std::string host, uint16_t port) {
 
     if (!m_connected) {
         LOG_ERROR("Not Connected");
-        return;
+        return -ENOTCONN;
     }
 
     LOG_INFO("Connected");
@@ -183,6 +188,7 @@ void cTcpConnection::connect(std::string host, uint16_t port) {
     m_receiveThreadActive = true;
     m_receiveThread = new std::thread(cTcpConnection::receiveThreadFunc, this);
     this->mProtocol->onConnected();
+    return 0;
 }
 
 } // namespace network

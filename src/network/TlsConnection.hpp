@@ -25,11 +25,21 @@ class cTlsConnection : public cConnection {
 
   public:
     using cConnection::cConnection;
+    cTlsConnection();
     ~cTlsConnection();
 
-    void connect(std::string ip_address, uint16_t port = 6697, bool ignoreServerName = false, bool allowDeprecatedServer = false);
+    int connect() override;
 
     void send(std::vector<char> data) override;
+
+    int setIgnoreInvalidCerficiate(bool ignoreInvalidCerficiate) override;
+    int setIgnoreInsecureProtocol(bool ignoreInsecureProtocol) override;
+
+
+  protected:
+
+    bool ignoreInvalidCerficiate = false;
+	bool ignoreInsecureProtocol = false;
 
   private:
     bool m_connected = false;

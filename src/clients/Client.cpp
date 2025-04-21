@@ -22,21 +22,20 @@ Client::Client() {
     mIRC->setRealName("BlaatBot2025");
 
     mConnection = new network::cTlsConnection();
-    mConnection->setProtocol(mIRC);
     mIRC->setConnection(mConnection);
-    ((::network::cTlsConnection *)mConnection)->connect("irc.blaatschaap.be", 6697, true);
+    mConnection->setProtocol(mIRC);
+    mConnection->setHostName("irc.blaatschaap.be");
+//    mConnection->setPort(6697);
+    mConnection->connect();
 
-    //((::network::cTlsConnection *)mConnection)->connect("testnet.ergo.chat", 6697, true);
+//	mConnection = new ::network::cTcpConnection();
+//	mIRC->setConnection(mConnection);
+//	mConnection->setProtocol(mIRC);
+//	mConnection->setHostName("irc.blaatschaap.be");
+////	mConnection->setPort(6667);
+//	mConnection->connect();
 
-    // libtls dropped support for older protocols, I can't force it to use them if I try.
-    // Even though the documentation said I could.
-    //    ((::network::cTlsConnection *)mConnection)->connect("irc.chat4all.org", 6697, true, true);
 
-    //    mConnection = new ::network::cTcpConnection();
-    //    mConnection->setProtocol(mIRC);
-    //    mIRC->setConnection(mConnection);
-    //    // how to make this neat?
-    //    ((::network::cTcpConnection*)mConnection)->connect("192.168.178.42");
 }
 
 Client::~Client() {
