@@ -1,6 +1,6 @@
 [submodule "pcdev"]
 	path = pcdev
-	url = git@github.com:a-v-s/pcdev.git
+	url = https://github.com/a-v-s/pcdev.git
 [submodule "ext/base64"]
 	path = ext/base64
 	url = https://github.com/tobiaslocker/base64.git
