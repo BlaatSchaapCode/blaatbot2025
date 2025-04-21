@@ -29,6 +29,7 @@ CXX_SRC += ./utils/compat.cpp
 CXX_SRC += ./utils/logger.cpp
 CXX_SRC += ./utils/splitString.cpp
 CXX_SRC += ./utils/threadName.cpp
+CXX_SRC += ./utils/timer.cpp
 CXX_SRC += ./main.cpp
 
 

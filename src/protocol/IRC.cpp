@@ -22,6 +22,7 @@
 #include <unicode/unistr.h>
 
 #include "logger.hpp"
+#include "timer.hpp"
 #include "version.hpp"
 
 namespace protocol {
@@ -45,6 +46,7 @@ namespace protocol {
 
 IRC::IRC() {
 
+    mMessageParsers["PONG"] = [this](const IRCMessage message) { onPONG(message); };
     mMessageParsers["PING"] = [this](const IRCMessage message) { onPING(message); };
     mMessageParsers["PRIVMSG"] = [this](const IRCMessage message) { onPRIVMSG(message); };
     mMessageParsers["NOTICE"] = [this](const IRCMessage message) { onNOTICE(message); };
@@ -68,6 +70,8 @@ IRC::IRC() {
 
     mMessageParsers["JOIN"] = [this](const IRCMessage message) { onJOIN(message); };
     mMessageParsers["MODE"] = [this](const IRCMessage message) { onMODE(message); };
+    mMessageParsers[Numeric::RPL_CHANNELMODEIS] = [this](const IRCMessage message) { onChannelModeIs(message); };
+
     mMessageParsers[Numeric::RPL_TOPIC] = [this](const IRCMessage message) { onTopic(message); };
     mMessageParsers[Numeric::RPL_TOPICWHOTIME] = [this](const IRCMessage message) { onTopicWhoTime(message); };
     mMessageParsers[Numeric::RPL_NAMREPLY] = [this](const IRCMessage message) { onNamReply(message); };
@@ -195,6 +199,14 @@ std::string IRC::toLower(std::string s) {
         // the Unicode Standard", which appears to be implemented by the ICU library
         // Should we use that library?
 
+        // Please note: There appears to be StringPrep support
+        // which is RFC 3454.
+        // RFC 7564 (PRECIS) obsoletes RFC 3454.
+        // However, if we got an RFC 3454 implementation,
+        // RFC 8265 (Obsoletes 7613) mentions previous approach was
+        // SASLPrep (RFC 4013)
+        // Seems it does the BiDi thing? But preserves case?
+
         // https://datatracker.ietf.org/doc/html/rfc8265#section-3.3
 
         // However, I think the most important parts are covered, for now.
@@ -255,6 +267,7 @@ bool IRC::isEqual(const std::string first, const std::string seccond) {
     return toLower(first) == toLower(seccond);
 }
 void IRC::onCanRegister(void) {
+
     if (mPass.length())
         send("PASS " + mPass);
 
@@ -366,6 +379,9 @@ void IRC::onReady(void) {
     if (serverInfo.features.count("BOT"))
         send("MODE " + mNick + " +" + serverInfo.features["BOT"]);
 
+    ping();
+
+    // TODO
     send("JOIN #bscp-test");
     //    send("JOIN #blaatschaap");
 }
@@ -389,18 +405,32 @@ void IRC::onConnected() {
 
     // Probe for extensions
     send("MODE ISIRCX");
+
+    // Is there any server that implements both capabilities and extensions?
+    // If that were the case the registration procedure may need to be a little
+    // more complicated, as then we need to synchronise the probes, and then
+    // decide what the way to continue the registration is. Especially, when
+    // SASL is needed, as there are both capabilities and extensions describing
+    // a SASL login procedure. Note that capabilities is the common method.
+    // I haven't found an IRCX server implementing SASL extensions to test against.
+    // Note: OfficeIRC, a commercial product, https://www.officeirc.com/
+    // claims "New IRCv3 features, improved IRCX support and server linking support."
+    // So it could be possible an implementation supports both.
+
+    // If a server supports neither, we have a timeout.
+    connectTimer.afterSeconds([this]() { onCanRegister(); }, std::chrono::seconds(3));
 }
 
 void IRC::onDisconnected() {}
 
 void IRC::onUnknownCommand(const IRCMessage message) {
-    if (message.command == Numeric::ERR_UNKNOWNCOMMAND) {
-        if (!serverInfo.registrationComplete) {
-            // Server replied unknown command to CAP LS
-            // Continue with registration
-            onCanRegister();
-        }
-    }
+    //    if (message.command == Numeric::ERR_UNKNOWNCOMMAND) {
+    //        if (!serverInfo.registrationComplete) {
+    //            // Server replied unknown command to CAP LS
+    //            // Continue with registration
+    //            onCanRegister();
+    //        }
+    //    }
 }
 
 void IRC::onWelcome(const IRCMessage message) {
@@ -543,11 +573,13 @@ void IRC::onCAP(const IRCMessage message) {
                         send("CAP REQ :extended-join");
 
                     send("CAP END");
+                    connectTimer.abortTimer();
                     onCanRegister();
                 }
             }
 
             if (subCommand == "ACK") {
+                // TODO
             }
         }
     }
@@ -580,8 +612,10 @@ void IRC::onIRCX(const IRCMessage message) {
     if (!serverInfo.extensions.enabled)
         send("IRCX");
 
-    if (!serverInfo.registrationComplete && serverInfo.extensions.enabled)
+    if (!serverInfo.registrationComplete && serverInfo.extensions.enabled) {
+        connectTimer.abortTimer();
         onCanRegister();
+    }
 }
 
 void IRC::onPING(const IRCMessage message) {
@@ -589,6 +623,33 @@ void IRC::onPING(const IRCMessage message) {
         if (message.parameters.size())
             send("PONG :" + message.parameters[0]);
     }
+}
+
+void IRC::ping() {
+    auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+    send("PING :" + std::to_string(now.count()));
+}
+
+void IRC::onPONG(const IRCMessage message) {
+    std::chrono::milliseconds lag;
+    int pingInterval = 10;
+    if (message.parameters.size()) {
+        try {
+            auto sent_int = std::stoll(message.parameters[1]);
+            auto sent = std::chrono::milliseconds(sent_int);
+            auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+            lag = now - sent;
+            LOG_DEBUG("Lag is %d ms", (int)lag.count());
+            serverInfo.lag = lag;
+            if (lag.count() > 5000)
+                pingInterval = 30;
+        } catch (...) {
+            LOG_DEBUG("Unable to determine lag");
+            serverInfo.lag = std::chrono::duration_values::max;
+            pingInterval = 60;
+        }
+    }
+    lagTimer.afterSeconds([this]() { ping(); }, std::chrono::seconds(pingInterval));
 }
 
 void IRC::onCTCPQuery(const IRCMessage message, const CTCPMessage ctcp) {
@@ -818,6 +879,8 @@ void IRC::onJOIN(const IRCMessage message) {
         // We index on the lowe case string, we store the string with case preserved
         // for displaying purposes
         mIRCChannels[toLower(message.parameters[0])].name = message.parameters[0];
+        // Obtain the channel modes
+        send("MODE " + channel);
     } else {
         // Someone else has joined a channel we are in
         // --> Update channel member list
@@ -833,6 +896,15 @@ void IRC::onJOIN(const IRCMessage message) {
         }
         mIRCChannels[channel].nicks[toLower(message.source.nick)] = joined;
     }
+}
+
+void IRC::onChannelModeIs(const IRCMessage message) {
+    // The RPL_CHANNELMODEIS message looks like
+    // "<client> <channel> <modestring> <mode arguments>..."
+    // We drop the <client> and let the onMODE handler process it
+    IRCMessage adjusted = message;
+    adjusted.parameters.erase(adjusted.parameters.begin());
+    onMODE(adjusted);
 }
 
 void IRC::onMODE(const IRCMessage message) {
@@ -855,6 +927,85 @@ void IRC::onMODE(const IRCMessage message) {
 
             Type D: Modes that change a setting on a channel. These modes MUST NOT have a parameter.
         */
+
+        int parameter = 0;
+        struct modechange_t {
+            char modeset;
+            char modechar;
+            int parameter;
+        };
+        std::vector<modechange_t> modeChanges;
+
+        auto modestring = message.parameters[1];
+
+        char modeset = 0;
+        unsigned pos = 0;
+        while (pos < modestring.length()) {
+            char modechar = modestring[pos];
+            pos++;
+            if (modechar == '+' || modechar == '-') {
+                modeset = modechar;
+                continue;
+            }
+
+            if (modeset == '+' || modeset == '-') {
+
+                modechange_t modechange = {.modeset = modeset, .modechar = modechar, .parameter = -1};
+
+                if (serverInfo.channelMembershipPrefixes.contains(modechar)) {
+                    // Channel Membership
+                    // Always takes parameter
+                    modechange.parameter = parameter++;
+                }
+                if (serverInfo.channelTypeAModes.find(modechar) != std::string::npos) {
+                    // Mode Type A
+                    // Add address to list
+                    // Always takes parameter in message from server
+                    modechange.parameter = parameter++;
+                }
+                if (serverInfo.channelTypeBModes.find(modechar) != std::string::npos) {
+                    // Mode Type B
+                    // Change setting on channel
+                    // Always takes parameter
+                    modechange.parameter = parameter++;
+                }
+                if (serverInfo.channelTypeCModes.find(modechar) != std::string::npos) {
+                    // Mode Type C
+                    // Change setting on channel
+                    // Takes parameter when being set
+                    // Takes no parameter when being unset
+                    if (modeset == '+')
+                        modechange.parameter = parameter++;
+                }
+                if (serverInfo.channelTypeDModes.find(modechar) != std::string::npos) {
+                    // Mode Type D
+                    // Change setting on channel
+                    // No parameters
+                }
+
+                modeChanges.push_back(modechange);
+            } else {
+                // Incorrectly formatted modestring
+                return;
+            }
+        }
+
+        // Now we have created a list of modes to be set and unset, with their respective parameter.
+
+        LOG_DEBUG("Setting modes on channel: %s", target.c_str());
+        for (auto &modeChange : modeChanges) {
+            std::string modeParameter;
+            if (modeChange.parameter != -1) {
+                unsigned parameter = modeChange.parameter + 2;
+                if (message.parameters.size() > parameter) {
+                    modeParameter = message.parameters[parameter];
+                } else {
+                    modeParameter = "ERROR";
+                }
+            }
+            LOG_DEBUG("%c%c %s", modeChange.modeset, modeChange.modechar, modeParameter.c_str());
+            // TODO: Now we should process that what we have gathered
+        }
 
     } else {
         // Mode on user.
@@ -999,7 +1150,8 @@ void IRC::splitUserNickHost(IRCSource &source) {
 }
 
 void IRC::parseMessage(std::string line) {
-    LOG_DEBUG("%s", (">>> " + line).c_str());
+    // LOG_DEBUG("%s", (">>> " + line).c_str());
+    LOG_DEBUG(">>> %s", line.c_str());
     IRCMessage message;
     message.raw = line;
 
@@ -1101,7 +1253,8 @@ void IRC::onData(std::vector<char> data) {
 }
 
 void IRC::send(std::string message) {
-    LOG_DEBUG(("<<< " + message).c_str());
+    // LOG_DEBUG(("<<< " + message).c_str());
+    LOG_DEBUG("<<< %s", message.c_str());
     this->mConnection->send(message + "\r\n");
 }
 

@@ -17,6 +17,8 @@
 #include "../network/Connection.hpp"
 #include "Protocol.hpp"
 
+#include "timer.hpp"
+
 namespace protocol {
 
 class IRC : public Protocol {
@@ -274,6 +276,13 @@ class IRC : public Protocol {
     using IRCMessageParser = std::function<void(const IRCMessage message)>;
     std::map<std::string, IRCMessageParser> mMessageParsers;
 
+    Timer connectTimer;
+
+
+    Timer lagTimer;
+
+
+
     std::vector<char> mBuffer;
 
     // NickServ
@@ -322,6 +331,8 @@ class IRC : public Protocol {
             std::vector<std::string> packages;
             std::vector<std::string> options;
         } extensions;
+
+        std::chrono::milliseconds lag;
     } serverInfo;
 
     void parseMessage(std::string message);
@@ -336,6 +347,7 @@ class IRC : public Protocol {
     void onMyInfo(const IRCMessage message);
 
     void onPING(const IRCMessage message);
+    void onPONG(const IRCMessage message);
     void onCAP(const IRCMessage message);
     void onIRCX(const IRCMessage message);
     void onERROR(const IRCMessage message);
@@ -353,6 +365,7 @@ class IRC : public Protocol {
 
     void onTopic(const IRCMessage message);
     void onTopicWhoTime(const IRCMessage message);
+    void onChannelModeIs(const IRCMessage message);
     void onNamReply(const IRCMessage message);
     void onEndOfNames(const IRCMessage message);
     void onWhoReply(const IRCMessage message);
@@ -380,6 +393,8 @@ class IRC : public Protocol {
 
     std::string stripFormatting(const std::string formattedString);
     void splitUserNickHost(IRCSource &source);
+
+    void ping();
 };
 
 } // namespace protocol
