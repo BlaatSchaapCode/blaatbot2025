@@ -436,17 +436,19 @@ void IRC::onUnknownCommand(const IRCMessage message) {
 void IRC::onWelcome(const IRCMessage message) {
     serverInfo.registrationComplete = true;
     // "<client> :Welcome to the <networkname> IRC Network, <nick>[!<user>@<host>]"
+    if (message.parameters.size() > 0) {
 
-    std::string preNetString = "Welcome to the ";
-    std::string postNetString = " IRC Network";
-    auto preNetPos = message.parameters[1].find(preNetString);
-    auto postNetPos = message.parameters[1].find(postNetString);
-    if (preNetPos != std::string::npos && postNetPos != std::string::npos) {
-        serverInfo.network =
-            message.parameters[1].substr(preNetString.length() + preNetPos, postNetPos - preNetPos - preNetString.length());
-        LOG_INFO("Network : %s", serverInfo.network.c_str());
-        std::string nickUserHost = message.parameters[1].substr(postNetString.length() + postNetPos + 1);
-        LOG_INFO("NickUserHost : %s", nickUserHost.c_str());
+        std::string preNetString = "Welcome to the ";
+        std::string postNetString = " IRC Network";
+        auto preNetPos = message.parameters[1].find(preNetString);
+        auto postNetPos = message.parameters[1].find(postNetString);
+        if (preNetPos != std::string::npos && postNetPos != std::string::npos) {
+            serverInfo.network =
+                message.parameters[1].substr(preNetString.length() + preNetPos, postNetPos - preNetPos - preNetString.length());
+            LOG_INFO("Network : %s", serverInfo.network.c_str());
+            std::string nickUserHost = message.parameters[1].substr(postNetString.length() + postNetPos + 1);
+            LOG_INFO("NickUserHost : %s", nickUserHost.c_str());
+        }
     }
 }
 
@@ -587,41 +589,46 @@ void IRC::onCAP(const IRCMessage message) {
 void IRC::onIRCX(const IRCMessage message) {
     // >>> :irc.mysite.com 800 Anonymous 0 0 ANON 512 *
     // <state> <version> <package-list> <maxmsg> <option-list>
-    serverInfo.hasExtensions = true;
+    if (message.parameters.size() > 5) {
 
-    serverInfo.extensions.enabled = message.parameters[1] == "1";
-    try {
-        serverInfo.extensions.version = std::stoi(message.parameters[2]);
-    } catch (...) {
-        serverInfo.extensions.version = -1;
-    }
-    serverInfo.extensions.packages = splitString(message.parameters[3]);
-    try {
-        serverInfo.maxLen = std::stoi(message.parameters[4]); // TODO
-    } catch (...) {
-        serverInfo.maxLen = 512;
-    }
-    if (message.parameters[5] == "*") {
-        serverInfo.extensions.options.clear();
-    } else {
-        serverInfo.extensions.options = splitString(message.parameters[5]);
-    }
-    // TODO: check if we already have tried enabling,
-    // preventing an endless loop if the server supports IRCX but
-    // denies our enable request.
-    if (!serverInfo.extensions.enabled)
-        send("IRCX");
+        serverInfo.hasExtensions = true;
 
-    if (!serverInfo.registrationComplete && serverInfo.extensions.enabled) {
-        connectTimer.abortTimer();
-        onCanRegister();
+        serverInfo.extensions.enabled = message.parameters[1] == "1";
+        try {
+            serverInfo.extensions.version = std::stoi(message.parameters[2]);
+        } catch (...) {
+            serverInfo.extensions.version = -1;
+        }
+        serverInfo.extensions.packages = splitString(message.parameters[3]);
+        try {
+            serverInfo.maxLen = std::stoi(message.parameters[4]); // TODO
+        } catch (...) {
+            serverInfo.maxLen = 512;
+        }
+        if (message.parameters[5] == "*") {
+            serverInfo.extensions.options.clear();
+        } else {
+            serverInfo.extensions.options = splitString(message.parameters[5]);
+        }
+        // TODO: check if we already have tried enabling,
+        // preventing an endless loop if the server supports IRCX but
+        // denies our enable request.
+        if (!serverInfo.extensions.enabled)
+            send("IRCX");
+
+        if (!serverInfo.registrationComplete && serverInfo.extensions.enabled) {
+            connectTimer.abortTimer();
+            onCanRegister();
+        }
     }
 }
 
 void IRC::onPING(const IRCMessage message) {
-    if (message.command == "PING") {
-        if (message.parameters.size())
-            send("PONG :" + message.parameters[0]);
+    if (message.parameters.size() > 0) {
+        if (message.command == "PING") {
+            if (message.parameters.size())
+                send("PONG :" + message.parameters[0]);
+        }
     }
 }
 
@@ -631,23 +638,30 @@ void IRC::ping() {
 }
 
 void IRC::onPONG(const IRCMessage message) {
-    std::chrono::milliseconds lag;
     int pingInterval = 10;
-    if (message.parameters.size()) {
-        try {
-            auto sent_int = std::stoll(message.parameters[1]);
-            auto sent = std::chrono::milliseconds(sent_int);
-            auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
-            lag = now - sent;
-            LOG_DEBUG("Lag is %d ms", (int)lag.count());
-            serverInfo.lag = lag;
-            if (lag.count() > 5000)
-                pingInterval = 30;
-        } catch (...) {
-            LOG_DEBUG("Unable to determine lag");
-            serverInfo.lag = std::chrono::duration_values::max;
-            pingInterval = 60;
+    if (message.parameters.size() > 1) {
+        std::chrono::milliseconds lag;
+        if (message.parameters.size()) {
+            try {
+                auto sent_int = std::stoll(message.parameters[1]);
+                auto sent = std::chrono::milliseconds(sent_int);
+                auto now =
+                    std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+                lag = now - sent;
+                LOG_DEBUG("Lag is %d ms", (int)lag.count());
+                serverInfo.lag = lag;
+                if (lag.count() > 5000)
+                    pingInterval = 30;
+            } catch (...) {
+                LOG_DEBUG("Unable to determine lag (parameter not integer)");
+                serverInfo.lag = std::chrono::milliseconds::max();
+                pingInterval = 60;
+            }
         }
+    } else {
+        LOG_DEBUG("Unable to determine lag (missing parameter)");
+        serverInfo.lag = std::chrono::milliseconds::max();
+        pingInterval = 60;
     }
     lagTimer.afterSeconds([this]() { ping(); }, std::chrono::seconds(pingInterval));
 }
@@ -678,18 +692,22 @@ void IRC::onCTCPResponse(const IRCMessage message, const CTCPMessage ctcp) {
     if (message.source.nick == "NickServ" && ctcp.command == "VERSION") {
         // Note... we might need to analyse some services
         // ergo responds "NickServ (ergo-v2.15.0)"
-        if (splitString(ctcp.parameters)[0] == "NickServ") {
-            serverInfo.services = splitString(ctcp.parameters)[1];
-        } else {
-            serverInfo.services = splitString(ctcp.parameters)[0];
+        if (message.parameters.size() > 0) {
+            if (splitString(ctcp.parameters)[0] == "NickServ") {
+                if (message.parameters.size() > 1)
+                    serverInfo.services = splitString(ctcp.parameters)[1];
+            } else {
+                serverInfo.services = splitString(ctcp.parameters)[0];
+            }
+
+            if (serverInfo.services.length()) {
+                if (serverInfo.services[0] == '(')
+                    serverInfo.services.erase(0, 1);
+                if (serverInfo.services[serverInfo.services.length() - 1] == ')')
+                    serverInfo.services.erase(serverInfo.services.length() - 1, 1);
+            }
+            LOG_INFO("Services : %s", serverInfo.services.c_str());
         }
-
-        if (serverInfo.services[0] == '(')
-            serverInfo.services.erase(0, 1);
-        if (serverInfo.services[serverInfo.services.length() - 1] == ')')
-            serverInfo.services.erase(serverInfo.services.length() - 1, 1);
-
-        LOG_INFO("Services : %s", serverInfo.services.c_str());
     }
 }
 
@@ -872,29 +890,31 @@ void IRC::onNOTICE(const IRCMessage message) {
 void IRC::onERROR(const IRCMessage message) {}
 
 void IRC::onJOIN(const IRCMessage message) {
-    auto channel = toLower(message.parameters[0]);
-    if (isEqual(mNick, message.source.nick)) {
-        // We have joined a channel
-        mIRCChannels[channel].joined = true;
-        // We index on the lowe case string, we store the string with case preserved
-        // for displaying purposes
-        mIRCChannels[toLower(message.parameters[0])].name = message.parameters[0];
-        // Obtain the channel modes
-        send("MODE " + channel);
-    } else {
-        // Someone else has joined a channel we are in
-        // --> Update channel member list
-        IRCUser joined;
-        joined.nick = message.source.nick;
-        joined.user = message.source.user;
-        joined.host = message.source.host;
+    if (message.parameters.size() > 0) {
+        auto channel = toLower(message.parameters[0]);
+        if (isEqual(mNick, message.source.nick)) {
+            // We have joined a channel
+            mIRCChannels[channel].joined = true;
+            // We index on the lowe case string, we store the string with case preserved
+            // for displaying purposes
+            mIRCChannels[toLower(message.parameters[0])].name = message.parameters[0];
+            // Obtain the channel modes
+            send("MODE " + channel);
+        } else {
+            // Someone else has joined a channel we are in
+            // --> Update channel member list
+            IRCUser joined;
+            joined.nick = message.source.nick;
+            joined.user = message.source.user;
+            joined.host = message.source.host;
 
-        if (message.parameters.size() > 2) {
-            // extended join
-            joined.account = message.parameters[1];
-            joined.realname = message.parameters[2];
+            if (message.parameters.size() > 2) {
+                // extended join
+                joined.account = message.parameters[1];
+                joined.realname = message.parameters[2];
+            }
+            mIRCChannels[channel].nicks[toLower(message.source.nick)] = joined;
         }
-        mIRCChannels[channel].nicks[toLower(message.source.nick)] = joined;
     }
 }
 
@@ -902,113 +922,119 @@ void IRC::onChannelModeIs(const IRCMessage message) {
     // The RPL_CHANNELMODEIS message looks like
     // "<client> <channel> <modestring> <mode arguments>..."
     // We drop the <client> and let the onMODE handler process it
-    IRCMessage adjusted = message;
-    adjusted.parameters.erase(adjusted.parameters.begin());
-    onMODE(adjusted);
+
+    if (message.parameters.size() > 0) {
+        IRCMessage adjusted = message;
+        adjusted.parameters.erase(adjusted.parameters.begin());
+        onMODE(adjusted);
+    }
 }
 
 void IRC::onMODE(const IRCMessage message) {
-    auto target = message.parameters[0];
-    if (isChannel(target)) {
-        /*
-                Channel Membership:
-                Server MUST NOT list modes in this parameter that are also advertised in the PREFIX parameter. However, modes within
-           the PREFIX parameter may be treated as type B modes.
+    if (message.parameters.size() > 1) {
+        auto target = message.parameters[0];
+        if (isChannel(target)) {
+            /*
+                    Channel Membership:
+                    Server MUST NOT list modes in this parameter that are also advertised in the PREFIX parameter. However, modes
+               within the PREFIX parameter may be treated as type B modes.
 
 
-            Type A: Modes that add or remove an address to or from a list. These modes MUST always have a parameter when sent from
-           the server to a client. A client MAY issue this type of mode without an argument to obtain the current contents of the
-           list. The numerics used to retrieve contents of Type A modes depends on the specific mode. Also see the EXTBAN parameter.
+                Type A: Modes that add or remove an address to or from a list. These modes MUST always have a parameter when sent
+               from the server to a client. A client MAY issue this type of mode without an argument to obtain the current contents
+               of the list. The numerics used to retrieve contents of Type A modes depends on the specific mode. Also see the EXTBAN
+               parameter.
 
-            Type B: Modes that change a setting on a channel. These modes MUST always have a parameter.
+                Type B: Modes that change a setting on a channel. These modes MUST always have a parameter.
 
-            Type C: Modes that change a setting on a channel. These modes MUST have a parameter when being set, and MUST NOT have a
-           parameter when being unset.
+                Type C: Modes that change a setting on a channel. These modes MUST have a parameter when being set, and MUST NOT
+               have a parameter when being unset.
 
-            Type D: Modes that change a setting on a channel. These modes MUST NOT have a parameter.
-        */
+                Type D: Modes that change a setting on a channel. These modes MUST NOT have a parameter.
+            */
 
-        int parameter = 0;
-        struct modechange_t {
-            char modeset;
-            char modechar;
-            int parameter;
-        };
-        std::vector<modechange_t> modeChanges;
+            int parameter = 0;
+            struct modechange_t {
+                char modeset;
+                char modechar;
+                int parameter;
+            };
+            std::vector<modechange_t> modeChanges;
 
-        auto modestring = message.parameters[1];
+            auto modestring = message.parameters[1];
 
-        char modeset = 0;
-        unsigned pos = 0;
-        while (pos < modestring.length()) {
-            char modechar = modestring[pos];
-            pos++;
-            if (modechar == '+' || modechar == '-') {
-                modeset = modechar;
-                continue;
-            }
-
-            if (modeset == '+' || modeset == '-') {
-
-                modechange_t modechange = {.modeset = modeset, .modechar = modechar, .parameter = -1};
-
-                if (serverInfo.channelMembershipPrefixes.contains(modechar)) {
-                    // Channel Membership
-                    // Always takes parameter
-                    modechange.parameter = parameter++;
+            char modeset = 0;
+            unsigned pos = 0;
+            while (pos < modestring.length()) {
+                char modechar = modestring[pos];
+                pos++;
+                if (modechar == '+' || modechar == '-') {
+                    modeset = modechar;
+                    continue;
                 }
-                if (serverInfo.channelTypeAModes.find(modechar) != std::string::npos) {
-                    // Mode Type A
-                    // Add address to list
-                    // Always takes parameter in message from server
-                    modechange.parameter = parameter++;
-                }
-                if (serverInfo.channelTypeBModes.find(modechar) != std::string::npos) {
-                    // Mode Type B
-                    // Change setting on channel
-                    // Always takes parameter
-                    modechange.parameter = parameter++;
-                }
-                if (serverInfo.channelTypeCModes.find(modechar) != std::string::npos) {
-                    // Mode Type C
-                    // Change setting on channel
-                    // Takes parameter when being set
-                    // Takes no parameter when being unset
-                    if (modeset == '+')
+
+                if (modeset == '+' || modeset == '-') {
+
+                    modechange_t modechange = {.modeset = modeset, .modechar = modechar, .parameter = -1};
+
+                    if (serverInfo.channelMembershipPrefixes.contains(modechar)) {
+                        // Channel Membership
+                        // Always takes parameter
                         modechange.parameter = parameter++;
-                }
-                if (serverInfo.channelTypeDModes.find(modechar) != std::string::npos) {
-                    // Mode Type D
-                    // Change setting on channel
-                    // No parameters
-                }
+                    }
+                    if (serverInfo.channelTypeAModes.find(modechar) != std::string::npos) {
+                        // Mode Type A
+                        // Add address to list
+                        // Always takes parameter in message from server
+                        modechange.parameter = parameter++;
+                    }
+                    if (serverInfo.channelTypeBModes.find(modechar) != std::string::npos) {
+                        // Mode Type B
+                        // Change setting on channel
+                        // Always takes parameter
+                        modechange.parameter = parameter++;
+                    }
+                    if (serverInfo.channelTypeCModes.find(modechar) != std::string::npos) {
+                        // Mode Type C
+                        // Change setting on channel
+                        // Takes parameter when being set
+                        // Takes no parameter when being unset
+                        if (modeset == '+')
+                            modechange.parameter = parameter++;
+                    }
+                    if (serverInfo.channelTypeDModes.find(modechar) != std::string::npos) {
+                        // Mode Type D
+                        // Change setting on channel
+                        // No parameters
+                    }
 
-                modeChanges.push_back(modechange);
-            } else {
-                // Incorrectly formatted modestring
-                return;
-            }
-        }
-
-        // Now we have created a list of modes to be set and unset, with their respective parameter.
-
-        LOG_DEBUG("Setting modes on channel: %s", target.c_str());
-        for (auto &modeChange : modeChanges) {
-            std::string modeParameter;
-            if (modeChange.parameter != -1) {
-                unsigned parameter = modeChange.parameter + 2;
-                if (message.parameters.size() > parameter) {
-                    modeParameter = message.parameters[parameter];
+                    modeChanges.push_back(modechange);
                 } else {
-                    modeParameter = "ERROR";
+                    // Incorrectly formatted modestring
+                    return;
                 }
             }
-            LOG_DEBUG("%c%c %s", modeChange.modeset, modeChange.modechar, modeParameter.c_str());
-            // TODO: Now we should process that what we have gathered
-        }
 
-    } else {
-        // Mode on user.
+            // Now we have created a list of modes to be set and unset, with their respective parameter.
+
+            LOG_DEBUG("Setting modes on channel: %s", target.c_str());
+            for (auto &modeChange : modeChanges) {
+                std::string modeParameter;
+                if (modeChange.parameter != -1) {
+                    unsigned parameter = modeChange.parameter + 2;
+                    if (message.parameters.size() > parameter) {
+                        modeParameter = message.parameters[parameter];
+                    } else {
+                        modeParameter = "ERROR";
+                    }
+                }
+                LOG_DEBUG("%c%c %s", modeChange.modeset, modeChange.modechar, modeParameter.c_str());
+                // TODO: Now we should process that what we have gathered
+            }
+
+        } else {
+            // Mode on user.
+        }
     }
 }
 
@@ -1046,6 +1072,7 @@ void IRC::onNamReply(const IRCMessage message) {
     //		mIRCChannels[toLower(message.parameters[2])];
     //	}
 }
+
 void IRC::onEndOfNames(const IRCMessage message) {
     if (message.parameters.size() >= 3) {
         if (serverInfo.features.count("WHOX")) {
@@ -1063,52 +1090,56 @@ void IRC::onWhoSpcReply(const IRCMessage message) {
     // https://ircv3.net/specs/extensions/whox
     // <client> [token] [channel] [user] [ip] [host] [server] [nick] [flags] [hopcount] [idle] [account] [oplevel] [:realname]
 
-    IRCUser user = {};
+    if (message.parameters.size() > 13) {
+        IRCUser user = {};
 
-    auto client = message.parameters[0];
-    auto token = message.parameters[1];
-    auto channel = message.parameters[2];
-    user.user = message.parameters[3];
-    user.ip = message.parameters[4];
-    user.host = message.parameters[5];
-    user.server = message.parameters[6];
-    user.nick = message.parameters[7];
-    user.flags = message.parameters[8];
-    user.hopcount = message.parameters[9];
-    user.idle = message.parameters[10];
-    user.account = message.parameters[11];
-    user.oplevel = message.parameters[12];
-    user.realname = message.parameters[13];
+        auto client = message.parameters[0];
+        auto token = message.parameters[1];
+        auto channel = message.parameters[2];
+        user.user = message.parameters[3];
+        user.ip = message.parameters[4];
+        user.host = message.parameters[5];
+        user.server = message.parameters[6];
+        user.nick = message.parameters[7];
+        user.flags = message.parameters[8];
+        user.hopcount = message.parameters[9];
+        user.idle = message.parameters[10];
+        user.account = message.parameters[11];
+        user.oplevel = message.parameters[12];
+        user.realname = message.parameters[13];
 
-    if (isChannel(channel))
-        mIRCChannels[toLower(channel)].nicks[toLower(user.nick)] = user;
+        if (isChannel(channel))
+            mIRCChannels[toLower(channel)].nicks[toLower(user.nick)] = user;
+    }
 }
 void IRC::onWhoReply(const IRCMessage message) {
     //   "<client> <channel> <username> <host> <server> <nick> <flags> :<hopcount> <realname>"
+    if (message.parameters.size() > 8) {
+        IRCUser user = {};
+        auto client = message.parameters[0];
+        auto channel = message.parameters[1];
+        user.user = message.parameters[2];
+        user.host = message.parameters[3];
+        user.server = message.parameters[4];
+        user.nick = message.parameters[5];
+        user.flags = message.parameters[6];
+        user.hopcount = message.parameters[7];
+        user.realname = message.parameters[8];
 
-    IRCUser user = {};
-    auto client = message.parameters[0];
-    auto channel = message.parameters[1];
-    user.user = message.parameters[2];
-    user.host = message.parameters[3];
-    user.server = message.parameters[4];
-    user.nick = message.parameters[5];
-    user.flags = message.parameters[6];
-    user.hopcount = message.parameters[7];
-    user.realname = message.parameters[8];
-
-    if (isChannel(channel))
-        mIRCChannels[toLower(channel)].nicks[toLower(user.nick)] = user;
+        if (isChannel(channel))
+            mIRCChannels[toLower(channel)].nicks[toLower(user.nick)] = user;
+    }
 }
 
 void IRC::onEndOfWho(const IRCMessage message) {
-
-    // "<client> <mask> :End of WHO list"
-    auto channel = toLower(message.parameters[1]);
-    if (isChannel(channel)) {
-        LOG_DEBUG("Channel: %s", channel.c_str());
-        for (auto &nick : mIRCChannels[toLower(channel)].nicks) {
-            LOG_DEBUG("Nick: %s", nick.second.nick.c_str());
+    if (message.parameters.size() > 1) {
+        // "<client> <mask> :End of WHO list"
+        auto channel = toLower(message.parameters[1]);
+        if (isChannel(channel)) {
+            LOG_DEBUG("Channel: %s", channel.c_str());
+            for (auto &nick : mIRCChannels[toLower(channel)].nicks) {
+                LOG_DEBUG("Nick: %s", nick.second.nick.c_str());
+            }
         }
     }
 }
