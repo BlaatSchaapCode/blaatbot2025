@@ -18,9 +18,9 @@ const char *get_label(LogLevel level) {
     case LogLevel::Error:
         return "[ERROR]   ";
     case LogLevel::DebugLog:
-        return "[DBG_LOG] ";
+        return "[DEBUG]   ";
     case LogLevel::TestLog:
-        return "[TEST_LOG]";
+        return "[TEST]    ";
     default:
         return "[LOG]     ";
     }
