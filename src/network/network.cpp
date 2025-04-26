@@ -26,19 +26,19 @@ WSADATA d = {0};
 
 void init(void) {
 #if defined(_WIN32) || defined(__WIN32__)
-    if (WSAStartup(0x0202, &d)) {
-        LOG_ERROR("Error initialising WinSock");
-    }
+  if (WSAStartup(0x0202, &d)) {
+    LOG_ERROR("Error initialising WinSock");
+  }
 #endif
 
-    active = true;
+  active = true;
 }
 
 void deinit(void) {
-    active = false;
+  active = false;
 
 #if defined(_WIN32) || defined(__WIN32__)
-    WSACleanup();
+  WSACleanup();
 #endif
 }
 

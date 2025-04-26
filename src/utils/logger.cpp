@@ -7,37 +7,42 @@
 #include <format>
 
 namespace utils::logger {
-template <size_t N> static consteval size_t compile_time_strlen(char const (&)[N]) { return N - 1; }
-const constexpr size_t FILE_SKIP = compile_time_strlen(__FILE__) - compile_time_strlen("utils/logger.cpp");
+template <size_t N>
+static consteval size_t compile_time_strlen(char const (&)[N]) {
+  return N - 1;
+}
+const constexpr size_t FILE_SKIP =
+    compile_time_strlen(__FILE__) - compile_time_strlen("utils/logger.cpp");
 // Note: FILE_SKIP is machine dependant
 
 const char *get_label(LogLevel level) {
-    switch (level) {
-    case LogLevel::Warning:
-        return "[WARNING] ";
-    case LogLevel::Error:
-        return "[ERROR]   ";
-    case LogLevel::DebugLog:
-        return "[DEBUG]   ";
-    case LogLevel::TestLog:
-        return "[TEST]    ";
-    default:
-        return "[LOG]     ";
-    }
+  switch (level) {
+  case LogLevel::Warning:
+    return "[WARNING] ";
+  case LogLevel::Error:
+    return "[ERROR]   ";
+  case LogLevel::DebugLog:
+    return "[DEBUG]   ";
+  case LogLevel::TestLog:
+    return "[TEST]    ";
+  default:
+    return "[LOG]     ";
+  }
 }
 
-void log_impl2(LogLevel level, const char *file, int line, std::string_view msg) {
-
+void log_impl2(LogLevel level, const char *file, int line,
+               std::string_view msg) {
 
 #if __cpp_lib_chrono >= 201907L
-    const auto zt{std::chrono::zoned_time{std::chrono::current_zone(), std::chrono::system_clock::now()}};
-    printf("%s %s%24s:%-4d %s\n", std::format("{:%FT%T%z}", zt).c_str(), get_label(level), file + FILE_SKIP, line, msg.data());
+  const auto zt{std::chrono::zoned_time{std::chrono::current_zone(),
+                                        std::chrono::system_clock::now()}};
+  printf("%s %s%24s:%-4d %s\n", std::format("{:%FT%T%z}", zt).c_str(),
+         get_label(level), file + FILE_SKIP, line, msg.data());
 #else
-    printf("%s%24s:%-4d %s\n", get_label(level), file + FILE_SKIP, line, msg.data());
+  printf("%s%24s:%-4d %s\n", get_label(level), file + FILE_SKIP, line,
+         msg.data());
 #endif
 
-
-
-    // TODO: Also write the log to a file
+  // TODO: Also write the log to a file
 }
 } // namespace utils::logger
