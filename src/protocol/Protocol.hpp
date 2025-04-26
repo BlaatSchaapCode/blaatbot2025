@@ -11,7 +11,7 @@
 #include "../network/Connection.hpp"
 
 namespace network {
-class cConnection;
+class Connection;
 }
 
 namespace protocol {
@@ -22,10 +22,10 @@ class Protocol {
     virtual void onData(std::vector<char> data) = 0;
     virtual void onConnected() = 0;
     virtual void onDisconnected() = 0;
-    void setConnection(::network::cConnection *connection) { mConnection = connection; }
+    void setConnection(::network::Connection *connection) { mConnection = connection; }
 
   protected:
-    ::network::cConnection *mConnection = nullptr;
+    ::network::Connection *mConnection = nullptr;
 };
 
 } // namespace protocol

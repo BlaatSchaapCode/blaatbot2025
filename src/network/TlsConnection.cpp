@@ -12,7 +12,7 @@
 
 namespace network {
 // void cTlsConnection::connect(std::string ip_address, uint16_t port, bool ignoreBadCertificate, bool ignoreLegacyServer) {
-int cTlsConnection::connect(void) {
+int TlsConnection::connect(void) {
     int rc;
     rc = tls_init();
     m_tls_config = tls_config_new();
@@ -108,12 +108,12 @@ int cTlsConnection::connect(void) {
     printf("tls_conn_version = %s\n", tls_conn_version(m_tls_socket));
 
     m_receiveThreadActive = true;
-    m_receiveThread = new std::thread(cTlsConnection::receiveThreadFunc, this);
+    m_receiveThread = new std::thread(TlsConnection::receiveThreadFunc, this);
     this->mProtocol->onConnected();
     return 0;
 }
 
-void cTlsConnection::receiveThreadFunc(cTlsConnection *self) {
+void TlsConnection::receiveThreadFunc(TlsConnection *self) {
     LOG_INFO("Starting Receive Thread");
     setThreadName("TlsRecv");
     char recv_buffer[8191] = {0};
@@ -145,7 +145,7 @@ void cTlsConnection::receiveThreadFunc(cTlsConnection *self) {
     }
 }
 
-void cTlsConnection::send(std::vector<char> data) {
+void TlsConnection::send(std::vector<char> data) {
     size_t sent_bytes = ::tls_write(m_tls_socket, (const char *)data.data(), (int)data.size());
     if (sent_bytes == data.size()) {
         LOG_DEBUG("Sent %d bytes", sent_bytes);
@@ -154,15 +154,27 @@ void cTlsConnection::send(std::vector<char> data) {
     }
 }
 
-int cTlsConnection::setIgnoreInvalidCerficiate(bool ignoreInvalidCerficiate) {
+int TlsConnection::setIgnoreInvalidCerficiate(bool ignoreInvalidCerficiate) {
     this->ignoreInvalidCerficiate = ignoreInvalidCerficiate;
     return 0;
 }
-int cTlsConnection::setIgnoreInsecureProtocol(bool ignoreInsecureProtocol) {
+int TlsConnection::setIgnoreInsecureProtocol(bool ignoreInsecureProtocol) {
     this->ignoreInsecureProtocol = ignoreInsecureProtocol;
     return 0;
 }
 
-cTlsConnection::cTlsConnection() { mPort = 6697; }
-cTlsConnection::~cTlsConnection() {}
+TlsConnection::TlsConnection() { mPort = 6697; }
+TlsConnection::~TlsConnection() {}
 } // namespace network
+
+
+#ifdef DYNAMIC_LIBRARY
+extern "C" {
+	network::TlsConnection * newInstance(void) {
+		return new network::TlsConnection();
+	}
+	void deleteInstance(network::TlsConnection * inst) {
+		delete inst;
+	}
+}
+#endif

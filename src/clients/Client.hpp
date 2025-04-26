@@ -13,7 +13,7 @@ class Client {
     virtual ~Client();
   protected:
     ::protocol::IRC *mIRC;
-    ::network::cConnection *mConnection;
+    ::network::Connection *mConnection;
   private:
 };
 

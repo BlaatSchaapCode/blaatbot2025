@@ -9,25 +9,23 @@
 #include <string>
 #include <vector>
 
-
-
 #include "Connection.hpp"
 namespace network {
 
-cConnection::~cConnection() {}
+Connection::~Connection() {}
 
-void cConnection::send(std::string s) {
+void Connection::send(std::string s) {
     std::vector<char> v(s.begin(), s.end());
     send(v);
 }
 
-void cConnection::setProtocol(::protocol::Protocol *protocol) { mProtocol = protocol; }
+void Connection::setProtocol(::protocol::Protocol *protocol) { mProtocol = protocol; }
 
-int cConnection::setHostName(std::string hostName) {
+int Connection::setHostName(std::string hostName) {
     mHostName = hostName;
     return 0;
 }
-int cConnection::setPort(uint16_t port) {
+int Connection::setPort(uint16_t port) {
     mPort = port;
     return 0;
 }

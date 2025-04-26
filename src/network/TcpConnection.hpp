@@ -13,10 +13,10 @@
 
 namespace network {
 
-class cTcpConnection : public cConnection {
+class TcpConnection : public Connection {
   public:
-    ~cTcpConnection();
-    cTcpConnection();
+    ~TcpConnection();
+    TcpConnection();
 
     //void connect(std::string ip_address, uint16_t port = 6667);
     int connect(void) override;
@@ -31,7 +31,7 @@ class cTcpConnection : public cConnection {
     std::atomic<bool> m_receiveThreadActive = false;
     std::thread *m_receiveThread = nullptr;
 
-    static void receiveThreadFunc(cTcpConnection *self);
+    static void receiveThreadFunc(TcpConnection *self);
 };
 
 } // namespace network

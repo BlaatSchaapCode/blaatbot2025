@@ -19,28 +19,7 @@
 #include "threadName.hpp"
 
 namespace network {
-
-
-cTcpConnection::cTcpConnection() {
-	mPort = 6667;
-}
-
-cTcpConnection::~cTcpConnection() {
-    m_receiveThreadActive = false;
-    LOG_INFO("Stopping receive thread ", 0);
-    if (m_receiveThread->joinable()) {
-        LOG_INFO("receive thread joinable", 1);
-        m_receiveThread->join();
-    } else {
-        LOG_INFO("receive thread not joinable", 0);
-    }
-    LOG_INFO("Deleting Receive Thread", 0);
-    delete m_receiveThread;
-    LOG_INFO("Closing socket", 0);
-    closesocket(m_socket);
-}
-
-void cTcpConnection::send(std::vector<char> data) {
+void TcpConnection::send(std::vector<char> data) {
     size_t sent_bytes = ::send(m_socket, (const char *)data.data(), (int)data.size(), 0);
     if (sent_bytes == data.size()) {
         LOG_DEBUG("Sent %d bytes", sent_bytes);
@@ -49,7 +28,7 @@ void cTcpConnection::send(std::vector<char> data) {
     }
 }
 
-void cTcpConnection::receiveThreadFunc(cTcpConnection *self) {
+void TcpConnection::receiveThreadFunc(TcpConnection *self) {
     LOG_INFO("Starting Receive Thread");
     setThreadName("TcpRecv");
     char recv_buffer[8191] = {0};
@@ -90,7 +69,7 @@ void cTcpConnection::receiveThreadFunc(cTcpConnection *self) {
     }
 }
 
-int cTcpConnection::connect(void) {
+int TcpConnection::connect(void) {
     LOG_INFO("Requested to connect to %s:%d", mHostName.c_str(), mPort);
 
     m_socket = 0;
@@ -186,9 +165,40 @@ int cTcpConnection::connect(void) {
     setsockopt(m_socket, SOL_SOCKET, SO_KEEPALIVE, (const char *)&yes, sizeof(yes));
 
     m_receiveThreadActive = true;
-    m_receiveThread = new std::thread(cTcpConnection::receiveThreadFunc, this);
+    m_receiveThread = new std::thread(TcpConnection::receiveThreadFunc, this);
     this->mProtocol->onConnected();
     return 0;
 }
 
+TcpConnection::TcpConnection() {
+	mPort = 6667;
+}
+
+TcpConnection::~TcpConnection() {
+    m_receiveThreadActive = false;
+    LOG_INFO("Stopping receive thread ", 0);
+    if (m_receiveThread->joinable()) {
+        LOG_INFO("receive thread joinable", 1);
+        m_receiveThread->join();
+    } else {
+        LOG_INFO("receive thread not joinable", 0);
+    }
+    LOG_INFO("Deleting Receive Thread", 0);
+    delete m_receiveThread;
+    LOG_INFO("Closing socket", 0);
+    closesocket(m_socket);
+}
+
 } // namespace network
+
+#ifdef DYNAMIC_LIBRARY
+extern "C" {
+	network::TcpConnection * newInstance(void) {
+		return new network::TcpConnection();
+	}
+	void deleteInstance(network::TcpConnection * inst) {
+		delete inst;
+	}
+}
+#endif
+

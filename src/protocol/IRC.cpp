@@ -384,7 +384,7 @@ void IRC::onReady(void) {
 
     // TODO
     send("JOIN #bscp-test");
-//	send("JOIN #blaatschaap");
+    //	send("JOIN #blaatschaap");
 }
 
 void IRC::onConnected() {
@@ -1295,11 +1295,19 @@ void IRC::send(std::string message) {
 }
 
 bool IRC::isChannel(const std::string target) {
-    // stub, TODO
-    return target[0] == '#';
+    if (!target.length())
+        return false;
+    for (unsigned i = 0; i < serverInfo.features["CHANTYPES"].length(); i++) {
+        if (target[0] == serverInfo.features["CHANTYPES"][i])
+            return true;
+    }
+    return false;
 }
 
 bool IRC::isNick(const std::string target) {
+    if (!target.length())
+        return false;
+    return !isChannel(target);
     /*
 
 
@@ -1316,16 +1324,6 @@ bool IRC::isNick(const std::string target) {
     has some nice rules
 
     */
-    if (target.length()) {
-        // Please note... this is for ascii mapping,
-        // but what when we have utf8 mapping?
-
-    } else {
-        // empty String?
-        return false;
-    }
-
-    return false;
 }
 
 bool IRC::validTarget(const std::string target) {

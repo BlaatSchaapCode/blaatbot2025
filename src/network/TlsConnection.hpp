@@ -21,12 +21,12 @@
 
 namespace network {
 
-class cTlsConnection : public cConnection {
+class TlsConnection : public Connection {
 
   public:
-    using cConnection::cConnection;
-    cTlsConnection();
-    ~cTlsConnection();
+    using Connection::Connection;
+    TlsConnection();
+    ~TlsConnection();
 
     int connect() override;
 
@@ -50,7 +50,7 @@ class cTlsConnection : public cConnection {
     struct tls_config *m_tls_config = nullptr;
     struct tls *m_tls_socket = nullptr;
 
-    static void receiveThreadFunc(cTlsConnection *self);
+    static void receiveThreadFunc(TlsConnection *self);
 };
 
 } // namespace network

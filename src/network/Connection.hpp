@@ -21,10 +21,10 @@ class Protocol;
 
 namespace network {
 
-class cConnection {
+class Connection {
 
   public:
-    virtual ~cConnection();
+    virtual ~Connection();
     virtual void send(std::vector<char> data) = 0;
     void send(std::string s);
     void setProtocol(::protocol::Protocol *protocol);
