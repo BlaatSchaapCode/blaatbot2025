@@ -31,6 +31,13 @@ void setThreadName(std::string threadName) {
   int result = pthread_setname_np(pthread_self(), threadName.c_str());
   (void)(result);
 }
+#elif defined __BEOS__ || defined __HAIKU__ 
+// Set threadName under Haiku
+#include <kernel/OS.h>    
+
+void setThreadName(std::string threadName) {
+  rename_thread(find_thread(nullptr), threadName.c_str());
+}
 
 #else
 // Empty implementation for non-supported OS'es/ C Libraries
