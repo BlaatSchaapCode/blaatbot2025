@@ -3,7 +3,7 @@ PCDEV_ROOT   := ../../pcdev
 OUT_DIR      := ../../out
 SRC_DIR      := ../../src
 
-LIBS +=  icu-uc nlohmann_json libtls
+LIBS +=  icu-uc nlohmann_json
 
 CXXFLAGS += -DENABLE_LOG_DEBUG
 
