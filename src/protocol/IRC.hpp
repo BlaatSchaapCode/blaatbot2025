@@ -45,6 +45,10 @@ class IRC : public Protocol {
     };
 
     struct Numeric {
+		// Originally these were "static constexpr std::string"
+		// However, this is not compatible with the C++ library used
+		// on HaikuOS. Therefore these are now
+		// "static constexpr const char*" instead.
         static constexpr const char* RPL_WELCOME = "001";
         static constexpr const char* RPL_YOURHOST = "002";
         static constexpr const char* RPL_CREATED = "003";
