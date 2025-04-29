@@ -4,7 +4,7 @@
 
 #include "../protocol/IRC.hpp"
 #include "../protocol/Protocol.hpp"
-
+#include "../PluginLoader.hpp"
 namespace client {
 
 class Client {
@@ -15,6 +15,7 @@ class Client {
     ::protocol::IRC *mIRC;
     ::network::Connection *mConnection;
   private:
+    PluginLoader pl;
 };
 
 } /* namespace client */

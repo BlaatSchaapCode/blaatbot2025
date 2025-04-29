@@ -1,4 +1,4 @@
-TARGET       := blaatnet_tcp
+TARGET       := geblaat_network_tcp
 PROJ_DIR     := ../../..
 PCDEV_ROOT   := $(PROJ_DIR)/pcdev
 OUT_DIR      := $(PROJ_DIR)/out

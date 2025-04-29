@@ -90,8 +90,8 @@ int TcpConnection::connect(void) {
 
     res = result;
 
-    struct sockaddr_in6 in6 = {};
-    struct sockaddr_in in = {};
+//    struct sockaddr_in6 in6 = {};
+//    struct sockaddr_in in = {};
 
     while (res && !m_connected) {
         switch (res->ai_family) {
@@ -196,9 +196,10 @@ extern "C" {
 	network::TcpConnection * newInstance(void) {
 		return new network::TcpConnection();
 	}
-	void deleteInstance(network::TcpConnection * inst) {
+	void delInstance(network::TcpConnection * inst) {
 		delete inst;
 	}
+	int test = 42;
 }
 #endif
 

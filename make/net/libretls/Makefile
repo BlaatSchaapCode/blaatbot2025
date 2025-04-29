@@ -1,4 +1,4 @@
-TARGET       := blaatnet_libretls
+TARGET       := geblaat_network_libretls
 PROJ_DIR     := ../../..
 PCDEV_ROOT   := $(PROJ_DIR)/pcdev
 OUT_DIR      := $(PROJ_DIR)/out

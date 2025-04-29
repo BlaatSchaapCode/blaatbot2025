@@ -13,6 +13,11 @@ CXX_INCLUDES += $(SRC_DIR)/protocol
 CXX_INCLUDES += $(SRC_DIR)/utils
 #CXX_INCLUDES += ../ext/base64/include/
 
+CXX_SRC += $(SRC_DIR)/main.cpp
+CXX_SRC += $(SRC_DIR)/PluginLoader.cpp
+
+
+
 CXX_SRC += $(SRC_DIR)/clients/Client.cpp
 CXX_SRC += $(SRC_DIR)/network/network.cpp
 CXX_SRC += $(SRC_DIR)/network/Connection.cpp
@@ -25,7 +30,9 @@ CXX_SRC += $(SRC_DIR)/utils/logger.cpp
 CXX_SRC += $(SRC_DIR)/utils/splitString.cpp
 CXX_SRC += $(SRC_DIR)/utils/threadName.cpp
 CXX_SRC += $(SRC_DIR)/utils/timer.cpp
-CXX_SRC += $(SRC_DIR)/main.cpp
+CXX_SRC += $(SRC_DIR)/utils/classname.cpp
+
+
 
 #LDFLAGS += -lblaatnet_tcp  -lblaatnet_libretls  -L$(SO_DIR)
 

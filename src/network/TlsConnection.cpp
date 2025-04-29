@@ -173,7 +173,7 @@ extern "C" {
 	network::TlsConnection * newInstance(void) {
 		return new network::TlsConnection();
 	}
-	void deleteInstance(network::TlsConnection * inst) {
+	void delInstance(network::TlsConnection * inst) {
 		delete inst;
 	}
 }
