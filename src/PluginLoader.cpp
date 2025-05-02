@@ -7,8 +7,6 @@
 
 #include "PluginLoader.hpp"
 
-#include <dlfcn.h>
-
 #include <exception>
 
 #include "utils/logger.hpp"
@@ -28,6 +26,77 @@
 
     return nullptr;
 }
+
+
+
+#if defined(_WIN32) || defined(_WIN64)
+
+#include <windows.h>
+//#include <libloaderapi.h>
+
+
+static std::string getWin32ErrorString() {
+	// https://stackoverflow.com/questions/1387064/how-to-get-the-error-message-from-the-error-code-returned-by-getlasterror
+
+	DWORD errorMessageID = GetLastError();
+    LPSTR messageBuffer = nullptr;
+
+    //Ask Win32 to give us the string version of that message ID.
+    //The parameters we pass in, tell Win32 to create the buffer that holds the message for us (because we don't yet know how long the message string will be).
+    size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                                 NULL, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
+
+    //Copy the error message into a std::string.
+    std::string message(messageBuffer, size);
+
+    //Free the Win32's string's buffer.
+    LocalFree(messageBuffer);
+    return message;
+}
+
+
+PluginLoader::networkPlugin PluginLoader::loadNetworkPlugin(std::string name) {
+    networkPlugin result;
+    result.refcount = 1;
+    result.name = name;
+    std::string library = "geblaat_network_" + name + ".dll";
+
+    typedef ::network::Connection *(*newInstance_f)();
+    newInstance_f newInstance;
+    typedef void (*delInstance_f)(::network::Connection *);
+    delInstance_f delInstance;
+
+    result.handle = LoadLibrary(TEXT(library.c_str()));
+    if (result.handle == nullptr) {
+        throw std::runtime_error(getWin32ErrorString());
+    }
+
+    newInstance = (newInstance_f)GetProcAddress((HMODULE)result.handle, "newInstance");
+    if (!newInstance) {
+        throw std::runtime_error(getWin32ErrorString());
+    }
+
+    delInstance = (delInstance_f)GetProcAddress((HMODULE)result.handle, "delInstance");
+    if (!delInstance) {
+    	throw std::runtime_error(getWin32ErrorString());
+    }
+
+    int * test =  (int *)GetProcAddress((HMODULE)result.handle, "test");
+
+
+    result.newConnection = newInstance;
+    result.delConnection = delInstance;
+
+    return result;
+}
+
+
+#else
+// For now, Operating Systems that are not Microsoft Windows compatible
+// are expected to be POSIX compatible. At the time of writing, no OS
+// is considered not matching this requirement. Do you know any?
+
+#include <dlfcn.h>
 
 PluginLoader::networkPlugin PluginLoader::loadNetworkPlugin(std::string name) {
     networkPlugin result;
@@ -63,3 +132,5 @@ PluginLoader::networkPlugin PluginLoader::loadNetworkPlugin(std::string name) {
 
     return result;
 }
+
+#endif

@@ -11,33 +11,30 @@
 #define WSTRING_SIZE (80)
 
 void setThreadName(std::string threadName) {
-  wchar_t buff[WSTRING_SIZE];
-  auto result = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS,
-                                    threadName.c_str(), -1, buff, WSTRING_SIZE);
-  if (result > 0)
-    SetThreadDescription(GetCurrentThread(), buff);
+    wchar_t buff[WSTRING_SIZE];
+    auto result = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, threadName.c_str(), -1, buff, WSTRING_SIZE);
+    if (result > 0)
+        SetThreadDescription(GetCurrentThread(), buff);
 }
 #elif __GNUC__
 // setThreadName for the GNU C Library
 #include <pthread.h>
 
 void setThreadName(std::string threadName) {
-  /*
-     The thread name is a
-     meaningful C language string, whose length is restricted to 16
-     characters, including the terminating null byte ('\0').
-   */
+    /*
+       The thread name is a
+       meaningful C language string, whose length is restricted to 16
+       characters, including the terminating null byte ('\0').
+     */
 
-  int result = pthread_setname_np(pthread_self(), threadName.c_str());
-  (void)(result);
+    int result = pthread_setname_np(pthread_self(), threadName.c_str());
+    (void)(result);
 }
-#elif defined __BEOS__ || defined __HAIKU__ 
+#elif defined __BEOS__ || defined __HAIKU__
 // Set threadName under Haiku
-#include <kernel/OS.h>    
+#include <kernel/OS.h>
 
-void setThreadName(std::string threadName) {
-  rename_thread(find_thread(nullptr), threadName.c_str());
-}
+void setThreadName(std::string threadName) { rename_thread(find_thread(nullptr), threadName.c_str()); }
 
 #else
 // Empty implementation for non-supported OS'es/ C Libraries

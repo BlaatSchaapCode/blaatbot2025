@@ -167,14 +167,9 @@ TlsConnection::TlsConnection() { mPort = 6697; }
 TlsConnection::~TlsConnection() {}
 } // namespace network
 
-
 #ifdef DYNAMIC_LIBRARY
 extern "C" {
-	network::TlsConnection * newInstance(void) {
-		return new network::TlsConnection();
-	}
-	void deleteInstance(network::TlsConnection * inst) {
-		delete inst;
-	}
+network::TlsConnection *newInstance(void) { return new network::TlsConnection(); }
+void deleteInstance(network::TlsConnection *inst) { delete inst; }
 }
 #endif

@@ -1,4 +1,4 @@
-TARGET       := blaatnet_tcp
+TARGET       := geblaat_network_tcp
 PROJ_DIR     := ../../..
 PCDEV_ROOT   := $(PROJ_DIR)/pcdev
 OUT_DIR      := $(PROJ_DIR)/out
@@ -7,8 +7,17 @@ SRC_DIR      := $(PROJ_DIR)/src
 LIBS +=  nlohmann_json 
 
 # Haiku 
-#LIBS +=  network
-LDFLAGS += -lnetwork
+
+ifeq ($(TARGET_OS),haiku)
+	LDFLAGS += -lnetwork
+endif
+
+ifeq ($(TARGET_OS),mingw)
+	#LDFLAGS += -lwsock32
+	LDFLAGS += -lws2_32
+endif
+
+
 
 
 CXXFLAGS += -DENABLE_LOG_DEBUG
