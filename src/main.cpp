@@ -25,19 +25,18 @@ PluginLoader gPluginLoader; // testing
 #include <windows.h>
 
 [[gnu::constructor]] void windows_init_utf8_console() {
-    auto a = SetConsoleOutputCP(CP_UTF8);
+	auto a = SetConsoleOutputCP(CP_UTF8);
     auto b = SetConsoleCP(CP_UTF8);
     // Note, these APIs have non-zero value for success
-    LOG_DEBUG("WIN32 setting output to UTF8 status %d %d", a, b);
-
+    // LOG_DEBUG("WIN32 setting output to UTF8 status %d %d", a, b);
+    //
     // Does not appear to output currectly when running under wine
-    LOG_DEBUG("test: äåéëþüúíóö«»¬");
+    // But it outputs correctly on real Windows (22H2 in VirtualBox)
+    // LOG_DEBUG("test: äåéëþüúíóö«»¬");
 
-    // I have no real Windows setup to test this yet.
-
-    // Might require manifest?
-    // https://learn.microsoft.com/en-us/windows/apps/design/globalizing/use-utf8-code-page
-    // Also requires Windows 10 version 1903 or later?
+    if (! (a&&b) ) {
+    	LOG_INFO("Error setting WIN32 console to UTF-8");
+    }
 }
 
 #endif
