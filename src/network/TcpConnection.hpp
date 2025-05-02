@@ -24,7 +24,8 @@ class TcpConnection : public Connection {
     void send(std::vector<char> data) override;
 
   private:
-    struct sockaddr_in6 m_sin6 = {0};
+    struct sockaddr_in6 in6 = {};
+    struct sockaddr_in in = {};
     socket_t m_socket = 0;
     bool m_connected = false;
 
