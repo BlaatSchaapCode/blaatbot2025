@@ -410,6 +410,8 @@ class IRC : public Protocol {
     std::string stripFormatting(const std::string &formattedString);
     void splitUserNickHost(IRCSource &source);
     std::vector<IRCtag> parseTags(const std::string &tagString);
+    std::map<std::string,std::string> parseKeyValue(const std::vector<std::string>&);
+    std::vector<std::string> parseNegation(const std::vector<std::string>&);
 
     void ping();
 };
