@@ -11,6 +11,21 @@
 
 #include "utils/logger.hpp"
 
+#include "protocol/IRC.hpp" // for the stub
+
+::client::Client *PluginLoader::newClient(std::string type) {
+    // stub
+    return new ::client::Client();
+}
+
+::protocol::Protocol *PluginLoader::newProtocol(std::string type) {
+    // stub
+    if (type == "irc") {
+        return new ::protocol::IRC();
+    }
+    return nullptr;
+}
+
 ::network::Connection *PluginLoader::newConnection(std::string name) {
     if (this->networkPlugins.contains(name)) {
         this->networkPlugins[name].refcount++;
@@ -27,33 +42,30 @@
     return nullptr;
 }
 
-
-
 #if defined(_WIN32) || defined(_WIN64)
 
 #include <windows.h>
-//#include <libloaderapi.h>
-
+// #include <libloaderapi.h>
 
 static std::string getWin32ErrorString() {
-	// https://stackoverflow.com/questions/1387064/how-to-get-the-error-message-from-the-error-code-returned-by-getlasterror
+    // https://stackoverflow.com/questions/1387064/how-to-get-the-error-message-from-the-error-code-returned-by-getlasterror
 
-	DWORD errorMessageID = GetLastError();
+    DWORD errorMessageID = GetLastError();
     LPSTR messageBuffer = nullptr;
 
-    //Ask Win32 to give us the string version of that message ID.
-    //The parameters we pass in, tell Win32 to create the buffer that holds the message for us (because we don't yet know how long the message string will be).
-    size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-                                 NULL, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
+    // Ask Win32 to give us the string version of that message ID.
+    // The parameters we pass in, tell Win32 to create the buffer that holds the message for us (because we don't yet know how long
+    // the message string will be).
+    size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL,
+                                 errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
 
-    //Copy the error message into a std::string.
+    // Copy the error message into a std::string.
     std::string message(messageBuffer, size);
 
-    //Free the Win32's string's buffer.
+    // Free the Win32's string's buffer.
     LocalFree(messageBuffer);
     return message;
 }
-
 
 PluginLoader::networkPlugin PluginLoader::loadNetworkPlugin(std::string name) {
     networkPlugin result;
@@ -78,18 +90,16 @@ PluginLoader::networkPlugin PluginLoader::loadNetworkPlugin(std::string name) {
 
     delInstance = (delInstance_f)GetProcAddress((HMODULE)result.handle, "delInstance");
     if (!delInstance) {
-    	throw std::runtime_error(getWin32ErrorString());
+        throw std::runtime_error(getWin32ErrorString());
     }
 
-    int * test =  (int *)GetProcAddress((HMODULE)result.handle, "test");
-
+    int *test = (int *)GetProcAddress((HMODULE)result.handle, "test");
 
     result.newConnection = newInstance;
     result.delConnection = delInstance;
 
     return result;
 }
-
 
 #else
 // For now, Operating Systems that are not Microsoft Windows compatible
@@ -124,8 +134,12 @@ PluginLoader::networkPlugin PluginLoader::loadNetworkPlugin(std::string name) {
         throw std::runtime_error(dlerror());
     }
 
-    int * test =  (int *)dlsym(result.handle, "test");
-
+    int *test = (int *)dlsym(result.handle, "test");
+    if (test) {
+        LOG_INFO("test exists, value %d", *test);
+    } else {
+        LOG_INFO("test does not exist");
+    }
 
     result.newConnection = newInstance;
     result.delConnection = delInstance;

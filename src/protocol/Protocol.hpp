@@ -6,9 +6,17 @@
  */
 
 #pragma once
+
+// C++ Includes
 #include <memory>
 #include <vector>
+
+// Third Party libraries
+#include <nlohmann/json.hpp>
+
+// Project Includes
 #include "../network/Connection.hpp"
+
 
 namespace network {
 class Connection;
@@ -23,6 +31,8 @@ class Protocol {
     virtual void onConnected() = 0;
     virtual void onDisconnected() = 0;
     void setConnection(::network::Connection *connection) { mConnection = connection; }
+
+    virtual int setConfig(nlohmann::json) = 0;
 
   protected:
     ::network::Connection *mConnection = nullptr;

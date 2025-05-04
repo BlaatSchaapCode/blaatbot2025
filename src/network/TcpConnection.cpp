@@ -171,6 +171,28 @@ int TcpConnection::connect(void) {
     return 0;
 }
 
+int TcpConnection::setConfig(nlohmann::json config) {
+    try {
+        if (config.contains("hostname") && config["hostname"].is_string()) {
+            mHostName = config["hostname"];
+        }
+        if (config.contains("port") && config["port"].is_number_unsigned()) {
+            mPort = config["port"];
+        }
+
+    } catch (nlohmann::json::exception &ex) {
+        LOG_ERROR("JSON exception: %s", ex.what());
+        return -1;
+    } catch (std::exception &ex) {
+        LOG_ERROR("Unknown exception: %s", ex.what());
+        return -1;
+    } catch (...) {
+        LOG_ERROR("Unknown exception (not derived from std::exception)");
+        return -1;
+    }
+    return 0;
+}
+
 TcpConnection::TcpConnection() { mPort = 6667; }
 
 TcpConnection::~TcpConnection() {

@@ -26,6 +26,9 @@
 #include "timer.hpp"
 #include "version.hpp"
 
+#include "PluginLoader.hpp"
+extern PluginLoader gPluginLoader; // testing
+
 namespace protocol {
 
 /*
@@ -88,6 +91,75 @@ IRC::IRC() {
 IRC::~IRC() {
     // TODO Auto-generated destructor stub
     send("QUIT exited");
+}
+
+int IRC::setConfig(nlohmann::json config) {
+    try {
+
+        if (config.contains("username") && config["username"].is_string()) {
+            mUser = config["username"];
+        } else {
+            mUser = "geblaat";
+        }
+
+        if (config.contains("nickname") && config["nickname"].is_string()) {
+            mNick = config["nickname"];
+        } else {
+            mNick = "geblaat";
+        }
+
+        if (config.contains("password") && config["password"].is_string()) {
+            mPass = config["password"];
+        } else {
+            mPass = "";
+        }
+
+        if (config.contains("realname") && config["realname"].is_string()) {
+            mRealName = config["realname"];
+        } else {
+            mRealName = "Geblaat (BlaatBot2025)";
+        }
+
+        if (config.contains("autojoin") && config["autojoin"].is_array()) {
+            for (auto &join : config["autojoin"]) {
+                AutoJoinChannel channel = {};
+                if (join.contains("key") && join["key"].is_string()) {
+                    channel.key = join["key"];
+                }
+
+                if (join.contains("channel") && join["channel"].is_string()) {
+                    channel.channel = join["channel"];
+                    autoJoinChannels.push_back(channel);
+                }
+            }
+        }
+
+        if (config.contains("connections") && config["connections"].is_array()) {
+            // Initially we only support one connection defined, but we set up
+            // the json to be able to handle multiple. If there are multiple
+            // the default behaviour is intended to be to pick server at random
+            auto jsonConnection = config["connections"][0];
+            mConnection = gPluginLoader.newConnection(jsonConnection["type"]);
+            if (mConnection) {
+                mConnection->setConfig(jsonConnection["config"]);
+                mConnection->setProtocol(this);
+                mConnection->connect();
+            }
+        }
+        //
+
+    } catch (nlohmann::json::exception &ex) {
+        LOG_ERROR("JSON exception: %s", ex.what());
+        return -1;
+    } catch (std::exception &ex) {
+        LOG_ERROR("Unknown exception: %s", ex.what());
+        return -1;
+    } catch (...) {
+        LOG_ERROR("Unknown exception (not derived from std::exception)");
+        return -1;
+    }
+
+    return 0;
 }
 
 std::string IRC::toLower(std::string s) {
@@ -385,9 +457,11 @@ void IRC::onReady(void) {
 
     ping();
 
-    // TODO
-    send("JOIN #bscp-test");
-    //	send("JOIN #blaatschaap");
+    for (auto &join : autoJoinChannels) {
+        // TODO: a join function
+        // TODO: merge multiple joins in one request
+        send("JOIN " + join.channel + " " + join.key);
+    }
 }
 
 void IRC::onConnected() {

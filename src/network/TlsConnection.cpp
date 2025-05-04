@@ -154,12 +154,38 @@ void TlsConnection::send(std::vector<char> data) {
     }
 }
 
-int TlsConnection::setIgnoreInvalidCerficiate(bool ignoreInvalidCerficiate) {
-    this->ignoreInvalidCerficiate = ignoreInvalidCerficiate;
-    return 0;
-}
-int TlsConnection::setIgnoreInsecureProtocol(bool ignoreInsecureProtocol) {
-    this->ignoreInsecureProtocol = ignoreInsecureProtocol;
+int TlsConnection::setConfig(nlohmann::json config) {
+    try {
+        if (config.contains("hostname") && config["hostname"].is_string()) {
+            mHostName = config["hostname"];
+        }
+        if (config.contains("port") && config["port"].is_number_unsigned()) {
+            mPort = config["port"];
+        } else {
+            mPort = 6697;
+        }
+
+        if (config.contains("ignoreInvalidCerficiate") && config["ignoreInvalidCerficiate"].is_boolean()) {
+            ignoreInvalidCerficiate = config["ignoreInvalidCerficiate"];
+        } else {
+            ignoreInvalidCerficiate = false;
+        }
+        if (config.contains("ignoreInsecureProtocol") && config["ignoreInsecureProtocol"].is_boolean()) {
+            ignoreInsecureProtocol = config["ignoreInsecureProtocol"];
+        } else {
+            ignoreInsecureProtocol = false;
+        }
+
+    } catch (nlohmann::json::exception &ex) {
+        LOG_ERROR("JSON exception: %s", ex.what());
+        return -1;
+    } catch (std::exception &ex) {
+        LOG_ERROR("Unknown exception: %s", ex.what());
+        return -1;
+    } catch (...) {
+        LOG_ERROR("Unknown exception (not derived from std::exception)");
+        return -1;
+    }
     return 0;
 }
 
@@ -170,6 +196,6 @@ TlsConnection::~TlsConnection() {}
 #ifdef DYNAMIC_LIBRARY
 extern "C" {
 network::TlsConnection *newInstance(void) { return new network::TlsConnection(); }
-void deleteInstance(network::TlsConnection *inst) { delete inst; }
+void delInstance(network::TlsConnection *inst) { delete inst; }
 }
 #endif

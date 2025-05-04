@@ -104,11 +104,32 @@ int main(int argc, char *argv[]) {
 
     if (mConfigdata.size()) {
         LOG_INFO("Config file loaded");
+
+        try {
+            auto jsonClient = mConfigdata["client"];
+            auto client = gPluginLoader.newClient(jsonClient["type"]);
+            if (client) {
+                client->setConfig(jsonClient["config"]);
+            } else {
+                throw std::runtime_error("Unable to get a client");
+            }
+
+        } catch (nlohmann::json::exception &ex) {
+            LOG_ERROR("JSON exception: %s", ex.what());
+            return -1;
+        } catch (std::exception &ex) {
+            LOG_ERROR("Unknown exception: %s", ex.what());
+            return -1;
+        } catch (...) {
+            LOG_ERROR("Unknown exception (not derived from std::exception)");
+            return -1;
+        }
+
     } else {
         LOG_INFO("Config file missing");
     }
 
-    client::Client client;
+    //    client::Client client;
 
     LOG_INFO("press ENTER key to quit");
     std::cin.get();

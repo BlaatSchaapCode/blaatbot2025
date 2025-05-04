@@ -9,6 +9,8 @@
 #define SRC_PLUGINLOADER_HPP_
 
 #include "network/Connection.hpp"
+#include "clients/Client.hpp"
+#include "protocol/Protocol.hpp"
 
 #include <functional>
 #include <map>
@@ -19,6 +21,8 @@
 class PluginLoader {
   public:
     ::network::Connection *newConnection(std::string type);
+    ::client::Client * newClient(std::string type);
+    ::protocol::Protocol * newProtocol(std::string type);
 
   private:
     struct plugin {

@@ -261,20 +261,11 @@ class IRC : public Protocol {
     IRC();
     ~IRC();
 
-    void setNick(std::string nick) { mNick = nick; }
-    void setUser(std::string user) { mUser = user; }
-    void setPass(std::string pass) { mPass = pass; }
-    void setRealName(std::string realName) { mRealName = realName; }
-    void setNickServPass(std::string nsPass) { mNsPass = nsPass; }
-    void setSaslPlain(std::string authzid, std::string authcid, std::string passwd) {
-        mSaslPlainAuthzid = authzid;
-        mSaslPlainAuthcid = authcid;
-        mSaslPlainPasswd = passwd;
-    }
-
     void onData(std::vector<char> data) override;
     void onConnected() override;
     void onDisconnected() override;
+
+    int setConfig(nlohmann::json) override;
 
   private:
     using IRCMessageParser = std::function<void(const IRCMessage message)>;
@@ -285,10 +276,11 @@ class IRC : public Protocol {
 
     Timer lagTimer;
 
-
-
     std::vector<char> mBuffer;
 
+    //------------------------------------------------------------------------
+    // Todo refactor this into a struct or something
+    //------------------------------------------------------------------------
     // NickServ
     std::string mNsPass;
 
@@ -302,6 +294,14 @@ class IRC : public Protocol {
     std::string mUser;
     std::string mNick;
     std::string mRealName;
+    //------------------------------------------------------------------------
+    struct AutoJoinChannel {
+    	std::string channel;
+		std::string key;
+    };
+    std::vector<AutoJoinChannel> autoJoinChannels;
+
+
 
     struct {
         bool hasCapabilities = false;

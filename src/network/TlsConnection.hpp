@@ -32,8 +32,8 @@ class TlsConnection : public Connection {
 
     void send(std::vector<char> data) override;
 
-    int setIgnoreInvalidCerficiate(bool ignoreInvalidCerficiate) override;
-    int setIgnoreInsecureProtocol(bool ignoreInsecureProtocol) override;
+
+    int setConfig(nlohmann::json) override;
 
 
   protected:

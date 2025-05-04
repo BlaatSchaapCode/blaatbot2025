@@ -18,10 +18,10 @@ class TcpConnection : public Connection {
     ~TcpConnection();
     TcpConnection();
 
-    //void connect(std::string ip_address, uint16_t port = 6667);
     int connect(void) override;
-
     void send(std::vector<char> data) override;
+
+    int setConfig(nlohmann::json) override;
 
   private:
     struct sockaddr_in6 in6 = {};

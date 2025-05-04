@@ -21,13 +21,13 @@ void Connection::send(std::string s) {
 
 void Connection::setProtocol(::protocol::Protocol *protocol) { mProtocol = protocol; }
 
-int Connection::setHostName(std::string hostName) {
-    mHostName = hostName;
-    return 0;
-}
-int Connection::setPort(uint16_t port) {
-    mPort = port;
-    return 0;
-}
+// int Connection::setHostName(std::string hostName) {
+//     mHostName = hostName;
+//     return 0;
+// }
+// int Connection::setPort(uint16_t port) {
+//     mPort = port;
+//     return 0;
+// }
 
 } // namespace network
