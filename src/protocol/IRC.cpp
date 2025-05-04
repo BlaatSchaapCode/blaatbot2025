@@ -53,6 +53,7 @@ IRC::IRC() {
     mMessageParsers["PONG"] = [this](const IRCMessage message) { onPONG(message); };
     mMessageParsers["PING"] = [this](const IRCMessage message) { onPING(message); };
     mMessageParsers["PRIVMSG"] = [this](const IRCMessage message) { onPRIVMSG(message); };
+    mMessageParsers["TAGMSG"] = [this](const IRCMessage message) { onTAGMSG(message); };
     mMessageParsers["NOTICE"] = [this](const IRCMessage message) { onNOTICE(message); };
     mMessageParsers["ERROR"] = [this](const IRCMessage message) { onERROR(message); };
     mMessageParsers[Numeric::ERR_NICKNAMEINUSE] = [this](const IRCMessage message) { onNicknameInUse(message); };
@@ -95,7 +96,7 @@ IRC::~IRC() {
 
     // TODO configurable quit message
     if (serverInfo.connected)
-    	send("QUIT exited");
+        send("QUIT exited");
 }
 
 int IRC::setConfig(nlohmann::json config) {
@@ -470,11 +471,13 @@ void IRC::onReady(void) {
 }
 
 void IRC::onConnected() {
-	serverInfo.connected = true;
+    serverInfo.connected = true;
 
     // Set defaults
     serverInfo.hasCapabilities = false;
-    serverInfo.capabilities.clear();
+    serverInfo.capabilities.acknowledged.clear();
+    serverInfo.capabilities.supported.clear();
+
     serverInfo.hasExtensions = false;
     serverInfo.features.clear();
     serverInfo.features["CASEMAPPING"] = "rfc1459";
@@ -506,9 +509,7 @@ void IRC::onConnected() {
     connectTimer.afterSeconds([this]() { onCanRegister(); }, std::chrono::seconds(3));
 }
 
-void IRC::onDisconnected() {
-	serverInfo.connected = false;
-}
+void IRC::onDisconnected() { serverInfo.connected = false; }
 
 void IRC::onUnknownCommand(const IRCMessage message) {
     //    if (message.command == Numeric::ERR_UNKNOWNCOMMAND) {
@@ -653,27 +654,69 @@ void IRC::onCAP(const IRCMessage message) {
 
             if (subCommand == "LS") {
                 bool moreCapabilitiesComing = message.parameters[2] == "*";
-                serverInfo.capabilities.merge(parseKeyValue(splitString(message.parameters[2 + moreCapabilitiesComing])));
+                if (message.parameters.size() > (2u + moreCapabilitiesComing)) {
+                    auto capabilities = splitString(message.parameters[2 + moreCapabilitiesComing]);
+                    serverInfo.capabilities.supported.merge(parseKeyValue(capabilities));
 
-                if (!serverInfo.registrationComplete && !moreCapabilitiesComing) {
+                    auto negations = parseNegation(capabilities);
+                    for (auto &negation : negations) {
+                        serverInfo.capabilities.supported.erase(negation);
+                        // TODO: any processing for negated capabilities?
+                    }
 
-                    if (serverInfo.capabilities.count("message-tags"))
-                        send("CAP REQ :message-tags");
+                    if (!serverInfo.registrationComplete && !moreCapabilitiesComing) {
 
-                    if (serverInfo.capabilities.count("account-notify"))
-                        send("CAP REQ :account-notify");
+                        if (serverInfo.capabilities.supported.contains("message-tags"))
+                            send("CAP REQ :message-tags");
 
-                    if (serverInfo.capabilities.count("extended-join"))
-                        send("CAP REQ :extended-join");
+                        if (serverInfo.capabilities.supported.contains("account-notify"))
+                            send("CAP REQ :account-notify");
 
-                    send("CAP END");
-                    connectTimer.abortTimer();
-                    onCanRegister();
+                        if (serverInfo.capabilities.supported.contains("extended-join"))
+                            send("CAP REQ :extended-join");
+
+                        send("CAP END");
+                        connectTimer.abortTimer();
+                        onCanRegister();
+                    }
                 }
             }
 
             if (subCommand == "ACK") {
-                // TODO
+                // serverInfo.capabilities.acknowledged.merge
+                auto capabilities = splitString(message.parameters[2]);
+                for (auto &capability : capabilities) {
+                    if (capability.length()) {
+                        if (capability[0] == '-') {
+                            capability = capability.substr(1);
+                            serverInfo.capabilities.acknowledged.erase(capability);
+
+                            LOG_INFO("Removing %s from acknowlegded capabilities", capability.c_str());
+                        } else {
+                            serverInfo.capabilities.acknowledged.insert(capability);
+                            LOG_INFO("Adding %s to acknowlegded capabilities", capability.c_str());
+                        }
+                    }
+                }
+            }
+
+            if (subCommand == "NEW") {
+                auto capabilities = splitString(message.parameters[2]);
+                serverInfo.capabilities.supported.merge(parseKeyValue(capabilities));
+                LOG_INFO("Adding %s to supported capabilities", message.parameters[2].c_str());
+            }
+
+            if (subCommand == "DEL") {
+                auto capabilities = splitString(message.parameters[2]);
+                for (auto &capability : capabilities) {
+                    serverInfo.capabilities.supported.erase(capability);
+                    LOG_INFO("Removing %s from supported capabilities", capability.c_str());
+                    serverInfo.capabilities.acknowledged.erase(capability);
+                }
+            }
+
+            if (subCommand == "LIST") {
+                // query of acknowledged capabilities
             }
         }
     }
@@ -805,7 +848,7 @@ void IRC::onCTCPResponse(const IRCMessage message, const CTCPMessage ctcp) {
     }
 }
 
-std::string IRC::stripFormatting(std::string formattedString) {
+std::string IRC::stripFormatting(const std::string &formattedString) {
     // TODO strip all formatting
     // https://modern.ircdocs.horse/formatting
 
@@ -945,6 +988,9 @@ void IRC::onPRIVMSG(const IRCMessage message) {
         // Malformed message?
     }
 }
+
+void IRC::onTAGMSG(const IRCMessage message) {}
+
 void IRC::onNOTICE(const IRCMessage message) {
     if (message.parameters.size() == 2) {
         std::string recipient = message.parameters[0];
@@ -1326,8 +1372,11 @@ void IRC::parseMessage(std::string line) {
     // https://defs.ircdocs.horse/defs/tags
     if (tokens.size()) {
         if (tokens[0][0] == '@') {
-            message.tags = tokens[0];
-            message.tags.erase(0, 1); // remove the '@'
+            // message.tags = tokens[0];
+            // message.tags.erase(0, 1); // remove the '@'
+
+            message.tags = parseTags(tokens[0].substr(1));
+
             tokens.erase(tokens.begin());
         }
     }
@@ -1452,14 +1501,39 @@ bool IRC::validText(const std::string text) {
     return true;
 }
 
-void IRC::sendPRIVMSG(const std::string target, const std::string text) {
+void IRC::sendPRIVMSG(const std::string target, const std::string text, const std::string tags) {
     if (validTarget(target) && validText(text)) {
-        send("PRIVMSG " + target + " :" + text);
+        if (serverInfo.capabilities.acknowledged.contains("message-tags") && tags.length()) {
+            // TODO: escape tags
+            // TODO: consider tags as key-value pairs?
+            send("@" + tags + " PRIVMSG " + target + " :" + text);
+        } else {
+            send("PRIVMSG " + target + " :" + text);
+        }
     }
 }
-void IRC::sendNOTICE(const std::string target, const std::string text) {
+
+void IRC::sendTAGMSG(const std::string target, const std::string tags) {
+    if (validTarget(target)) {
+        if (serverInfo.capabilities.acknowledged.contains("message-tags") && tags.length()) {
+            // TODO: escape tags
+            // TODO: consider tags as key-value pairs?
+            send("@" + tags + " TAGMSG " + target);
+        } else {
+            // Not supported
+        }
+    }
+}
+
+void IRC::sendNOTICE(const std::string target, const std::string text, const std::string tags) {
     if (validTarget(target) && validText(text)) {
-        send("NOTICE " + target + " :" + text);
+        if (serverInfo.capabilities.acknowledged.contains("message-tags") && tags.length()) {
+            // TODO: escape tags
+            // TODO: consider tags as key-value pairs?
+            send("@" + tags + " NOTICE " + target + " :" + text);
+        } else {
+            send("NOTICE " + target + " :" + text);
+        }
     }
 }
 void IRC::sendCTCPQuery(const std::string target, const std::string command, const std::string parameters) {
@@ -1473,6 +1547,22 @@ void IRC::sendCTCPResponse(const std::string target, const std::string command, 
         sendNOTICE(target, "\01" + command + " " + parameters + "\01");
     else
         sendNOTICE(target, "\01" + command + "\01");
+}
+
+std::vector<IRC::IRCtag> IRC::parseTags(const std::string &tagString) {
+    std::vector<IRC::IRCtag> result;
+    auto tags = splitString(tagString, ";");
+    for (auto &tag : tags) {
+        auto kv = splitString(tag, "=");
+        IRCtag t;
+        // TODO unescape
+        if (kv.size() > 0)
+            t.tag = kv[0];
+        if (kv.size() > 1)
+            t.value = kv[1];
+        result.push_back(t);
+    }
+    return result;
 }
 
 } // namespace protocol
