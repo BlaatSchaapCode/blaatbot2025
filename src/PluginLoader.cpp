@@ -94,6 +94,11 @@ PluginLoader::networkPlugin PluginLoader::loadNetworkPlugin(std::string name) {
     }
 
     int *test = (int *)GetProcAddress((HMODULE)result.handle, "test");
+    if (test) {
+        LOG_INFO("test exists, value %d", *test);
+    } else {
+        LOG_INFO("test does not exist");
+    }
 
     result.newConnection = newInstance;
     result.delConnection = delInstance;

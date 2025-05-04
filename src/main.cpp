@@ -12,8 +12,6 @@
 // using json = nlohmann::json;
 
 #include "clients/Client.hpp"
-
-#include "network/network.hpp"
 #include "protocol/IRC.hpp"
 #include "utils/logger.hpp"
 #include "utils/version.hpp"
@@ -27,6 +25,8 @@ PluginLoader gPluginLoader; // testing
 [[gnu::constructor]] void windows_init_utf8_console() {
     auto a = SetConsoleOutputCP(CP_UTF8);
     auto b = SetConsoleCP(CP_UTF8);
+    (void)a;
+    (void)b;
     // Note, these APIs have non-zero value for success
     LOG_DEBUG("WIN32 setting output to UTF8 status %d %d", a, b);
 
@@ -96,8 +96,6 @@ int main(int argc, char *argv[]) {
     int result;
     utils::Version version;
 
-    network::init();
-
     ::client::Client *client = nullptr;
 
     result = parse_options(argc, argv);
@@ -138,8 +136,6 @@ int main(int argc, char *argv[]) {
 
     if (client)
         delete client;
-
-    network::deinit();
 
     return 0;
 }

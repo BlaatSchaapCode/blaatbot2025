@@ -7,13 +7,12 @@
 
 #include "TcpConnection.hpp"
 
-#include "network.hpp"
-
-#include <cstring>
-#include <errno.h>
 #include <iostream>
 #include <random>
 #include <vector>
+
+#include <cerrno>
+#include <cstring>
 
 #include "logger.hpp"
 #include "threadName.hpp"
@@ -193,7 +192,15 @@ int TcpConnection::setConfig(nlohmann::json config) {
     return 0;
 }
 
-TcpConnection::TcpConnection() { mPort = 6667; }
+TcpConnection::TcpConnection() {
+    mPort = 6667;
+
+#if defined(_WIN32) || defined(_WIN64)
+    if (WSAStartup(0x0202, &d)) {
+        LOG_ERROR("Error initialising WinSock");
+    }
+#endif
+}
 
 TcpConnection::~TcpConnection() {
     LOG_INFO("Stopping receive thread ", 0);
@@ -208,6 +215,10 @@ TcpConnection::~TcpConnection() {
     delete m_receiveThread;
     LOG_INFO("Closing socket", 0);
     closesocket(m_socket);
+
+#if defined(_WIN32) || defined(__WIN32__)
+    WSACleanup();
+#endif
 }
 
 } // namespace network

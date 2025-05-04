@@ -417,6 +417,8 @@ class IRC : public Protocol {
     std::string encodeTagKey(const std::string&);
     std::string decodeTagKey(const std::string&);
 
+    void requestCapabilityIfPresent(const std::string&);
+
     void ping();
 };
 

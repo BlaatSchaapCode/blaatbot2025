@@ -644,6 +644,12 @@ void IRC::onISupport(IRCMessage &message) {
      ftp://ftp.funet.fi/pub/unix/irc/server/
      */
 }
+
+void IRC::requestCapabilityIfPresent(const std::string &cap) {
+    if (serverInfo.capabilities.supported.contains(cap))
+        send("CAP REQ :" + cap);
+}
+
 void IRC::onCAP(IRCMessage &message) {
     if (message.command == "CAP") {
         serverInfo.hasCapabilities = true;
@@ -666,20 +672,13 @@ void IRC::onCAP(IRCMessage &message) {
 
                     if (!serverInfo.registrationComplete && !moreCapabilitiesComing) {
 
-                        if (serverInfo.capabilities.supported.contains("message-tags"))
-                            send("CAP REQ :message-tags");
-
-                        if (serverInfo.capabilities.supported.contains("echo-message"))
-                            send("CAP REQ :echo-message");
-
-                        if (serverInfo.capabilities.supported.contains("batch"))
-                            send("CAP REQ :batch");
-
-                        if (serverInfo.capabilities.supported.contains("account-notify"))
-                            send("CAP REQ :account-notify");
-
-                        if (serverInfo.capabilities.supported.contains("extended-join"))
-                            send("CAP REQ :extended-join");
+                        requestCapabilityIfPresent("message-tags");
+                        requestCapabilityIfPresent("echo-message");
+                        requestCapabilityIfPresent("batch");
+                        requestCapabilityIfPresent("label");
+                        requestCapabilityIfPresent("draft/labeled-response");
+                        requestCapabilityIfPresent("account-notify");
+                        requestCapabilityIfPresent("extended-join");
 
                         send("CAP END");
                         connectTimer.abortTimer();
