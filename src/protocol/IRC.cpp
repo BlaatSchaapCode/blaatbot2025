@@ -90,7 +90,12 @@ IRC::IRC() {
 
 IRC::~IRC() {
     // TODO Auto-generated destructor stub
-    send("QUIT exited");
+    lagTimer.abortTimer();
+    connectTimer.abortTimer();
+
+    // TODO configurable quit message
+    if (serverInfo.connected)
+    	send("QUIT exited");
 }
 
 int IRC::setConfig(nlohmann::json config) {
@@ -465,6 +470,8 @@ void IRC::onReady(void) {
 }
 
 void IRC::onConnected() {
+	serverInfo.connected = true;
+
     // Set defaults
     serverInfo.hasCapabilities = false;
     serverInfo.capabilities.clear();
@@ -499,7 +506,9 @@ void IRC::onConnected() {
     connectTimer.afterSeconds([this]() { onCanRegister(); }, std::chrono::seconds(3));
 }
 
-void IRC::onDisconnected() {}
+void IRC::onDisconnected() {
+	serverInfo.connected = false;
+}
 
 void IRC::onUnknownCommand(const IRCMessage message) {
     //    if (message.command == Numeric::ERR_UNKNOWNCOMMAND) {
@@ -721,7 +730,7 @@ void IRC::ping() {
 }
 
 void IRC::onPONG(const IRCMessage message) {
-    int pingInterval = 10;
+    int pingInterval = 30;
     if (message.parameters.size() > 1) {
         std::chrono::milliseconds lag;
         if (message.parameters.size()) {
@@ -733,8 +742,6 @@ void IRC::onPONG(const IRCMessage message) {
                 lag = now - sent;
                 LOG_DEBUG("Lag is %d ms", (int)lag.count());
                 serverInfo.lag = lag;
-                if (lag.count() > 5000)
-                    pingInterval = 30;
             } catch (...) {
                 LOG_DEBUG("Unable to determine lag (parameter not integer)");
                 serverInfo.lag = std::chrono::milliseconds::max();
@@ -1233,6 +1240,7 @@ void IRC::onWhoReply(const IRCMessage message) {
 }
 
 void IRC::onEndOfWho(const IRCMessage message) {
+#ifdef ENABLE_LOG_DEBUG
     if (message.parameters.size() > 1) {
         // "<client> <mask> :End of WHO list"
         auto channel = toLower(message.parameters[1]);
@@ -1243,6 +1251,7 @@ void IRC::onEndOfWho(const IRCMessage message) {
             }
         }
     }
+#endif
 }
 //
 

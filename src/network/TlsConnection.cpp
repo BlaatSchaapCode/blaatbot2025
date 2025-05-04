@@ -190,7 +190,17 @@ int TlsConnection::setConfig(nlohmann::json config) {
 }
 
 TlsConnection::TlsConnection() { mPort = 6697; }
-TlsConnection::~TlsConnection() {}
+TlsConnection::~TlsConnection() {
+    LOG_INFO("Stopping receive thread ");
+    m_receiveThreadActive = false;
+    LOG_INFO("Closing socket");
+    tls_close(m_tls_socket);
+    if (m_receiveThread->joinable())
+        m_receiveThread->join();
+    LOG_INFO("Deleting Receive Thread", 0);
+    delete m_receiveThread;
+}
+
 } // namespace network
 
 #ifdef DYNAMIC_LIBRARY

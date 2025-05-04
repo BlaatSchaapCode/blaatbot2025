@@ -6,7 +6,7 @@ SRC_DIR      := $(PROJ_DIR)/src
 
 LIBS +=  nlohmann_json libtls
 
-CXXFLAGS += -DENABLE_LOG_DEBUG
+#CXXFLAGS += -DENABLE_LOG_DEBUG
 
 BUILD_LIBRARY=D
 

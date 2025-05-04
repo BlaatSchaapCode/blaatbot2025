@@ -272,8 +272,6 @@ class IRC : public Protocol {
     std::map<std::string, IRCMessageParser> mMessageParsers;
 
     Timer connectTimer;
-
-
     Timer lagTimer;
 
     std::vector<char> mBuffer;
@@ -304,6 +302,8 @@ class IRC : public Protocol {
 
 
     struct {
+    	bool connected = false;
+
         bool hasCapabilities = false;
         bool hasExtensions = false;
         bool registrationComplete = false;

@@ -18,10 +18,9 @@
               "key" : "let_me_in"
             } ],
             "connections" : [ {
-              "type" : "libretls",
+              "type" : "tcp",
               "config" : {
                 "hostname" : "irc.blaatschaap.be",
-                "port" : 6697,
                 "ignoreInvalidCerficiate" : false,
                 "ignoreInsecureProtocol" : false
               }

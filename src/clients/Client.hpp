@@ -22,7 +22,8 @@ class Client {
     virtual ~Client();
     int setConfig(nlohmann::json);
   protected:
-    ::protocol::IRC *mIRC = nullptr;
+//    ::protocol::IRC *mIRC = nullptr;
+    ::protocol::Protocol * mProtocol = nullptr;
     ::network::Connection *mConnection  = nullptr;
 
 };

@@ -196,8 +196,8 @@ int TcpConnection::setConfig(nlohmann::json config) {
 TcpConnection::TcpConnection() { mPort = 6667; }
 
 TcpConnection::~TcpConnection() {
-    m_receiveThreadActive = false;
     LOG_INFO("Stopping receive thread ", 0);
+    m_receiveThreadActive = false;
     if (m_receiveThread->joinable()) {
         LOG_INFO("receive thread joinable", 1);
         m_receiveThread->join();

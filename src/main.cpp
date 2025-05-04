@@ -98,6 +98,8 @@ int main(int argc, char *argv[]) {
 
     network::init();
 
+    ::client::Client *client = nullptr;
+
     result = parse_options(argc, argv);
     if (result)
         return result;
@@ -107,7 +109,7 @@ int main(int argc, char *argv[]) {
 
         try {
             auto jsonClient = mConfigdata["client"];
-            auto client = gPluginLoader.newClient(jsonClient["type"]);
+            client = gPluginLoader.newClient(jsonClient["type"]);
             if (client) {
                 client->setConfig(jsonClient["config"]);
             } else {
@@ -133,6 +135,9 @@ int main(int argc, char *argv[]) {
 
     LOG_INFO("press ENTER key to quit");
     std::cin.get();
+
+    if (client)
+        delete client;
 
     network::deinit();
 
