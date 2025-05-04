@@ -39,8 +39,7 @@ class IRC : public Protocol {
 
     struct IRCMessage {
         std::string raw;
-        //std::string tags;
-        std::vector<IRCtag> tags;
+        std::map<std::string, std::string> tags;
         IRCSource source;
         std::string command;
         std::vector<std::string> parameters;
@@ -275,7 +274,7 @@ class IRC : public Protocol {
     int setConfig(nlohmann::json) override;
 
   private:
-    using IRCMessageParser = std::function<void(const IRCMessage message)>;
+    using IRCMessageParser = std::function<void(IRCMessage &message)>;
     std::map<std::string, IRCMessageParser> mMessageParsers;
 
     Timer connectTimer;
@@ -350,51 +349,51 @@ class IRC : public Protocol {
     } serverInfo;
 
     void parseMessage(std::string message);
-    void onMessage(const IRCMessage message);
+    void onMessage(IRCMessage &message);
     void send(std::string message);
 
-    void onISupport(const IRCMessage message);
+    void onISupport(IRCMessage &message);
 
-    void onWelcome(const IRCMessage message);
-    void onYourHost(const IRCMessage message);
-    void onCreated(const IRCMessage message);
-    void onMyInfo(const IRCMessage message);
+    void onWelcome(IRCMessage &message);
+    void onYourHost(IRCMessage &message);
+    void onCreated(IRCMessage &message);
+    void onMyInfo(IRCMessage &message);
 
-    void onPING(const IRCMessage message);
-    void onPONG(const IRCMessage message);
-    void onCAP(const IRCMessage message);
-    void onIRCX(const IRCMessage message);
-    void onERROR(const IRCMessage message);
-    void onUnknownCommand(const IRCMessage message);
+    void onPING(IRCMessage &message);
+    void onPONG(IRCMessage &message);
+    void onCAP(IRCMessage &message);
+    void onIRCX(IRCMessage &message);
+    void onERROR(IRCMessage &message);
+    void onUnknownCommand(IRCMessage &message);
 
     void applyFeatures(void);
     void applyServerQuirks(void);
     void onReady(void);
     void onCanRegister(void);
 
-    void onPRIVMSG(const IRCMessage message);
-    void onTAGMSG(const IRCMessage message);
-    void onNOTICE(const IRCMessage message);
-    void onJOIN(const IRCMessage message);
-    void onMODE(const IRCMessage message);
+    void onPRIVMSG(IRCMessage &message);
+    void onTAGMSG(IRCMessage &message);
+    void onNOTICE(IRCMessage &message);
+    void onJOIN(IRCMessage &message);
+    void onMODE(IRCMessage &message);
 
-    void onTopic(const IRCMessage message);
-    void onTopicWhoTime(const IRCMessage message);
-    void onChannelModeIs(const IRCMessage message);
-    void onNamReply(const IRCMessage message);
-    void onEndOfNames(const IRCMessage message);
-    void onWhoReply(const IRCMessage message);
-    void onWhoSpcReply(const IRCMessage message);
-    void onEndOfWho(const IRCMessage message);
+    void onTopic(IRCMessage &message);
+    void onTopicWhoTime(IRCMessage &message);
+    void onChannelModeIs(IRCMessage &message);
+    void onNamReply(IRCMessage &message);
+    void onEndOfNames(IRCMessage &message);
+    void onWhoReply(IRCMessage &message);
+    void onWhoSpcReply(IRCMessage &message);
+    void onEndOfWho(IRCMessage &message);
 
-    void onCTCPQuery(const IRCMessage message, const CTCPMessage ctcp);
-    void onCTCPResponse(const IRCMessage message, const CTCPMessage ctcp);
+    void onCTCPQuery(IRCMessage &message, CTCPMessage &ctcp);
+    void onCTCPResponse(IRCMessage &message, CTCPMessage &ctcp);
 
-    void onNicknameInUse(const IRCMessage message);
+    void onNicknameInUse(IRCMessage &message);
 
-    void sendPRIVMSG(const std::string target, const std::string text, const std::string tags = "");
-    void sendTAGMSG(const std::string target, const std::string tags);
-    void sendNOTICE(const std::string target, const std::string text, const std::string tags = "");
+    void sendPRIVMSG(const std::string target, const std::string text, const std::map<std::string,std::string> tags = {});
+    void sendTAGMSG(const std::string target, const std::map<std::string,std::string> tags = {});
+    void sendNOTICE(const std::string target, const std::string text, const std::map<std::string,std::string> tags = {});
     void sendCTCPQuery(const std::string target, const std::string command, const std::string parameters = "");
     void sendCTCPResponse(const std::string target, const std::string command, const std::string parameters = "");
 
@@ -409,9 +408,14 @@ class IRC : public Protocol {
 
     std::string stripFormatting(const std::string &formattedString);
     void splitUserNickHost(IRCSource &source);
-    std::vector<IRCtag> parseTags(const std::string &tagString);
+    std::map<std::string,std::string> parseTags(const std::string &tagString);
+    std::string formatTags(std::map<std::string,std::string> tags);
     std::map<std::string,std::string> parseKeyValue(const std::vector<std::string>&);
     std::vector<std::string> parseNegation(const std::vector<std::string>&);
+    std::string encodeTagValue(const std::string&);
+    std::string decodeTagValue(const std::string&);
+    std::string encodeTagKey(const std::string&);
+    std::string decodeTagKey(const std::string&);
 
     void ping();
 };

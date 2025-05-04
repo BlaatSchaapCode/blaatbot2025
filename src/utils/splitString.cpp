@@ -29,5 +29,3 @@ std::vector<std::string> splitString(const std::string &str, const std::string &
     }
     return tokens;
 }
-
-
