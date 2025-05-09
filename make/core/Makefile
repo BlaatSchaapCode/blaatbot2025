@@ -8,13 +8,12 @@ LIBS +=  icu-uc nlohmann_json
 #CXXFLAGS += -DENABLE_LOG_DEBUG
 
 CXX_INCLUDES += $(SRC_DIR)
-CXX_INCLUDES += $(SRC_DIR)/network
+CXX_INCLUDES += $(SRC_DIR)/connection
 CXX_INCLUDES += $(SRC_DIR)/protocol
 CXX_INCLUDES += $(SRC_DIR)/utils
 #CXX_INCLUDES += ../ext/base64/include/
 
-CXX_SRC += $(SRC_DIR)/clients/Client.cpp
-CXX_SRC += $(SRC_DIR)/network/Connection.cpp
+CXX_SRC += $(SRC_DIR)/connection/Connection.cpp
 CXX_SRC += $(SRC_DIR)/protocol/Protocol.cpp
 CXX_SRC += $(SRC_DIR)/protocol/IRC.cpp
 CXX_SRC += $(SRC_DIR)/utils/compat.cpp
@@ -25,8 +24,5 @@ CXX_SRC += $(SRC_DIR)/utils/time.cpp
 CXX_SRC += $(SRC_DIR)/utils/timer.cpp
 CXX_SRC += $(SRC_DIR)/main.cpp
 CXX_SRC += $(SRC_DIR)/PluginLoader.cpp
-
-#LDFLAGS += -lblaatnet_tcp  -lblaatnet_libretls  -L$(SO_DIR)
-
 
 include $(PCDEV_ROOT)/build/make/all.mk

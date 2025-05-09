@@ -14,8 +14,8 @@
 
 #include <tls.h>
 
+#include "../connection/Connection.hpp"
 #include "../utils/logger.hpp"
-#include "Connection.hpp"
 
 namespace geblaat {
 

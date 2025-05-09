@@ -5,7 +5,7 @@
  *      Author: andre
  */
 
-#include "TcpConnection.hpp"
+#include "../connection/TcpConnection.hpp"
 
 #include <iostream>
 #include <random>
@@ -221,7 +221,7 @@ TcpConnection::~TcpConnection() {
 #endif
 }
 
-} // namespace network
+} // namespace geblaat
 
 #ifdef DYNAMIC_LIBRARY
 extern "C" {

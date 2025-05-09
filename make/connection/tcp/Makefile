@@ -1,4 +1,4 @@
-TARGET       := geblaat_network_tcp
+TARGET       := geblaat_connection_tcp
 PROJ_DIR     := ../../..
 PCDEV_ROOT   := $(PROJ_DIR)/pcdev
 OUT_DIR      := $(PROJ_DIR)/out
@@ -11,15 +11,14 @@ LIBS +=  nlohmann_json
 BUILD_LIBRARY=D
 
 CXX_INCLUDES += $(SRC_DIR)
-CXX_INCLUDES += $(SRC_DIR)/network
+CXX_INCLUDES += $(SRC_DIR)/connection
 CXX_INCLUDES += $(SRC_DIR)/protocol
 CXX_INCLUDES += $(SRC_DIR)/utils
 CXX_INCLUDES += ../ext/base64/include/
 
-#CXX_SRC += $(SRC_DIR)/network/network.cpp
-CXX_SRC += $(SRC_DIR)/network/Connection.cpp
-#CXX_SRC += $(SRC_DIR)/network/TlsConnection.cpp
-CXX_SRC += $(SRC_DIR)/network/TcpConnection.cpp
+CXX_SRC += $(SRC_DIR)/connection/Connection.cpp
+CXX_SRC += $(SRC_DIR)/connection/TcpConnection.cpp
+CXX_SRC += $(SRC_DIR)/PluginLoadable.cpp
 
 CXX_SRC += $(SRC_DIR)/utils/time.cpp
 CXX_SRC += $(SRC_DIR)/utils/logger.cpp

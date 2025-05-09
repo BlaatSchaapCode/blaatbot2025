@@ -31,7 +31,7 @@ typedef int socket_t;
 
 #include <atomic>
 #include <thread>
-#include "Connection.hpp"
+#include "../connection/Connection.hpp"
 
 namespace geblaat {
 

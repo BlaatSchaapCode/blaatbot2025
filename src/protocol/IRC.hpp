@@ -15,10 +15,8 @@
 #include <string>
 #include <vector>
 
+#include "../connection/Connection.hpp"
 #include "Protocol.hpp"
-#include "../network/Connection.hpp"
-
-
 #include "timer.hpp"
 
 namespace geblaat {

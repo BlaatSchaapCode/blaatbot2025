@@ -5,9 +5,10 @@
  *      Author: andre
  */
 
+#include "../connection/TlsConnection.hpp"
+
 #include <cstring>
 
-#include "TlsConnection.hpp"
 #include "threadName.hpp"
 
 namespace geblaat {

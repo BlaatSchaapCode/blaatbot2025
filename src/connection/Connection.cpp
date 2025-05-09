@@ -5,11 +5,12 @@
  *      Author: andre
  */
 
+#include "../connection/Connection.hpp"
+
 #include <iostream>
 #include <string>
 #include <vector>
 
-#include "Connection.hpp"
 namespace geblaat {
 
 Connection::~Connection() {}

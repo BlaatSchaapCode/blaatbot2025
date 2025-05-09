@@ -9,12 +9,12 @@
 #define SRC_PLUGINLOADER_HPP_
 
 #include "clients/Client.hpp"
-#include "network/Connection.hpp"
 #include "protocol/Protocol.hpp"
 #include "PluginLoadable.hpp"
 
 #include <functional>
 #include <map>
+#include "connection/Connection.hpp"
 
 
 
@@ -30,15 +30,15 @@ class PluginLoader {
   private:
     struct plugin {
         std::string name;
+        std::string type;
         void *handle;
         int refcount;
+		std::function<PluginLoadable *(void)> newInstance;
+		std::function<void(PluginLoadable *)> delInstance;
     };
-    struct networkPlugin : public plugin {
-        std::function<::geblaat::Connection *(void)> newConnection;
-        std::function<void(::geblaat::Connection *)> delConnection;
-    };
-    std::map<std::string, networkPlugin> networkPlugins;
-    networkPlugin loadNetworkPlugin(std::string type);
+
+    std::map<std::string, plugin> plugins;
+    plugin loadPlugin(std::string name, std::string type);
 };
 
 }; // namespace geblaat

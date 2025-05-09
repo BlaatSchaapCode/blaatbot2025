@@ -11,34 +11,69 @@
 
 #include "utils/logger.hpp"
 
-#include "protocol/IRC.hpp" // for the stub
-
 namespace geblaat {
 
-::geblaat::Client *PluginLoader::newClient(std::string type) {
-    // stub
-    return new ::geblaat::Client();
-}
-
-::geblaat::Protocol *PluginLoader::newProtocol(std::string type) {
-    // stub
-    if (type == "irc") {
-        return new ::geblaat::IRC();
-    }
-    return nullptr;
-}
-
-::geblaat::Connection *PluginLoader::newConnection(std::string name) {
-    if (this->networkPlugins.contains(name)) {
-        this->networkPlugins[name].refcount++;
-        return this->networkPlugins[name].newConnection();
-    } else {
+Client *PluginLoader::newClient(std::string name) {
+    if (!this->plugins.contains("client_" + name)) {
         try {
-            this->networkPlugins[name] = loadNetworkPlugin(name);
-            return this->networkPlugins[name].newConnection();
+            this->plugins["client_" + name] = loadPlugin(name, "client");
         } catch (std::exception &ex) {
             LOG_ERROR("Error: %s", ex.what());
         }
+    }
+
+    if (this->plugins.contains("client_" + name)) {
+        this->plugins["client_" + name].refcount++;
+        Client *instance = dynamic_cast<Client *>(this->plugins["client_" + name].newInstance());
+        if (instance)
+            return instance;
+        LOG_ERROR("Error: Not a Client plugin");
+    } else {
+        LOG_ERROR("Error: Plugin not found");
+    }
+
+    return nullptr;
+}
+
+Protocol *PluginLoader::newProtocol(std::string name) {
+    if (!this->plugins.contains("protocol_" + name)) {
+        try {
+            this->plugins["protocol_" + name] = loadPlugin(name, "protocol");
+        } catch (std::exception &ex) {
+            LOG_ERROR("Error: %s", ex.what());
+        }
+    }
+
+    if (this->plugins.contains("protocol_" + name)) {
+        this->plugins["protocol_" + name].refcount++;
+        Protocol *instance = dynamic_cast<Protocol *>(this->plugins["protocol_" + name].newInstance());
+        if (instance)
+            return instance;
+        LOG_ERROR("Error: Not a Connection plugin");
+    } else {
+        LOG_ERROR("Error: Plugin not found");
+    }
+
+    return nullptr;
+}
+
+Connection *PluginLoader::newConnection(std::string name) {
+    if (!this->plugins.contains("connection_" + name)) {
+        try {
+            this->plugins["connection_" + name] = loadPlugin(name, "connection");
+        } catch (std::exception &ex) {
+            LOG_ERROR("Error: %s", ex.what());
+        }
+    }
+
+    if (this->plugins.contains("connection_" + name)) {
+        this->plugins["connection_" + name].refcount++;
+        Connection *instance = dynamic_cast<Connection *>(this->plugins["connection_" + name].newInstance());
+        if (instance)
+            return instance;
+        LOG_ERROR("Error: Not a Connection plugin");
+    } else {
+        LOG_ERROR("Error: Plugin not found");
     }
 
     return nullptr;
@@ -75,9 +110,9 @@ PluginLoader::networkPlugin PluginLoader::loadNetworkPlugin(std::string name) {
     result.name = name;
     std::string library = "geblaat_network_" + name + ".dll";
 
-    typedef ::geblaat::Connection *(*newInstance_f)();
+    typedef Connection *(*newInstance_f)();
     newInstance_f newInstance;
-    typedef void (*delInstance_f)(::geblaat::Connection *);
+    typedef void (*delInstance_f)(Connection *);
     delInstance_f delInstance;
 
     result.handle = LoadLibrary(TEXT(library.c_str()));
@@ -115,15 +150,15 @@ PluginLoader::networkPlugin PluginLoader::loadNetworkPlugin(std::string name) {
 
 #include <dlfcn.h>
 
-PluginLoader::networkPlugin PluginLoader::loadNetworkPlugin(std::string name) {
-    networkPlugin result;
-    result.refcount = 1;
+PluginLoader::plugin PluginLoader::loadPlugin(std::string name, std::string type) {
+    plugin result;
+    result.refcount = 0;
     result.name = name;
-    std::string library = "libgeblaat_network_" + name + ".so";
+    std::string library = "libgeblaat_" + type + "_" + name + ".so";
 
-    typedef ::geblaat::Connection *(*newInstance_f)();
+    typedef PluginLoadable *(*newInstance_f)();
     newInstance_f newInstance;
-    typedef void (*delInstance_f)(::geblaat::Connection *);
+    typedef void (*delInstance_f)(PluginLoadable *);
     delInstance_f delInstance;
 
     result.handle = dlopen(library.c_str(), RTLD_NOW);
@@ -148,8 +183,8 @@ PluginLoader::networkPlugin PluginLoader::loadNetworkPlugin(std::string name) {
         LOG_INFO("test does not exist");
     }
 
-    result.newConnection = newInstance;
-    result.delConnection = delInstance;
+    result.newInstance = newInstance;
+    result.delInstance = delInstance;
 
     return result;
 }
