@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+uname="$(uname)"
+
+
+
+if  [[  "$uname" = "Haiku" ]] then
+	GEBLAAT_ROOT=`pwd`/out/gcc/haiku/`uname -m`/debug
+	LIBRARY_PATH=$LIBRARY_PATH:$GEBLAAT_ROOT/lib
+	$GEBLAAT_ROOT/bin/blaatbot2025 -c $1
+fi
+
