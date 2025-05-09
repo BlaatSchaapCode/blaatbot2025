@@ -6,20 +6,6 @@ SRC_DIR      := $(PROJ_DIR)/src
 
 LIBS +=  nlohmann_json 
 
-# Haiku 
-
-ifeq ($(TARGET_OS),haiku)
-	LDFLAGS += -lnetwork
-endif
-
-ifeq ($(TARGET_OS),mingw)
-	#LDFLAGS += -lwsock32
-	LDFLAGS += -lws2_32
-endif
-
-
-
-
 #CXXFLAGS += -DENABLE_LOG_DEBUG
 
 BUILD_LIBRARY=D
@@ -39,3 +25,14 @@ CXX_SRC += $(SRC_DIR)/utils/threadName.cpp
 
 
 include $(PCDEV_ROOT)/build/make/all.mk
+
+$(info target os is $(TARGET_OS) )
+
+ifeq ($(TARGET_OS),haiku)
+	LDFLAGS += -lnetwork
+endif
+
+ifeq ($(TARGET_OS),mingw)
+	#LDFLAGS += -lwsock32
+	LDFLAGS += -lws2_32
+endif
