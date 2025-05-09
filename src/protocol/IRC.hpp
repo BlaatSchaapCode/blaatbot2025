@@ -393,6 +393,7 @@ class IRC : public Protocol {
     void onNicknameInUse(IRCMessage &message);
 
     void sendPRIVMSG(const std::string target, const std::string text, const std::map<std::string,std::string> tags = {});
+    void sendACTION(const std::string target, const std::string text, const std::map<std::string,std::string> tags = {});
     void sendTAGMSG(const std::string target, const std::map<std::string,std::string> tags = {});
     void sendNOTICE(const std::string target, const std::string text, const std::map<std::string,std::string> tags = {});
     void sendCTCPQuery(const std::string target, const std::string command, const std::string parameters = "");
@@ -423,7 +424,11 @@ class IRC : public Protocol {
     void ping();
 
 
+
+
     std::map<std::string,std::string> messageToClient(IRCMessage &message);
+  public:
+    void sendMessage(std::map<std::string, std::string> message) override;
 
 
 };

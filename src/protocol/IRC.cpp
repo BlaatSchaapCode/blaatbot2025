@@ -1542,6 +1542,10 @@ std::string IRC::formatTags(std::map<std::string, std::string> tags) {
     return result;
 }
 
+void IRC::sendACTION(const std::string target, const std::string text, const std::map<std::string, std::string> tags) {
+    sendCTCPQuery(target, "ACTION", text); // TODO tags
+}
+
 void IRC::sendPRIVMSG(const std::string target, const std::string text, const std::map<std::string, std::string> tags) {
     if (validTarget(target) && validText(text)) {
         std::string msg;
@@ -1583,12 +1587,14 @@ void IRC::sendNOTICE(const std::string target, const std::string text, const std
     }
 }
 void IRC::sendCTCPQuery(const std::string target, const std::string command, const std::string parameters) {
+    // TODO tags
     if (parameters.length())
         sendPRIVMSG(target, "\01" + command + " " + parameters + "\01");
     else
         sendPRIVMSG(target, "\01" + command + "\01");
 }
 void IRC::sendCTCPResponse(const std::string target, const std::string command, const std::string parameters) {
+    // TODO tags
     if (parameters.length())
         sendNOTICE(target, "\01" + command + " " + parameters + "\01");
     else
@@ -1696,9 +1702,10 @@ std::string IRC::decodeTagKey(const std::string &escapedString) {
     return escapedString;
 }
 
+// Convert IRC messages to generic format used by the Client class
 std::map<std::string, std::string> IRC::messageToClient(IRCMessage &message) {
     std::map<std::string, std::string> result;
-    auto recipient = message.parameters[0];
+    auto target = message.parameters[0];
 
     if (message.source.nick.length()) {
         result["sender"] = toLower(message.source.nick);
@@ -1706,15 +1713,15 @@ std::map<std::string, std::string> IRC::messageToClient(IRCMessage &message) {
         result["sender"] = toLower(message.source.raw);
     }
 
-    result["recipient"] = toLower(recipient);
-    result["recipient/irc"] = recipient;
-    if (isChannel(recipient)) {
-        result["recipient/type"] = "channel";
+    result["target"] = toLower(target);
+    result["target/irc"] = target;
+    if (isChannel(target)) {
+        result["target/type"] = "channel";
     } else {
-        if (isEqual(mNick, recipient)) {
-            result["recipient/type"] = "pm";
+        if (isEqual(mNick, target)) {
+            result["target/type"] = "pm";
         } else {
-            result["recipient/type"] = "other";
+            result["target/type"] = "other";
         }
     }
 
@@ -1733,6 +1740,33 @@ std::map<std::string, std::string> IRC::messageToClient(IRCMessage &message) {
         result["irc/tag/" + tag.first] = tag.second;
     }
     return result;
+}
+
+// Accept generic type message from Client class and send it as an IRC message
+// TODO: how to handle incorrect message types? Add a return value, throw an exception?
+// TODO: tags not supported yet
+void IRC::sendMessage(std::map<std::string, std::string> message) {
+    if (message.contains("target")) {
+        std::string text;
+
+        if (message.contains("text/plain"))
+            text = message["text/plain"];
+
+        if (message.contains("text/irc"))
+            text = message["text/irc"];
+
+        if (message.contains("type")) {
+            if (message["type"] == "message") {
+                sendPRIVMSG(message["target"], text);
+            }
+            if (message["type"] == "notice") {
+                sendNOTICE(message["target"], text);
+            }
+            if (message["type"] == "action") {
+                sendACTION(message["target"], text);
+            }
+        }
+    }
 }
 
 } // namespace geblaat

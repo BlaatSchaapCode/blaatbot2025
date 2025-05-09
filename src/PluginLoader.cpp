@@ -154,4 +154,4 @@ PluginLoader::networkPlugin PluginLoader::loadNetworkPlugin(std::string name) {
     return result;
 }
 #endif
-}
+} // namespace geblaat

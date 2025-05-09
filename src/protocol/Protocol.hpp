@@ -31,6 +31,7 @@ class Protocol : public PluginLoadable {
     void setClient(Client *client) { mClient = client; }
 
     virtual int setConfig(nlohmann::json) = 0;
+    virtual void sendMessage(std::map<std::string, std::string> message) = 0;
 
   protected:
     Connection *mConnection = nullptr;

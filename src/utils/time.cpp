@@ -1,7 +1,7 @@
 
 #include "time.hpp"
 
-#if __cpp_lib_chrono >= 201907L && false // force C implementation for testing
+#if __cpp_lib_chrono >= 201907L
 #include <chrono>
 
 std::string getTimeString(void) {

@@ -53,10 +53,43 @@ Client::~Client() {
 }
 
 void Client::onMessage(std::map<std::string, std::string> message) {
+    std::string prefix = "!";
 
-    LOG_INFO("Message:");
-    for (auto &m : message) {
-        LOG_INFO("%24s : %s", m.first.c_str(), m.second.c_str());
+    //    LOG_INFO("Message:");
+    //    for (auto &m : message) {
+    //        LOG_INFO("%24s : %s", m.first.c_str(), m.second.c_str());
+    //    }
+
+    if (message.contains("type")) {
+        if (message["type"] == "message") {
+            if (message.contains("text/plain")) {
+                if (message["text/plain"].length()) {
+                    auto isbotcommand = message["text/plain"].find(prefix);
+                    if (isbotcommand == 0) {
+                        auto endbotcommand = message["text/plain"].find(" ");
+                        std::string botcommand;
+                        if (endbotcommand == std::string::npos) {
+                            botcommand = message["text/plain"].substr(1);
+                        } else {
+                            botcommand = message["text/plain"].substr(1, endbotcommand - 1);
+                        }
+                        LOG_INFO("Botcommand %s", botcommand.c_str());
+                        if (botcommand == "blaat") {
+                            std::map<std::string, std::string> m;
+                            m["type"] = "action";
+                            m["text/plain"] = "bææ";
+                            // m["target"] = message["sender"];
+                            if (message["target/type"] == "channel") {
+                                m["target"] = message["target"];
+                            } else {
+                                m["target"] = message["sender"];
+                            }
+                            mProtocol->sendMessage(m);
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
