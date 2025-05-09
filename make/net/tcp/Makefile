@@ -21,6 +21,7 @@ CXX_SRC += $(SRC_DIR)/network/Connection.cpp
 #CXX_SRC += $(SRC_DIR)/network/TlsConnection.cpp
 CXX_SRC += $(SRC_DIR)/network/TcpConnection.cpp
 
+CXX_SRC += $(SRC_DIR)/utils/time.cpp
 CXX_SRC += $(SRC_DIR)/utils/logger.cpp
 CXX_SRC += $(SRC_DIR)/utils/threadName.cpp
 
