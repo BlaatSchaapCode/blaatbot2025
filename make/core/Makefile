@@ -21,6 +21,7 @@ CXX_SRC += $(SRC_DIR)/utils/compat.cpp
 CXX_SRC += $(SRC_DIR)/utils/logger.cpp
 CXX_SRC += $(SRC_DIR)/utils/splitString.cpp
 CXX_SRC += $(SRC_DIR)/utils/threadName.cpp
+CXX_SRC += $(SRC_DIR)/utils/time.cpp
 CXX_SRC += $(SRC_DIR)/utils/timer.cpp
 CXX_SRC += $(SRC_DIR)/main.cpp
 CXX_SRC += $(SRC_DIR)/PluginLoader.cpp

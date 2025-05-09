@@ -13,20 +13,22 @@
 
 #include "protocol/IRC.hpp" // for the stub
 
-::client::Client *PluginLoader::newClient(std::string type) {
+namespace geblaat {
+
+::geblaat::Client *PluginLoader::newClient(std::string type) {
     // stub
-    return new ::client::Client();
+    return new ::geblaat::Client();
 }
 
-::protocol::Protocol *PluginLoader::newProtocol(std::string type) {
+::geblaat::Protocol *PluginLoader::newProtocol(std::string type) {
     // stub
     if (type == "irc") {
-        return new ::protocol::IRC();
+        return new ::geblaat::IRC();
     }
     return nullptr;
 }
 
-::network::Connection *PluginLoader::newConnection(std::string name) {
+::geblaat::Connection *PluginLoader::newConnection(std::string name) {
     if (this->networkPlugins.contains(name)) {
         this->networkPlugins[name].refcount++;
         return this->networkPlugins[name].newConnection();
@@ -73,9 +75,9 @@ PluginLoader::networkPlugin PluginLoader::loadNetworkPlugin(std::string name) {
     result.name = name;
     std::string library = "geblaat_network_" + name + ".dll";
 
-    typedef ::network::Connection *(*newInstance_f)();
+    typedef ::geblaat::Connection *(*newInstance_f)();
     newInstance_f newInstance;
-    typedef void (*delInstance_f)(::network::Connection *);
+    typedef void (*delInstance_f)(::geblaat::Connection *);
     delInstance_f delInstance;
 
     result.handle = LoadLibrary(TEXT(library.c_str()));
@@ -119,9 +121,9 @@ PluginLoader::networkPlugin PluginLoader::loadNetworkPlugin(std::string name) {
     result.name = name;
     std::string library = "libgeblaat_network_" + name + ".so";
 
-    typedef ::network::Connection *(*newInstance_f)();
+    typedef ::geblaat::Connection *(*newInstance_f)();
     newInstance_f newInstance;
-    typedef void (*delInstance_f)(::network::Connection *);
+    typedef void (*delInstance_f)(::geblaat::Connection *);
     delInstance_f delInstance;
 
     result.handle = dlopen(library.c_str(), RTLD_NOW);
@@ -151,5 +153,5 @@ PluginLoader::networkPlugin PluginLoader::loadNetworkPlugin(std::string name) {
 
     return result;
 }
-
+}
 #endif

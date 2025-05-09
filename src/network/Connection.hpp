@@ -22,19 +22,20 @@
 
 // Project includes
 #include "../protocol/Protocol.hpp"
-namespace protocol {
+#include "PluginLoadable.hpp"
+namespace geblaat {
 class Protocol;
 }
 
-namespace network {
+namespace geblaat {
 
-class Connection {
+class Connection : public PluginLoadable {
 
   public:
     virtual ~Connection();
     virtual void send(std::vector<char> data) = 0;
     void send(std::string s);
-    void setProtocol(::protocol::Protocol *protocol);
+    void setProtocol(::geblaat::Protocol *protocol);
 
 //		Replaced with setConfig
 //    int setHostName(std::string hostName);
@@ -53,7 +54,7 @@ class Connection {
 
 
   protected:
-    ::protocol::Protocol *mProtocol;
+    ::geblaat::Protocol *mProtocol;
     std::string mHostName;
     uint16_t mPort;
 };

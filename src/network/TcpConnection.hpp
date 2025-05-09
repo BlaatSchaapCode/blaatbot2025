@@ -33,7 +33,7 @@ typedef int socket_t;
 #include <thread>
 #include "Connection.hpp"
 
-namespace network {
+namespace geblaat {
 
 class TcpConnection : public Connection {
   public:

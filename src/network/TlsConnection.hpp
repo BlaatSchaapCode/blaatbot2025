@@ -8,8 +8,6 @@
 #ifndef NETWORK_TLSCONNECTION_HPP_
 #define NETWORK_TLSCONNECTION_HPP_
 
-#include "network.hpp"
-
 #include <atomic>
 #include <string>
 #include <thread>
@@ -19,7 +17,7 @@
 #include "../utils/logger.hpp"
 #include "Connection.hpp"
 
-namespace network {
+namespace geblaat {
 
 class TlsConnection : public Connection {
 

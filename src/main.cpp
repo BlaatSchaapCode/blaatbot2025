@@ -17,7 +17,10 @@
 #include "utils/version.hpp"
 
 #include "PluginLoader.hpp"
+
+namespace geblaat {
 PluginLoader gPluginLoader; // testing
+}
 
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
@@ -31,13 +34,9 @@ PluginLoader gPluginLoader; // testing
     LOG_DEBUG("WIN32 setting output to UTF8 status %d %d", a, b);
 
     // Does not appear to output currectly when running under wine
+    // Works in a real Windows 10
+    // Note: requires Windows 10 version 1903 or later.
     LOG_DEBUG("test: äåéëþüúíóö«»¬");
-
-    // I have no real Windows setup to test this yet.
-
-    // Might require manifest?
-    // https://learn.microsoft.com/en-us/windows/apps/design/globalizing/use-utf8-code-page
-    // Also requires Windows 10 version 1903 or later?
 }
 
 #endif
@@ -96,7 +95,7 @@ int main(int argc, char *argv[]) {
     int result;
     utils::Version version;
 
-    ::client::Client *client = nullptr;
+    ::geblaat::Client *client = nullptr;
 
     result = parse_options(argc, argv);
     if (result)
@@ -107,7 +106,7 @@ int main(int argc, char *argv[]) {
 
         try {
             auto jsonClient = mConfigdata["client"];
-            client = gPluginLoader.newClient(jsonClient["type"]);
+            client = geblaat::gPluginLoader.newClient(jsonClient["type"]);
             if (client) {
                 client->setConfig(jsonClient["config"]);
             } else {

@@ -10,6 +10,7 @@ LIBS +=  nlohmann_json libtls
 
 BUILD_LIBRARY=D
 
+CXX_INCLUDES += $(SRC_DIR)
 CXX_INCLUDES += $(SRC_DIR)/network
 CXX_INCLUDES += $(SRC_DIR)/protocol
 CXX_INCLUDES += $(SRC_DIR)/utils

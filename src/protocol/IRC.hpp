@@ -15,12 +15,13 @@
 #include <string>
 #include <vector>
 
-#include "../network/Connection.hpp"
 #include "Protocol.hpp"
+#include "../network/Connection.hpp"
+
 
 #include "timer.hpp"
 
-namespace protocol {
+namespace geblaat {
 
 class IRC : public Protocol {
   public:
@@ -420,6 +421,11 @@ class IRC : public Protocol {
     void requestCapabilityIfPresent(const std::string&);
 
     void ping();
+
+
+    std::map<std::string,std::string> messageToClient(IRCMessage &message);
+
+
 };
 
 } // namespace protocol

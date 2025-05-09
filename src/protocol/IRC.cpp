@@ -23,13 +23,15 @@
 #include <unicode/unistr.h>
 
 #include "logger.hpp"
+#include "time.hpp"
 #include "timer.hpp"
 #include "version.hpp"
 
 #include "PluginLoader.hpp"
-extern PluginLoader gPluginLoader; // testing
 
-namespace protocol {
+namespace geblaat {
+
+extern PluginLoader gPluginLoader; // testing
 
 /*
  * Channel names begin with
@@ -679,6 +681,7 @@ void IRC::onCAP(IRCMessage &message) {
                         requestCapabilityIfPresent("draft/labeled-response");
                         requestCapabilityIfPresent("account-notify");
                         requestCapabilityIfPresent("extended-join");
+                        requestCapabilityIfPresent("away-notify");
 
                         send("CAP END");
                         connectTimer.abortTimer();
@@ -806,7 +809,16 @@ void IRC::onPONG(IRCMessage &message) {
 
 void IRC::onCTCPQuery(IRCMessage &message, CTCPMessage &ctcp) {
     if (ctcp.command == "ACTION") {
-        LOG_DEBUG("Action: %s", ctcp.parameters.c_str());
+
+        auto recipient = message.parameters[0];
+        auto action = ctcp.parameters;
+        std::map<std::string, std::string> m = messageToClient(message);
+        m["type"] = "action";
+        m["text/plain"] = stripFormatting(action);
+        m["text/irc"] = action;
+        if (mClient)
+            mClient->onMessage(m);
+
     } else if (ctcp.command == "CLIENTINFO") {
     } else if (ctcp.command == "DCC") {
     } else if (ctcp.command == "FINGER") {
@@ -815,12 +827,7 @@ void IRC::onCTCPQuery(IRCMessage &message, CTCPMessage &ctcp) {
     } else if (ctcp.command == "SOURCE") {
         sendCTCPResponse(message.source.nick, "SOURCE", "https://github.com/BlaatSchaapCode/blaatbot2025/");
     } else if (ctcp.command == "TIME") {
-#if __cpp_lib_chrono >= 201907L
-        const auto zt{std::chrono::zoned_time{std::chrono::current_zone(), std::chrono::system_clock::now()}};
-        sendCTCPResponse(message.source.nick, "TIME", std::format("{:%FT%T%z}", zt));
-#else
-        // TODO: implementation for older C++ libraries (eg. Haiku)
-#endif
+        sendCTCPResponse(message.source.nick, "TIME", getTimeString());
     } else if (ctcp.command == "VERSION") {
         utils::Version version;
         sendCTCPResponse(message.source.nick, "VERSION", "BlaatBot2025 " + version.m_git_commit);
@@ -986,21 +993,14 @@ void IRC::onPRIVMSG(IRCMessage &message) {
                 return;
             }
         }
-        auto cleanMessage = stripFormatting(privmsg);
-        LOG_DEBUG("Message      : %s", privmsg.c_str());
-        LOG_DEBUG("Clean Message: %s", cleanMessage.c_str());
 
-        if (privmsg == "test") {
-            std::map<std::string, std::string> tags;
-            if (message.tags.contains("msgid")) {
-                // C++ doesn't like reading message.tags["msgid"];
-                // because message is const?
-                // auto messagetags = message.tags;
-                tags["+draft/reply"] = message.tags["msgid"];
-                tags["+blaatschaap.be/weee"] = "mooo";
-                sendPRIVMSG(recipient, "reply", tags);
-            }
-        }
+        std::map<std::string, std::string> m = messageToClient(message);
+        m["type"] = "message";
+        m["text/plain"] = stripFormatting(privmsg);
+        m["text/irc"] = privmsg;
+
+        if (mClient)
+            mClient->onMessage(m);
 
     } else {
         // Malformed message?
@@ -1041,7 +1041,14 @@ void IRC::onNOTICE(IRCMessage &message) {
                 return;
             }
         }
-        auto cleanMessage = stripFormatting(notice);
+
+        std::map<std::string, std::string> m = messageToClient(message);
+        m["type"] = "notice";
+        m["text/plain"] = stripFormatting(notice);
+        m["text/irc"] = notice;
+        if (mClient)
+            mClient->onMessage(m);
+
     } else {
         // Malformed message?
     }
@@ -1689,4 +1696,43 @@ std::string IRC::decodeTagKey(const std::string &escapedString) {
     return escapedString;
 }
 
-} // namespace protocol
+std::map<std::string, std::string> IRC::messageToClient(IRCMessage &message) {
+    std::map<std::string, std::string> result;
+    auto recipient = message.parameters[0];
+
+    if (message.source.nick.length()) {
+        result["sender"] = toLower(message.source.nick);
+    } else {
+        result["sender"] = toLower(message.source.raw);
+    }
+
+    result["recipient"] = toLower(recipient);
+    result["recipient/irc"] = recipient;
+    if (isChannel(recipient)) {
+        result["recipient/type"] = "channel";
+    } else {
+        if (isEqual(mNick, recipient)) {
+            result["recipient/type"] = "pm";
+        } else {
+            result["recipient/type"] = "other";
+        }
+    }
+
+    if (message.source.nick.length())
+        result["sender/irc/nick"] = message.source.nick;
+    if (message.source.user.length())
+        result["sender/irc/user"] = message.source.user;
+    if (message.source.host.length())
+        result["sender/irc/host"] = message.source.host;
+    if (message.tags.contains("account"))
+        result["sender/irc/account"] = message.tags["account"];
+
+    result["sender/irc/raw"] = message.source.raw;
+
+    for (auto &tag : message.tags) {
+        result["irc/tag/" + tag.first] = tag.second;
+    }
+    return result;
+}
+
+} // namespace geblaat

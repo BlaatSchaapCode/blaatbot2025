@@ -10,7 +10,7 @@
 #include "TlsConnection.hpp"
 #include "threadName.hpp"
 
-namespace network {
+namespace geblaat {
 // void cTlsConnection::connect(std::string ip_address, uint16_t port, bool ignoreBadCertificate, bool ignoreLegacyServer) {
 int TlsConnection::connect(void) {
     int rc;
@@ -201,11 +201,11 @@ TlsConnection::~TlsConnection() {
     delete m_receiveThread;
 }
 
-} // namespace network
+} // namespace geblaat
 
 #ifdef DYNAMIC_LIBRARY
 extern "C" {
-network::TlsConnection *newInstance(void) { return new network::TlsConnection(); }
-void delInstance(network::TlsConnection *inst) { delete inst; }
+geblaat::TlsConnection *newInstance(void) { return new geblaat::TlsConnection(); }
+void delInstance(geblaat::TlsConnection *inst) { delete inst; }
 }
 #endif

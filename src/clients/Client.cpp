@@ -7,16 +7,15 @@
 
 #include "Client.hpp"
 
-// #include "../network/TcpConnection.hpp"
-// #include "../network/TlsConnection.hpp"
 #include "../network/Connection.hpp"
 #include "../protocol/IRC.hpp"
 #include "../utils/logger.hpp"
 
 #include "PluginLoader.hpp"
-extern PluginLoader gPluginLoader; // testing
 
-namespace client {
+namespace geblaat {
+
+extern PluginLoader gPluginLoader; // testing
 
 Client::Client() {}
 
@@ -29,6 +28,7 @@ int Client::setConfig(nlohmann::json config) {
 
                 mProtocol = gPluginLoader.newProtocol(jsonProtocol["type"]);
                 if (mProtocol) {
+                    mProtocol->setClient(this);
                     mProtocol->setConfig(jsonProtocol["config"]);
                 }
             }
@@ -52,4 +52,12 @@ Client::~Client() {
         delete mProtocol;
 }
 
-} /* namespace client */
+void Client::onMessage(std::map<std::string, std::string> message) {
+
+    LOG_INFO("Message:");
+    for (auto &m : message) {
+        LOG_INFO("%24s : %s", m.first.c_str(), m.second.c_str());
+    }
+}
+
+} /* namespace geblaat */

@@ -17,7 +17,7 @@
 #include "logger.hpp"
 #include "threadName.hpp"
 
-namespace network {
+namespace geblaat {
 void TcpConnection::send(std::vector<char> data) {
     size_t sent_bytes = ::send(m_socket, (const char *)data.data(), (int)data.size(), 0);
     if (sent_bytes == data.size()) {
@@ -225,7 +225,7 @@ TcpConnection::~TcpConnection() {
 
 #ifdef DYNAMIC_LIBRARY
 extern "C" {
-network::TcpConnection *newInstance(void) { return new network::TcpConnection(); }
-void delInstance(network::TcpConnection *inst) { delete inst; }
+geblaat::TcpConnection *newInstance(void) { return new geblaat::TcpConnection(); }
+void delInstance(geblaat::TcpConnection *inst) { delete inst; }
 }
 #endif

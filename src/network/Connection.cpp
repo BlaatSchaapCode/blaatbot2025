@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "Connection.hpp"
-namespace network {
+namespace geblaat {
 
 Connection::~Connection() {}
 
@@ -19,7 +19,7 @@ void Connection::send(std::string s) {
     send(v);
 }
 
-void Connection::setProtocol(::protocol::Protocol *protocol) { mProtocol = protocol; }
+void Connection::setProtocol(::geblaat::Protocol *protocol) { mProtocol = protocol; }
 
 // int Connection::setHostName(std::string hostName) {
 //     mHostName = hostName;
@@ -30,4 +30,4 @@ void Connection::setProtocol(::protocol::Protocol *protocol) { mProtocol = proto
 //     return 0;
 // }
 
-} // namespace network
+} // namespace geblaat
