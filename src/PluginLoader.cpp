@@ -183,6 +183,18 @@ PluginLoader::plugin PluginLoader::loadPlugin(std::string name, std::string type
         LOG_INFO("test does not exist");
     }
 
+    typedef char *(__attribute__((cdecl)) (*geblaat_get_info_f)(void));
+
+    geblaat_get_info_f geblaat_get_info = (geblaat_get_info_f)dlsym(result.handle, "geblaat_get_info");
+
+    if (geblaat_get_info) {
+        LOG_INFO("geblaat_get_info exists, value %s", geblaat_get_info());
+    } else {
+        LOG_INFO("geblaat_get_info does not exist");
+    }
+
+    // geblaat_get_info
+
     result.newInstance = newInstance;
     result.delInstance = delInstance;
 

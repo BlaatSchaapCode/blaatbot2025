@@ -15,7 +15,6 @@ CXX_INCLUDES += $(SRC_DIR)/utils
 
 CXX_SRC += $(SRC_DIR)/connection/Connection.cpp
 CXX_SRC += $(SRC_DIR)/protocol/Protocol.cpp
-CXX_SRC += $(SRC_DIR)/protocol/IRC.cpp
 CXX_SRC += $(SRC_DIR)/utils/compat.cpp
 CXX_SRC += $(SRC_DIR)/utils/logger.cpp
 CXX_SRC += $(SRC_DIR)/utils/splitString.cpp

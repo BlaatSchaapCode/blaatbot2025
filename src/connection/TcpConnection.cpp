@@ -227,5 +227,6 @@ TcpConnection::~TcpConnection() {
 extern "C" {
 geblaat::TcpConnection *newInstance(void) { return new geblaat::TcpConnection(); }
 void delInstance(geblaat::TcpConnection *inst) { delete inst; }
+int test = 4;
 }
 #endif

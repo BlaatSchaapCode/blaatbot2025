@@ -31,7 +31,7 @@
 
 namespace geblaat {
 
-extern PluginLoader gPluginLoader; // testing
+PluginLoader gPluginLoader; // testing
 
 /*
  * Channel names begin with
@@ -1770,3 +1770,11 @@ void IRC::sendMessage(std::map<std::string, std::string> message) {
 }
 
 } // namespace geblaat
+
+#ifdef DYNAMIC_LIBRARY
+extern "C" {
+geblaat::IRC *newInstance(void) { return new geblaat::IRC(); }
+void delInstance(geblaat::IRC *inst) { delete inst; }
+int test = 6667;
+}
+#endif
