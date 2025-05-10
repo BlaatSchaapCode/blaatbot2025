@@ -27,6 +27,13 @@ class PluginLoader {
     Client *newClient(std::string type);
     Protocol *newProtocol(std::string type);
 
+
+#ifdef __i386__
+    [[gnu::cdecl]] typedef char *(*geblaat_get_info_f)(void);
+#else
+    typedef char *(*geblaat_get_info_f)(void);
+#endif
+
   private:
     struct plugin {
         std::string name;
