@@ -17,9 +17,7 @@ namespace geblaat {
 
 PluginLoader gPluginLoader; // testing
 
-BotClient::BotClient() {
-
-}
+BotClient::BotClient() {}
 
 void BotClient::registerBotCommand(BotModule *mod, std::string command, OnCommand cmd) {
     if (mBotModules.contains(mod)) {

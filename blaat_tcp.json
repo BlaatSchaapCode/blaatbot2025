@@ -20,13 +20,16 @@
             "connections" : [ {
               "type" : "tcp",
               "config" : {
-                "hostname" : "irc.blaatschaap.be",
-                "ignoreInvalidCerficiate" : false,
-                "ignoreInsecureProtocol" : false
+                "hostname" : "irc.blaatschaap.be"
               }
             } ]
           }
         }
+      } ],
+      "modules" : [ {
+        "type" : "test",
+        "prefix" : "!",
+        "config" : { }
       } ]
     }
   }

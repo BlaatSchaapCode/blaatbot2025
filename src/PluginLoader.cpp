@@ -11,8 +11,6 @@
 
 #include "utils/logger.hpp"
 
-
-
 namespace geblaat {
 
 Client *PluginLoader::newClient(std::string name) {
@@ -128,49 +126,47 @@ static std::string getWin32ErrorString() {
     return message;
 }
 
-PluginLoader::networkPlugin PluginLoader::loadNetworkPlugin(std::string name) {
-    networkPlugin result;
-    result.refcount = 1;
+PluginLoader::plugin PluginLoader::loadPlugin(std::string name, std::string type) {
+    plugin result;
+    result.refcount = 0;
     result.name = name;
-    std::string library = "geblaat_network_" + name + ".dll";
-
+    std::string library = "geblaat_" + type + "_" + name + ".dll";
+    LOG_INFO("Loading %s", library.c_str());
 
     typedef PluginLoadable *(*newInstance_f)();
     newInstance_f newInstance;
     typedef void (*delInstance_f)(PluginLoadable *);
     delInstance_f delInstance;
 
-
     result.handle = LoadLibrary(TEXT(library.c_str()));
     if (result.handle == nullptr) {
-        throw std::runtime_error(dlerror());
+        throw std::runtime_error(getWin32ErrorString());
     }
 
-    newInstance = (newInstance_f)GetProcAddress(result.handle, "newInstance");
+    newInstance = (newInstance_f)GetProcAddress((HMODULE)result.handle, "newInstance");
     if (!newInstance) {
-        throw std::runtime_error(dlerror());
+        throw std::runtime_error(getWin32ErrorString());
     }
 
-    delInstance = (delInstance_f)GetProcAddress(result.handle, "delInstance");
+    delInstance = (delInstance_f)GetProcAddress((HMODULE)result.handle, "delInstance");
     if (!delInstance) {
-        throw std::runtime_error(dlerror());
+        throw std::runtime_error(getWin32ErrorString());
     }
 
-    int *test = (int *)GetProcAddress(result.handle, "test");
+    int *test = (int *)GetProcAddress((HMODULE)result.handle, "test");
     if (test) {
         LOG_INFO("test exists, value %d", *test);
     } else {
         LOG_INFO("test does not exist");
     }
 
-    geblaat_get_info_f geblaat_get_info = (geblaat_get_info_f)dlsym(result.handle, "geblaat_get_info");
+    geblaat_get_info_f geblaat_get_info = (geblaat_get_info_f)GetProcAddress((HMODULE)result.handle, "geblaat_get_info");
 
     if (geblaat_get_info) {
         LOG_INFO("geblaat_get_info exists, value %s", geblaat_get_info());
     } else {
         LOG_INFO("geblaat_get_info does not exist");
     }
-
 
     result.newInstance = newInstance;
     result.delInstance = delInstance;
@@ -223,7 +219,6 @@ PluginLoader::plugin PluginLoader::loadPlugin(std::string name, std::string type
     }
 
     // typedef char *(__attribute__((cdecl)) (*geblaat_get_info_f)(void));
-
 
     geblaat_get_info_f geblaat_get_info = (geblaat_get_info_f)dlsym(result.handle, "geblaat_get_info");
 
