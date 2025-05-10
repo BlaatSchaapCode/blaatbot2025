@@ -186,6 +186,7 @@ PluginLoader::plugin PluginLoader::loadPlugin(std::string name, std::string type
     result.refcount = 0;
     result.name = name;
     std::string library = "libgeblaat_" + type + "_" + name + ".so";
+    LOG_INFO("Loading %s", library.c_str());
 
     typedef PluginLoadable *(*newInstance_f)();
     newInstance_f newInstance;
