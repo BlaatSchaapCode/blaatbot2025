@@ -2,6 +2,8 @@
 
 namespace geblaat {
 
+TestBotModule::~TestBotModule(){}
+
 int TestBotModule::setConfig(nlohmann::json) {
     if (mBotClient) {
         mBotClient->registerBotCommand(

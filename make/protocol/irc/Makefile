@@ -20,7 +20,7 @@ CXX_SRC += $(SRC_DIR)/protocol/Protocol.cpp
 CXX_SRC += $(SRC_DIR)/protocol/IRC.cpp
 CXX_SRC += $(SRC_DIR)/connection/Connection.cpp
 CXX_SRC += $(SRC_DIR)/PluginLoadable.cpp
-CXX_SRC += $(SRC_DIR)/PluginLoader.cpp
+#CXX_SRC += $(SRC_DIR)/PluginLoader.cpp
 
 CXX_SRC += $(SRC_DIR)/utils/time.cpp
 CXX_SRC += $(SRC_DIR)/utils/timer.cpp

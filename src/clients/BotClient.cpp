@@ -15,9 +15,11 @@
 
 namespace geblaat {
 
-PluginLoader gPluginLoader; // testing
+
 
 BotClient::BotClient() {}
+
+
 
 void BotClient::registerBotCommand(BotModule *mod, std::string command, OnCommand cmd) {
     if (mBotModules.contains(mod)) {
@@ -31,19 +33,20 @@ void BotClient::registerBotCommand(BotModule *mod, std::string command, OnComman
 
 int BotClient::setConfig(nlohmann::json config) {
     try {
+    	if (!pluginLoader) throw new std::runtime_error("PluginLoader missing");
         auto networks = config["networks"];
         if (networks.is_array()) {
             for (auto &network : networks) {
                 auto jsonProtocol = network["protocol"];
 
-                mProtocol = gPluginLoader.newProtocol(jsonProtocol["type"]);
+                mProtocol = pluginLoader->newProtocol(jsonProtocol["type"]);
                 if (mProtocol) {
                     mProtocol->setClient(this);
 
                     auto modules = config["modules"];
                     if (modules.is_array()) {
                         for (auto &module : modules) {
-                            auto botModule = gPluginLoader.newBotModule(module["type"]);
+                            auto botModule = pluginLoader->newBotModule(module["type"]);
                             if (!botModule) {
                                 LOG_ERROR("Could not load Botmodule");
                                 continue;

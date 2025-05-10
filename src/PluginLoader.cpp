@@ -25,8 +25,10 @@ Client *PluginLoader::newClient(std::string name) {
     if (this->plugins.contains("client_" + name)) {
         this->plugins["client_" + name].refcount++;
         Client *instance = dynamic_cast<Client *>(this->plugins["client_" + name].newInstance());
-        if (instance)
+        if (instance) {
+        	instance->setPluginLoader(this);
             return instance;
+        }
         LOG_ERROR("Error: Not a Client plugin");
     } else {
         LOG_ERROR("Error: Plugin not found");
@@ -47,8 +49,10 @@ Protocol *PluginLoader::newProtocol(std::string name) {
     if (this->plugins.contains("protocol_" + name)) {
         this->plugins["protocol_" + name].refcount++;
         Protocol *instance = dynamic_cast<Protocol *>(this->plugins["protocol_" + name].newInstance());
-        if (instance)
+        if (instance) {
+        	instance->setPluginLoader(this);
             return instance;
+        }
         LOG_ERROR("Error: Not a Connection plugin");
     } else {
         LOG_ERROR("Error: Plugin not found");
@@ -69,8 +73,10 @@ BotModule *PluginLoader::newBotModule(std::string name) {
     if (this->plugins.contains("botmodule_" + name)) {
         this->plugins["botmodule_" + name].refcount++;
         BotModule *instance = dynamic_cast<BotModule *>(this->plugins["botmodule_" + name].newInstance());
-        if (instance)
+        if (instance) {
+        	instance->setPluginLoader(this);
             return instance;
+        }
         LOG_ERROR("Error: Not a BotModule plugin");
     } else {
         LOG_ERROR("Error: Plugin not found");
@@ -91,8 +97,10 @@ Connection *PluginLoader::newConnection(std::string name) {
     if (this->plugins.contains("connection_" + name)) {
         this->plugins["connection_" + name].refcount++;
         Connection *instance = dynamic_cast<Connection *>(this->plugins["connection_" + name].newInstance());
-        if (instance)
+        if (instance) {
+        	instance->setPluginLoader(this);
             return instance;
+        }
         LOG_ERROR("Error: Not a Connection plugin");
     } else {
         LOG_ERROR("Error: Plugin not found");

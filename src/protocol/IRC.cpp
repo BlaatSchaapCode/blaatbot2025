@@ -31,8 +31,6 @@
 
 namespace geblaat {
 
-PluginLoader gPluginLoader; // testing
-
 /*
  * Channel names begin with
  * rfc1459: '&' or '#'
@@ -147,7 +145,7 @@ int IRC::setConfig(nlohmann::json config) {
             // the json to be able to handle multiple. If there are multiple
             // the default behaviour is intended to be to pick server at random
             auto jsonConnection = config["connections"][0];
-            mConnection = gPluginLoader.newConnection(jsonConnection["type"]);
+            mConnection = pluginLoader->newConnection(jsonConnection["type"]);
             if (mConnection) {
                 mConnection->setConfig(jsonConnection["config"]);
                 mConnection->setProtocol(this);

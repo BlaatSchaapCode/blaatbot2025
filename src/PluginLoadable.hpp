@@ -11,11 +11,16 @@
 // Third Party libraries
 #include <nlohmann/json.hpp>
 
-namespace geblaat {
 
+
+namespace geblaat {
+class PluginLoader;
 class PluginLoadable {
 public:
 	virtual int setConfig(nlohmann::json) = 0;
+	virtual void setPluginLoader(PluginLoader * pl) {pluginLoader = pl;}
+protected:
+	PluginLoader * pluginLoader = nullptr;
 };
 
 };
