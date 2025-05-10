@@ -95,7 +95,7 @@ int main(int argc, char *argv[]) {
     int result;
     utils::Version version;
 
-    Client *client = nullptr;
+    geblaat::Client *client = nullptr;
 
     result = parse_options(argc, argv);
     if (result)

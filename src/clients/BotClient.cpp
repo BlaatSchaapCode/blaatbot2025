@@ -17,7 +17,19 @@ namespace geblaat {
 
 PluginLoader gPluginLoader; // testing
 
-BotClient::BotClient() {}
+BotClient::BotClient() {
+
+}
+
+void BotClient::registerBotCommand(BotModule *mod, std::string command, OnCommand cmd) {
+    if (mBotModules.contains(mod)) {
+        auto prefix = mBotModules[mod];
+        LOG_INFO("Registering Bot Command, Prefix %s, Command %s", prefix.c_str(), command.c_str());
+        mCommands[prefix][command] = cmd;
+    } else {
+        LOG_ERROR("Bot Module Not Registered");
+    }
+}
 
 int BotClient::setConfig(nlohmann::json config) {
     try {
@@ -29,7 +41,23 @@ int BotClient::setConfig(nlohmann::json config) {
                 mProtocol = gPluginLoader.newProtocol(jsonProtocol["type"]);
                 if (mProtocol) {
                     mProtocol->setClient(this);
+
+                    auto modules = config["modules"];
+                    if (modules.is_array()) {
+                        for (auto &module : modules) {
+                            auto botModule = gPluginLoader.newBotModule(module["type"]);
+                            if (!botModule) {
+                                LOG_ERROR("Could not load Botmodule");
+                                continue;
+                            }
+                            mBotModules[botModule] = module["prefix"];
+                            botModule->setBotClient(this);
+                            botModule->setConfig(module["config"]);
+                        }
+                    }
+
                     mProtocol->setConfig(jsonProtocol["config"]);
+
                 } else {
                     std::string prototolName = jsonProtocol["type"];
                     LOG_ERROR("Cannot load protocol %s", prototolName.c_str());
@@ -56,7 +84,7 @@ int BotClient::setConfig(nlohmann::json config) {
 
         sendMessage["type"] = "action";
         sendMessage["text/plain"] = "bææ";
-        // m["target"] = message["sender"];
+
         if (recvMessage["target/type"] == "channel") {
             sendMessage["target"] = recvMessage["target"];
         } else {
@@ -68,6 +96,8 @@ int BotClient::setConfig(nlohmann::json config) {
 
     return 0;
 }
+
+void BotClient::sendMessage(std::map<std::string, std::string> message) { mProtocol->sendMessage(message); }
 
 BotClient::~BotClient() {
     // TODO Auto-generated destructor stub

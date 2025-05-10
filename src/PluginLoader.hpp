@@ -11,6 +11,7 @@
 #include "clients/Client.hpp"
 #include "protocol/Protocol.hpp"
 #include "PluginLoadable.hpp"
+#include "botmodule/BotModule.hpp"
 
 #include <functional>
 #include <map>
@@ -26,6 +27,7 @@ class PluginLoader {
     Connection *newConnection(std::string type);
     Client *newClient(std::string type);
     Protocol *newProtocol(std::string type);
+    BotModule *newBotModule(std::string type);
 
 
 #ifdef __i386__

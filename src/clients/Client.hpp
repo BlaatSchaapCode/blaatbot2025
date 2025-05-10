@@ -9,9 +9,10 @@
 #include <nlohmann/json.hpp>
 
 // Project includes
-#include "../protocol/Protocol.hpp"
+//#include "Protocol.hpp"
+class Protocol;
 
-#include "PluginLoader.hpp"
+#include "PluginLoadable.hpp"
 
 namespace geblaat {
 

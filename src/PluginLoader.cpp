@@ -59,6 +59,28 @@ Protocol *PluginLoader::newProtocol(std::string name) {
     return nullptr;
 }
 
+BotModule *PluginLoader::newBotModule(std::string name) {
+    if (!this->plugins.contains("botmodule_" + name)) {
+        try {
+            this->plugins["botmodule_" + name] = loadPlugin(name, "botmodule");
+        } catch (std::exception &ex) {
+            LOG_ERROR("Error: %s", ex.what());
+        }
+    }
+
+    if (this->plugins.contains("botmodule_" + name)) {
+        this->plugins["botmodule_" + name].refcount++;
+        BotModule *instance = dynamic_cast<BotModule *>(this->plugins["botmodule_" + name].newInstance());
+        if (instance)
+            return instance;
+        LOG_ERROR("Error: Not a BotModule plugin");
+    } else {
+        LOG_ERROR("Error: Plugin not found");
+    }
+
+    return nullptr;
+}
+
 Connection *PluginLoader::newConnection(std::string name) {
     if (!this->plugins.contains("connection_" + name)) {
         try {
@@ -112,35 +134,46 @@ PluginLoader::networkPlugin PluginLoader::loadNetworkPlugin(std::string name) {
     result.name = name;
     std::string library = "geblaat_network_" + name + ".dll";
 
-    typedef Connection *(*newInstance_f)();
+
+    typedef PluginLoadable *(*newInstance_f)();
     newInstance_f newInstance;
-    typedef void (*delInstance_f)(Connection *);
+    typedef void (*delInstance_f)(PluginLoadable *);
     delInstance_f delInstance;
+
 
     result.handle = LoadLibrary(TEXT(library.c_str()));
     if (result.handle == nullptr) {
-        throw std::runtime_error(getWin32ErrorString());
+        throw std::runtime_error(dlerror());
     }
 
-    newInstance = (newInstance_f)GetProcAddress((HMODULE)result.handle, "newInstance");
+    newInstance = (newInstance_f)GetProcAddress(result.handle, "newInstance");
     if (!newInstance) {
-        throw std::runtime_error(getWin32ErrorString());
+        throw std::runtime_error(dlerror());
     }
 
-    delInstance = (delInstance_f)GetProcAddress((HMODULE)result.handle, "delInstance");
+    delInstance = (delInstance_f)GetProcAddress(result.handle, "delInstance");
     if (!delInstance) {
-        throw std::runtime_error(getWin32ErrorString());
+        throw std::runtime_error(dlerror());
     }
 
-    int *test = (int *)GetProcAddress((HMODULE)result.handle, "test");
+    int *test = (int *)GetProcAddress(result.handle, "test");
     if (test) {
         LOG_INFO("test exists, value %d", *test);
     } else {
         LOG_INFO("test does not exist");
     }
 
-    result.newConnection = newInstance;
-    result.delConnection = delInstance;
+    geblaat_get_info_f geblaat_get_info = (geblaat_get_info_f)dlsym(result.handle, "geblaat_get_info");
+
+    if (geblaat_get_info) {
+        LOG_INFO("geblaat_get_info exists, value %s", geblaat_get_info());
+    } else {
+        LOG_INFO("geblaat_get_info does not exist");
+    }
+
+
+    result.newInstance = newInstance;
+    result.delInstance = delInstance;
 
     return result;
 }
@@ -163,7 +196,11 @@ PluginLoader::plugin PluginLoader::loadPlugin(std::string name, std::string type
     typedef void (*delInstance_f)(PluginLoadable *);
     delInstance_f delInstance;
 
-    result.handle = dlopen(library.c_str(), RTLD_NOW);
+    // For a BotModule to call into the BotClient, we need symbols
+    // in global space.
+    // Can Windows do this?
+    // Also, this means we cannot support unloading modules on MUSL/Linux
+    result.handle = dlopen(library.c_str(), RTLD_NOW | RTLD_GLOBAL);
     if (result.handle == nullptr) {
         throw std::runtime_error(dlerror());
     }

@@ -27,6 +27,11 @@
             } ]
           }
         }
+      } ],
+      "modules" : [ {
+        "type" : "test",
+        "prefix" : "!",
+        "config" : { }
       } ]
     }
   }
