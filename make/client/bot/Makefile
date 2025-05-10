@@ -10,6 +10,8 @@ LIBS +=  nlohmann_json
 
 BUILD_LIBRARY=D
 
+
+
 CXX_INCLUDES += $(SRC_DIR)
 CXX_INCLUDES += $(SRC_DIR)/clients
 CXX_INCLUDES += $(SRC_DIR)/connection
@@ -20,8 +22,14 @@ CXX_INCLUDES += ../ext/base64/include/
 CXX_SRC += $(SRC_DIR)/clients/BotClient.cpp
 CXX_SRC += $(SRC_DIR)/PluginLoadable.cpp
 CXX_SRC += $(SRC_DIR)/PluginLoader.cpp
+
+CXX_SRC += $(SRC_DIR)/botmodule/CAPI_BotModule.cpp
+
+
 CXX_SRC += $(SRC_DIR)/connection/Connection.cpp
 CXX_SRC += $(SRC_DIR)/clients/Client.cpp
+
+
 
 CXX_SRC += $(SRC_DIR)/utils/time.cpp
 CXX_SRC += $(SRC_DIR)/utils/logger.cpp
