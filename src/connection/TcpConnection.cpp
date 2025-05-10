@@ -5,20 +5,19 @@
  *      Author: andre
  */
 
-#include "TcpConnection.hpp"
+#include "../connection/TcpConnection.hpp"
 
-#include "network.hpp"
-
-#include <cstring>
-#include <errno.h>
 #include <iostream>
 #include <random>
 #include <vector>
 
+#include <cerrno>
+#include <cstring>
+
 #include "logger.hpp"
 #include "threadName.hpp"
 
-namespace network {
+namespace geblaat {
 void TcpConnection::send(std::vector<char> data) {
     size_t sent_bytes = ::send(m_socket, (const char *)data.data(), (int)data.size(), 0);
     if (sent_bytes == data.size()) {
@@ -171,11 +170,41 @@ int TcpConnection::connect(void) {
     return 0;
 }
 
-TcpConnection::TcpConnection() { mPort = 6667; }
+int TcpConnection::setConfig(nlohmann::json config) {
+    try {
+        if (config.contains("hostname") && config["hostname"].is_string()) {
+            mHostName = config["hostname"];
+        }
+        if (config.contains("port") && config["port"].is_number_unsigned()) {
+            mPort = config["port"];
+        }
+
+    } catch (nlohmann::json::exception &ex) {
+        LOG_ERROR("JSON exception: %s", ex.what());
+        return -1;
+    } catch (std::exception &ex) {
+        LOG_ERROR("Unknown exception: %s", ex.what());
+        return -1;
+    } catch (...) {
+        LOG_ERROR("Unknown exception (not derived from std::exception)");
+        return -1;
+    }
+    return 0;
+}
+
+TcpConnection::TcpConnection() {
+    mPort = 6667;
+
+#if defined(_WIN32) || defined(_WIN64)
+    if (WSAStartup(0x0202, &d)) {
+        LOG_ERROR("Error initialising WinSock");
+    }
+#endif
+}
 
 TcpConnection::~TcpConnection() {
-    m_receiveThreadActive = false;
     LOG_INFO("Stopping receive thread ", 0);
+    m_receiveThreadActive = false;
     if (m_receiveThread->joinable()) {
         LOG_INFO("receive thread joinable", 1);
         m_receiveThread->join();
@@ -186,13 +215,18 @@ TcpConnection::~TcpConnection() {
     delete m_receiveThread;
     LOG_INFO("Closing socket", 0);
     closesocket(m_socket);
+
+#if defined(_WIN32) || defined(__WIN32__)
+    WSACleanup();
+#endif
 }
 
-} // namespace network
+} // namespace geblaat
 
 #ifdef DYNAMIC_LIBRARY
 extern "C" {
-network::TcpConnection *newInstance(void) { return new network::TcpConnection(); }
-void delInstance(network::TcpConnection *inst) { delete inst; }
+geblaat::TcpConnection *newInstance(void) { return new geblaat::TcpConnection(); }
+void delInstance(geblaat::TcpConnection *inst) { delete inst; }
+int test = 4;
 }
 #endif

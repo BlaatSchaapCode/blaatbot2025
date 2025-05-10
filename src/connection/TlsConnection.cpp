@@ -5,12 +5,13 @@
  *      Author: andre
  */
 
+#include "../connection/TlsConnection.hpp"
+
 #include <cstring>
 
-#include "TlsConnection.hpp"
 #include "threadName.hpp"
 
-namespace network {
+namespace geblaat {
 // void cTlsConnection::connect(std::string ip_address, uint16_t port, bool ignoreBadCertificate, bool ignoreLegacyServer) {
 int TlsConnection::connect(void) {
     int rc;
@@ -154,22 +155,58 @@ void TlsConnection::send(std::vector<char> data) {
     }
 }
 
-int TlsConnection::setIgnoreInvalidCerficiate(bool ignoreInvalidCerficiate) {
-    this->ignoreInvalidCerficiate = ignoreInvalidCerficiate;
-    return 0;
-}
-int TlsConnection::setIgnoreInsecureProtocol(bool ignoreInsecureProtocol) {
-    this->ignoreInsecureProtocol = ignoreInsecureProtocol;
+int TlsConnection::setConfig(nlohmann::json config) {
+    try {
+        if (config.contains("hostname") && config["hostname"].is_string()) {
+            mHostName = config["hostname"];
+        }
+        if (config.contains("port") && config["port"].is_number_unsigned()) {
+            mPort = config["port"];
+        } else {
+            mPort = 6697;
+        }
+
+        if (config.contains("ignoreInvalidCerficiate") && config["ignoreInvalidCerficiate"].is_boolean()) {
+            ignoreInvalidCerficiate = config["ignoreInvalidCerficiate"];
+        } else {
+            ignoreInvalidCerficiate = false;
+        }
+        if (config.contains("ignoreInsecureProtocol") && config["ignoreInsecureProtocol"].is_boolean()) {
+            ignoreInsecureProtocol = config["ignoreInsecureProtocol"];
+        } else {
+            ignoreInsecureProtocol = false;
+        }
+
+    } catch (nlohmann::json::exception &ex) {
+        LOG_ERROR("JSON exception: %s", ex.what());
+        return -1;
+    } catch (std::exception &ex) {
+        LOG_ERROR("Unknown exception: %s", ex.what());
+        return -1;
+    } catch (...) {
+        LOG_ERROR("Unknown exception (not derived from std::exception)");
+        return -1;
+    }
     return 0;
 }
 
 TlsConnection::TlsConnection() { mPort = 6697; }
-TlsConnection::~TlsConnection() {}
-} // namespace network
+TlsConnection::~TlsConnection() {
+    LOG_INFO("Stopping receive thread ");
+    m_receiveThreadActive = false;
+    LOG_INFO("Closing socket");
+    tls_close(m_tls_socket);
+    if (m_receiveThread->joinable())
+        m_receiveThread->join();
+    LOG_INFO("Deleting Receive Thread", 0);
+    delete m_receiveThread;
+}
+
+} // namespace geblaat
 
 #ifdef DYNAMIC_LIBRARY
 extern "C" {
-network::TlsConnection *newInstance(void) { return new network::TlsConnection(); }
-void deleteInstance(network::TlsConnection *inst) { delete inst; }
+geblaat::TlsConnection *newInstance(void) { return new geblaat::TlsConnection(); }
+void delInstance(geblaat::TlsConnection *inst) { delete inst; }
 }
 #endif

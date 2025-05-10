@@ -23,10 +23,13 @@
 #include <unicode/unistr.h>
 
 #include "logger.hpp"
+#include "time.hpp"
 #include "timer.hpp"
 #include "version.hpp"
 
-namespace protocol {
+#include "PluginLoader.hpp"
+
+namespace geblaat {
 
 /*
  * Channel names begin with
@@ -47,47 +50,122 @@ namespace protocol {
 
 IRC::IRC() {
 
-    mMessageParsers["PONG"] = [this](const IRCMessage message) { onPONG(message); };
-    mMessageParsers["PING"] = [this](const IRCMessage message) { onPING(message); };
-    mMessageParsers["PRIVMSG"] = [this](const IRCMessage message) { onPRIVMSG(message); };
-    mMessageParsers["NOTICE"] = [this](const IRCMessage message) { onNOTICE(message); };
-    mMessageParsers["ERROR"] = [this](const IRCMessage message) { onERROR(message); };
-    mMessageParsers[Numeric::ERR_NICKNAMEINUSE] = [this](const IRCMessage message) { onNicknameInUse(message); };
+    mMessageParsers["PONG"] = [this](IRCMessage &message) { onPONG(message); };
+    mMessageParsers["PING"] = [this](IRCMessage &message) { onPING(message); };
+    mMessageParsers["PRIVMSG"] = [this](IRCMessage &message) { onPRIVMSG(message); };
+    mMessageParsers["TAGMSG"] = [this](IRCMessage &message) { onTAGMSG(message); };
+    mMessageParsers["NOTICE"] = [this](IRCMessage &message) { onNOTICE(message); };
+    mMessageParsers["ERROR"] = [this](IRCMessage &message) { onERROR(message); };
+    mMessageParsers[Numeric::ERR_NICKNAMEINUSE] = [this](IRCMessage &message) { onNicknameInUse(message); };
 
-    mMessageParsers[Numeric::RPL_ENDOFMOTD] = [this](const IRCMessage message) { onReady(); };
-    mMessageParsers[Numeric::ERR_NOMOTD] = [this](const IRCMessage message) { onReady(); };
+    mMessageParsers[Numeric::RPL_ENDOFMOTD] = [this](IRCMessage &message) { onReady(); };
+    mMessageParsers[Numeric::ERR_NOMOTD] = [this](IRCMessage &message) { onReady(); };
 
-    mMessageParsers["CAP"] = [this](const IRCMessage message) { onCAP(message); };
-    mMessageParsers[Numeric::IRCRPL_IRCX] = [this](const IRCMessage message) { onIRCX(message); };
+    mMessageParsers["CAP"] = [this](IRCMessage &message) { onCAP(message); };
+    mMessageParsers[Numeric::IRCRPL_IRCX] = [this](IRCMessage &message) { onIRCX(message); };
 
-    mMessageParsers[Numeric::ERR_UNKNOWNCOMMAND] = [this](const IRCMessage message) { onUnknownCommand(message); };
+    mMessageParsers[Numeric::ERR_UNKNOWNCOMMAND] = [this](IRCMessage &message) { onUnknownCommand(message); };
 
-    mMessageParsers[Numeric::RPL_CREATED] = [this](const IRCMessage message) { onCreated(message); };
-    mMessageParsers[Numeric::RPL_MYINFO] = [this](const IRCMessage message) { onMyInfo(message); };
-    mMessageParsers[Numeric::RPL_ISUPPORT] = [this](const IRCMessage message) { onISupport(message); };
+    mMessageParsers[Numeric::RPL_CREATED] = [this](IRCMessage &message) { onCreated(message); };
+    mMessageParsers[Numeric::RPL_MYINFO] = [this](IRCMessage &message) { onMyInfo(message); };
+    mMessageParsers[Numeric::RPL_ISUPPORT] = [this](IRCMessage &message) { onISupport(message); };
 
-    mMessageParsers[Numeric::RPL_WELCOME] = [this](const IRCMessage message) { onWelcome(message); };
-    mMessageParsers[Numeric::RPL_YOURHOST] = [this](const IRCMessage message) { onYourHost(message); };
+    mMessageParsers[Numeric::RPL_WELCOME] = [this](IRCMessage &message) { onWelcome(message); };
+    mMessageParsers[Numeric::RPL_YOURHOST] = [this](IRCMessage &message) { onYourHost(message); };
 
-    mMessageParsers["JOIN"] = [this](const IRCMessage message) { onJOIN(message); };
-    mMessageParsers["MODE"] = [this](const IRCMessage message) { onMODE(message); };
-    mMessageParsers[Numeric::RPL_CHANNELMODEIS] = [this](const IRCMessage message) { onChannelModeIs(message); };
+    mMessageParsers["JOIN"] = [this](IRCMessage &message) { onJOIN(message); };
+    mMessageParsers["MODE"] = [this](IRCMessage &message) { onMODE(message); };
+    mMessageParsers[Numeric::RPL_CHANNELMODEIS] = [this](IRCMessage &message) { onChannelModeIs(message); };
 
-    mMessageParsers[Numeric::RPL_TOPIC] = [this](const IRCMessage message) { onTopic(message); };
-    mMessageParsers[Numeric::RPL_TOPICWHOTIME] = [this](const IRCMessage message) { onTopicWhoTime(message); };
-    mMessageParsers[Numeric::RPL_NAMREPLY] = [this](const IRCMessage message) { onNamReply(message); };
-    mMessageParsers[Numeric::RPL_ENDOFNAMES] = [this](const IRCMessage message) { onEndOfNames(message); };
+    mMessageParsers[Numeric::RPL_TOPIC] = [this](IRCMessage &message) { onTopic(message); };
+    mMessageParsers[Numeric::RPL_TOPICWHOTIME] = [this](IRCMessage &message) { onTopicWhoTime(message); };
+    mMessageParsers[Numeric::RPL_NAMREPLY] = [this](IRCMessage &message) { onNamReply(message); };
+    mMessageParsers[Numeric::RPL_ENDOFNAMES] = [this](IRCMessage &message) { onEndOfNames(message); };
 
-    mMessageParsers[Numeric::RPL_WHOREPLY] = [this](const IRCMessage message) { onWhoReply(message); };
-    mMessageParsers[Numeric::RPL_WHOSPCRPL] = [this](const IRCMessage message) { onWhoSpcReply(message); };
-    mMessageParsers[Numeric::RPL_ENDOFWHO] = [this](const IRCMessage message) { onEndOfWho(message); };
+    mMessageParsers[Numeric::RPL_WHOREPLY] = [this](IRCMessage &message) { onWhoReply(message); };
+    mMessageParsers[Numeric::RPL_WHOSPCRPL] = [this](IRCMessage &message) { onWhoSpcReply(message); };
+    mMessageParsers[Numeric::RPL_ENDOFWHO] = [this](IRCMessage &message) { onEndOfWho(message); };
     //
     //
 }
 
 IRC::~IRC() {
     // TODO Auto-generated destructor stub
-    send("QUIT exited");
+    lagTimer.abortTimer();
+    connectTimer.abortTimer();
+
+    // TODO configurable quit message
+    if (serverInfo.connected)
+        send("QUIT exited");
+}
+
+int IRC::setConfig(nlohmann::json config) {
+    try {
+
+        if (config.contains("username") && config["username"].is_string()) {
+            mUser = config["username"];
+        } else {
+            mUser = "geblaat";
+        }
+
+        if (config.contains("nickname") && config["nickname"].is_string()) {
+            mNick = config["nickname"];
+        } else {
+            mNick = "geblaat";
+        }
+
+        if (config.contains("password") && config["password"].is_string()) {
+            mPass = config["password"];
+        } else {
+            mPass = "";
+        }
+
+        if (config.contains("realname") && config["realname"].is_string()) {
+            mRealName = config["realname"];
+        } else {
+            mRealName = "Geblaat (BlaatBot2025)";
+        }
+
+        if (config.contains("autojoin") && config["autojoin"].is_array()) {
+            for (auto &join : config["autojoin"]) {
+                AutoJoinChannel channel = {};
+                if (join.contains("key") && join["key"].is_string()) {
+                    channel.key = join["key"];
+                }
+
+                if (join.contains("channel") && join["channel"].is_string()) {
+                    channel.channel = join["channel"];
+                    autoJoinChannels.push_back(channel);
+                }
+            }
+        }
+
+        if (config.contains("connections") && config["connections"].is_array()) {
+            // Initially we only support one connection defined, but we set up
+            // the json to be able to handle multiple. If there are multiple
+            // the default behaviour is intended to be to pick server at random
+            auto jsonConnection = config["connections"][0];
+            mConnection = pluginLoader->newConnection(jsonConnection["type"]);
+            if (mConnection) {
+                mConnection->setConfig(jsonConnection["config"]);
+                mConnection->setProtocol(this);
+                mConnection->connect();
+            }
+        }
+        //
+
+    } catch (nlohmann::json::exception &ex) {
+        LOG_ERROR("JSON exception: %s", ex.what());
+        return -1;
+    } catch (std::exception &ex) {
+        LOG_ERROR("Unknown exception: %s", ex.what());
+        return -1;
+    } catch (...) {
+        LOG_ERROR("Unknown exception (not derived from std::exception)");
+        return -1;
+    }
+
+    return 0;
 }
 
 std::string IRC::toLower(std::string s) {
@@ -385,15 +463,21 @@ void IRC::onReady(void) {
 
     ping();
 
-    // TODO
-    send("JOIN #bscp-test");
-    //	send("JOIN #blaatschaap");
+    for (auto &join : autoJoinChannels) {
+        // TODO: a join function
+        // TODO: merge multiple joins in one request
+        send("JOIN " + join.channel + " " + join.key);
+    }
 }
 
 void IRC::onConnected() {
+    serverInfo.connected = true;
+
     // Set defaults
     serverInfo.hasCapabilities = false;
-    serverInfo.capabilities.clear();
+    serverInfo.capabilities.acknowledged.clear();
+    serverInfo.capabilities.supported.clear();
+
     serverInfo.hasExtensions = false;
     serverInfo.features.clear();
     serverInfo.features["CASEMAPPING"] = "rfc1459";
@@ -425,9 +509,9 @@ void IRC::onConnected() {
     connectTimer.afterSeconds([this]() { onCanRegister(); }, std::chrono::seconds(3));
 }
 
-void IRC::onDisconnected() {}
+void IRC::onDisconnected() { serverInfo.connected = false; }
 
-void IRC::onUnknownCommand(const IRCMessage message) {
+void IRC::onUnknownCommand(IRCMessage &message) {
     //    if (message.command == Numeric::ERR_UNKNOWNCOMMAND) {
     //        if (!serverInfo.registrationComplete) {
     //            // Server replied unknown command to CAP LS
@@ -437,7 +521,7 @@ void IRC::onUnknownCommand(const IRCMessage message) {
     //    }
 }
 
-void IRC::onWelcome(const IRCMessage message) {
+void IRC::onWelcome(IRCMessage &message) {
     serverInfo.registrationComplete = true;
     // "<client> :Welcome to the <networkname> IRC Network,
     // <nick>[!<user>@<host>]"
@@ -457,7 +541,7 @@ void IRC::onWelcome(const IRCMessage message) {
     }
 }
 
-void IRC::onYourHost(const IRCMessage message) {
+void IRC::onYourHost(IRCMessage &message) {
     // "<client> :Your host is <servername>, running version <version>"
     // All of this is also part of the MYINFO message
     // In a more machine-friendly manner
@@ -481,11 +565,11 @@ void IRC::onYourHost(const IRCMessage message) {
     //    }
 }
 
-void IRC::onCreated(const IRCMessage message) {
+void IRC::onCreated(IRCMessage &message) {
     // "<client> :This server was created <datetime>"
 }
 
-void IRC::onMyInfo(const IRCMessage message) {
+void IRC::onMyInfo(IRCMessage &message) {
     //   "<client> <servername> <version> <available user modes>
     //   <available channel modes> [<channel modes with a parameter>]"
 
@@ -512,7 +596,7 @@ void IRC::onMyInfo(const IRCMessage message) {
     LOG_INFO("Host : %s", serverInfo.host.c_str());
     LOG_INFO("IRCd : %s", serverInfo.daemon.c_str());
 }
-void IRC::onISupport(const IRCMessage message) {
+void IRC::onISupport(IRCMessage &message) {
 
     // https://defs.ircdocs.horse/defs/isupport.html
     const std::string iSupport = "are supported by this server";
@@ -560,7 +644,13 @@ void IRC::onISupport(const IRCMessage message) {
      ftp://ftp.funet.fi/pub/unix/irc/server/
      */
 }
-void IRC::onCAP(const IRCMessage message) {
+
+void IRC::requestCapabilityIfPresent(const std::string &cap) {
+    if (serverInfo.capabilities.supported.contains(cap))
+        send("CAP REQ :" + cap);
+}
+
+void IRC::onCAP(IRCMessage &message) {
     if (message.command == "CAP") {
         serverInfo.hasCapabilities = true;
         if (message.parameters.size() > 2) {
@@ -570,32 +660,74 @@ void IRC::onCAP(const IRCMessage message) {
 
             if (subCommand == "LS") {
                 bool moreCapabilitiesComing = message.parameters[2] == "*";
-                serverInfo.capabilities.merge(parseKeyValue(splitString(message.parameters[2 + moreCapabilitiesComing])));
+                if (message.parameters.size() > (2u + moreCapabilitiesComing)) {
+                    auto capabilities = splitString(message.parameters[2 + moreCapabilitiesComing]);
+                    serverInfo.capabilities.supported.merge(parseKeyValue(capabilities));
 
-                if (!serverInfo.registrationComplete && !moreCapabilitiesComing) {
+                    auto negations = parseNegation(capabilities);
+                    for (auto &negation : negations) {
+                        serverInfo.capabilities.supported.erase(negation);
+                        // TODO: any processing for negated capabilities?
+                    }
 
-                    if (serverInfo.capabilities.count("message-tags"))
-                        send("CAP REQ :message-tags");
+                    if (!serverInfo.registrationComplete && !moreCapabilitiesComing) {
 
-                    if (serverInfo.capabilities.count("account-notify"))
-                        send("CAP REQ :account-notify");
+                        requestCapabilityIfPresent("message-tags");
+                        requestCapabilityIfPresent("echo-message");
+                        requestCapabilityIfPresent("batch");
+                        requestCapabilityIfPresent("label");
+                        requestCapabilityIfPresent("draft/labeled-response");
+                        requestCapabilityIfPresent("account-notify");
+                        requestCapabilityIfPresent("extended-join");
+                        requestCapabilityIfPresent("away-notify");
 
-                    if (serverInfo.capabilities.count("extended-join"))
-                        send("CAP REQ :extended-join");
-
-                    send("CAP END");
-                    connectTimer.abortTimer();
-                    onCanRegister();
+                        send("CAP END");
+                        connectTimer.abortTimer();
+                        onCanRegister();
+                    }
                 }
             }
 
             if (subCommand == "ACK") {
-                // TODO
+                // serverInfo.capabilities.acknowledged.merge
+                auto capabilities = splitString(message.parameters[2]);
+                for (auto &capability : capabilities) {
+                    if (capability.length()) {
+                        if (capability[0] == '-') {
+                            capability = capability.substr(1);
+                            serverInfo.capabilities.acknowledged.erase(capability);
+
+                            LOG_INFO("Removing %s from acknowlegded capabilities", capability.c_str());
+                        } else {
+                            serverInfo.capabilities.acknowledged.insert(capability);
+                            LOG_INFO("Adding %s to acknowlegded capabilities", capability.c_str());
+                        }
+                    }
+                }
+            }
+
+            if (subCommand == "NEW") {
+                auto capabilities = splitString(message.parameters[2]);
+                serverInfo.capabilities.supported.merge(parseKeyValue(capabilities));
+                LOG_INFO("Adding %s to supported capabilities", message.parameters[2].c_str());
+            }
+
+            if (subCommand == "DEL") {
+                auto capabilities = splitString(message.parameters[2]);
+                for (auto &capability : capabilities) {
+                    serverInfo.capabilities.supported.erase(capability);
+                    LOG_INFO("Removing %s from supported capabilities", capability.c_str());
+                    serverInfo.capabilities.acknowledged.erase(capability);
+                }
+            }
+
+            if (subCommand == "LIST") {
+                // query of acknowledged capabilities
             }
         }
     }
 }
-void IRC::onIRCX(const IRCMessage message) {
+void IRC::onIRCX(IRCMessage &message) {
     // >>> :irc.mysite.com 800 Anonymous 0 0 ANON 512 *
     // <state> <version> <package-list> <maxmsg> <option-list>
     if (message.parameters.size() > 5) {
@@ -632,7 +764,7 @@ void IRC::onIRCX(const IRCMessage message) {
     }
 }
 
-void IRC::onPING(const IRCMessage message) {
+void IRC::onPING(IRCMessage &message) {
     if (message.parameters.size() > 0) {
         if (message.command == "PING") {
             if (message.parameters.size())
@@ -646,8 +778,8 @@ void IRC::ping() {
     send("PING :" + std::to_string(now.count()));
 }
 
-void IRC::onPONG(const IRCMessage message) {
-    int pingInterval = 10;
+void IRC::onPONG(IRCMessage &message) {
+    int pingInterval = 30;
     if (message.parameters.size() > 1) {
         std::chrono::milliseconds lag;
         if (message.parameters.size()) {
@@ -659,8 +791,6 @@ void IRC::onPONG(const IRCMessage message) {
                 lag = now - sent;
                 LOG_DEBUG("Lag is %d ms", (int)lag.count());
                 serverInfo.lag = lag;
-                if (lag.count() > 5000)
-                    pingInterval = 30;
             } catch (...) {
                 LOG_DEBUG("Unable to determine lag (parameter not integer)");
                 serverInfo.lag = std::chrono::milliseconds::max();
@@ -675,9 +805,18 @@ void IRC::onPONG(const IRCMessage message) {
     lagTimer.afterSeconds([this]() { ping(); }, std::chrono::seconds(pingInterval));
 }
 
-void IRC::onCTCPQuery(const IRCMessage message, const CTCPMessage ctcp) {
+void IRC::onCTCPQuery(IRCMessage &message, CTCPMessage &ctcp) {
     if (ctcp.command == "ACTION") {
-        LOG_DEBUG("Action: %s", ctcp.parameters.c_str());
+
+        auto recipient = message.parameters[0];
+        auto action = ctcp.parameters;
+        std::map<std::string, std::string> m = messageToClient(message);
+        m["type"] = "action";
+        m["text/plain"] = stripFormatting(action);
+        m["text/irc"] = action;
+        if (mClient)
+            mClient->onMessage(m);
+
     } else if (ctcp.command == "CLIENTINFO") {
     } else if (ctcp.command == "DCC") {
     } else if (ctcp.command == "FINGER") {
@@ -686,12 +825,7 @@ void IRC::onCTCPQuery(const IRCMessage message, const CTCPMessage ctcp) {
     } else if (ctcp.command == "SOURCE") {
         sendCTCPResponse(message.source.nick, "SOURCE", "https://github.com/BlaatSchaapCode/blaatbot2025/");
     } else if (ctcp.command == "TIME") {
-#if __cpp_lib_chrono >= 201907L
-        const auto zt{std::chrono::zoned_time{std::chrono::current_zone(), std::chrono::system_clock::now()}};
-        sendCTCPResponse(message.source.nick, "TIME", std::format("{:%FT%T%z}", zt));
-#else
-        // TODO: implementation for older C++ libraries (eg. Haiku)
-#endif
+        sendCTCPResponse(message.source.nick, "TIME", getTimeString());
     } else if (ctcp.command == "VERSION") {
         utils::Version version;
         sendCTCPResponse(message.source.nick, "VERSION", "BlaatBot2025 " + version.m_git_commit);
@@ -699,14 +833,14 @@ void IRC::onCTCPQuery(const IRCMessage message, const CTCPMessage ctcp) {
     }
 }
 
-void IRC::onCTCPResponse(const IRCMessage message, const CTCPMessage ctcp) {
+void IRC::onCTCPResponse(IRCMessage &message, CTCPMessage &ctcp) {
     // TODO
 
     if (message.source.nick == "NickServ" && ctcp.command == "VERSION") {
         // Note... we might need to analyse some services
         // ergo responds "NickServ (ergo-v2.15.0)"
         if (message.parameters.size() > 0) {
-            if (splitString(ctcp.parameters)[0] == "NickServ") {
+            if (isEqual(splitString(ctcp.parameters)[0], "NickServ")) {
                 if (message.parameters.size() > 1)
                     serverInfo.services = splitString(ctcp.parameters)[1];
             } else {
@@ -724,7 +858,7 @@ void IRC::onCTCPResponse(const IRCMessage message, const CTCPMessage ctcp) {
     }
 }
 
-std::string IRC::stripFormatting(std::string formattedString) {
+std::string IRC::stripFormatting(const std::string &formattedString) {
     // TODO strip all formatting
     // https://modern.ircdocs.horse/formatting
 
@@ -825,7 +959,7 @@ std::string IRC::stripFormatting(std::string formattedString) {
     return strippedString;
 }
 
-void IRC::onPRIVMSG(const IRCMessage message) {
+void IRC::onPRIVMSG(IRCMessage &message) {
     if (message.parameters.size() == 2) {
         std::string recipient = message.parameters[0];
         std::string privmsg = message.parameters[1];
@@ -857,14 +991,23 @@ void IRC::onPRIVMSG(const IRCMessage message) {
                 return;
             }
         }
-        auto cleanMessage = stripFormatting(privmsg);
-        LOG_DEBUG("Message      : %s", privmsg.c_str());
-        LOG_DEBUG("Clean Message: %s", cleanMessage.c_str());
+
+        std::map<std::string, std::string> m = messageToClient(message);
+        m["type"] = "message";
+        m["text/plain"] = stripFormatting(privmsg);
+        m["text/irc"] = privmsg;
+
+        if (mClient)
+            mClient->onMessage(m);
+
     } else {
         // Malformed message?
     }
 }
-void IRC::onNOTICE(const IRCMessage message) {
+
+void IRC::onTAGMSG(IRCMessage &message) {}
+
+void IRC::onNOTICE(IRCMessage &message) {
     if (message.parameters.size() == 2) {
         std::string recipient = message.parameters[0];
         std::string notice = message.parameters[1];
@@ -896,14 +1039,21 @@ void IRC::onNOTICE(const IRCMessage message) {
                 return;
             }
         }
-        auto cleanMessage = stripFormatting(notice);
+
+        std::map<std::string, std::string> m = messageToClient(message);
+        m["type"] = "notice";
+        m["text/plain"] = stripFormatting(notice);
+        m["text/irc"] = notice;
+        if (mClient)
+            mClient->onMessage(m);
+
     } else {
         // Malformed message?
     }
 }
-void IRC::onERROR(const IRCMessage message) {}
+void IRC::onERROR(IRCMessage &message) {}
 
-void IRC::onJOIN(const IRCMessage message) {
+void IRC::onJOIN(IRCMessage &message) {
     if (message.parameters.size() > 0) {
         auto channel = toLower(message.parameters[0]);
         if (isEqual(mNick, message.source.nick)) {
@@ -932,7 +1082,7 @@ void IRC::onJOIN(const IRCMessage message) {
     }
 }
 
-void IRC::onChannelModeIs(const IRCMessage message) {
+void IRC::onChannelModeIs(IRCMessage &message) {
     // The RPL_CHANNELMODEIS message looks like
     // "<client> <channel> <modestring> <mode arguments>..."
     // We drop the <client> and let the onMODE handler process it
@@ -944,7 +1094,7 @@ void IRC::onChannelModeIs(const IRCMessage message) {
     }
 }
 
-void IRC::onMODE(const IRCMessage message) {
+void IRC::onMODE(IRCMessage &message) {
     if (message.parameters.size() > 1) {
         auto target = message.parameters[0];
         if (isChannel(target)) {
@@ -1059,7 +1209,7 @@ void IRC::onMODE(const IRCMessage message) {
     }
 }
 
-void IRC::onTopic(const IRCMessage message) {
+void IRC::onTopic(IRCMessage &message) {
     // <client> <channel> :<topic>"
     // Do we have to care about the client in the message?
     if (message.parameters.size() >= 3) {
@@ -1068,14 +1218,14 @@ void IRC::onTopic(const IRCMessage message) {
     }
 }
 
-void IRC::onTopicWhoTime(const IRCMessage message) {
+void IRC::onTopicWhoTime(IRCMessage &message) {
     if (message.parameters.size() >= 4) {
         mIRCChannels[toLower(message.parameters[1])].topicNick = message.parameters[2];
         mIRCChannels[toLower(message.parameters[1])].topicSetAt = atoi(message.parameters[3].c_str());
     }
 }
 
-void IRC::onNamReply(const IRCMessage message) {
+void IRC::onNamReply(IRCMessage &message) {
     // But I suppose, don't bother, send a WHO command instead
     // "<client> <symbol> <channel> :[prefix]<nick>{ [prefix]<nick>}"
     //	if (message.parameters.size() >= 4) {
@@ -1094,7 +1244,7 @@ void IRC::onNamReply(const IRCMessage message) {
     //	}
 }
 
-void IRC::onEndOfNames(const IRCMessage message) {
+void IRC::onEndOfNames(IRCMessage &message) {
     if (message.parameters.size() >= 3) {
         if (serverInfo.features.count("WHOX")) {
             // unsigned token = rand() % 100;
@@ -1110,7 +1260,7 @@ void IRC::onEndOfNames(const IRCMessage message) {
     }
 }
 
-void IRC::onWhoSpcReply(const IRCMessage message) {
+void IRC::onWhoSpcReply(IRCMessage &message) {
     // WHOX Response
     // https://ircv3.net/specs/extensions/whox
     // <client> [token] [channel] [user] [ip] [host] [server] [nick] [flags]
@@ -1138,7 +1288,7 @@ void IRC::onWhoSpcReply(const IRCMessage message) {
             mIRCChannels[toLower(channel)].nicks[toLower(user.nick)] = user;
     }
 }
-void IRC::onWhoReply(const IRCMessage message) {
+void IRC::onWhoReply(IRCMessage &message) {
     //   "<client> <channel> <username> <host> <server> <nick> <flags> :<hopcount>
     //   <realname>"
     if (message.parameters.size() > 8) {
@@ -1158,7 +1308,8 @@ void IRC::onWhoReply(const IRCMessage message) {
     }
 }
 
-void IRC::onEndOfWho(const IRCMessage message) {
+void IRC::onEndOfWho(IRCMessage &message) {
+#ifdef ENABLE_LOG_DEBUG
     if (message.parameters.size() > 1) {
         // "<client> <mask> :End of WHO list"
         auto channel = toLower(message.parameters[1]);
@@ -1169,10 +1320,11 @@ void IRC::onEndOfWho(const IRCMessage message) {
             }
         }
     }
+#endif
 }
 //
 
-void IRC::onNicknameInUse(const IRCMessage message) {
+void IRC::onNicknameInUse(IRCMessage &message) {
     if (!serverInfo.registrationComplete && Numeric::ERR_NICKNAMEINUSE == message.command) {
         // TODO, limit retries, make configurable
         mNick += "_";
@@ -1181,7 +1333,7 @@ void IRC::onNicknameInUse(const IRCMessage message) {
     }
 }
 
-void IRC::onMessage(const IRCMessage message) {
+void IRC::onMessage(IRCMessage &message) {
 
     if (mMessageParsers[message.command]) {
         mMessageParsers[message.command](message);
@@ -1243,8 +1395,11 @@ void IRC::parseMessage(std::string line) {
     // https://defs.ircdocs.horse/defs/tags
     if (tokens.size()) {
         if (tokens[0][0] == '@') {
-            message.tags = tokens[0];
-            message.tags.erase(0, 1); // remove the '@'
+            // message.tags = tokens[0];
+            // message.tags.erase(0, 1); // remove the '@'
+
+            message.tags = parseTags(tokens[0].substr(1));
+
             tokens.erase(tokens.begin());
         }
     }
@@ -1369,27 +1524,255 @@ bool IRC::validText(const std::string text) {
     return true;
 }
 
-void IRC::sendPRIVMSG(const std::string target, const std::string text) {
+std::string IRC::formatTags(std::map<std::string, std::string> tags) {
+    std::string result;
+    bool first = true;
+    for (auto &tag : tags) {
+        if (!first)
+            result += ";";
+        first = false;
+        // vendor prefixes in tags should be punycode encoded
+        // TODO: punycode encode, priority: low
+        result += tag.first;
+        if (tag.second.length())
+            result += "=" + tag.second;
+    }
+    return result;
+}
+
+void IRC::sendACTION(const std::string target, const std::string text, const std::map<std::string, std::string> tags) {
+    sendCTCPQuery(target, "ACTION", text); // TODO tags
+}
+
+void IRC::sendPRIVMSG(const std::string target, const std::string text, const std::map<std::string, std::string> tags) {
     if (validTarget(target) && validText(text)) {
-        send("PRIVMSG " + target + " :" + text);
+        std::string msg;
+        if (serverInfo.capabilities.acknowledged.contains("message-tags") && tags.size()) {
+            // TODO: escape tags
+            // TODO: consider tags as key-value pairs?
+            // send("@" + tags + " PRIVMSG " + target + " :" + text);
+            msg = "@" + formatTags(tags) + " ";
+        }
+        msg += "PRIVMSG " + target + " :" + text;
+        send(msg);
     }
 }
-void IRC::sendNOTICE(const std::string target, const std::string text) {
+
+void IRC::sendTAGMSG(const std::string target, const std::map<std::string, std::string> tags) {
+    if (validTarget(target)) {
+        std::string msg;
+        if (serverInfo.capabilities.acknowledged.contains("message-tags") && tags.size()) {
+            // TODO: escape tags
+            // TODO: consider tags as key-value pairs?
+            // send("@" + tags + " PRIVMSG " + target + " :" + text);
+            msg = "@" + formatTags(tags) + " TAGMSG " + target;
+            send(msg);
+        }
+    }
+}
+
+void IRC::sendNOTICE(const std::string target, const std::string text, const std::map<std::string, std::string> tags) {
     if (validTarget(target) && validText(text)) {
-        send("NOTICE " + target + " :" + text);
+        std::string msg;
+        if (serverInfo.capabilities.acknowledged.contains("message-tags") && tags.size()) {
+            // TODO: escape tags
+            // TODO: consider tags as key-value pairs?
+            // send("@" + tags + " PRIVMSG " + target + " :" + text);
+            msg = "@" + formatTags(tags) + " ";
+        }
+        msg += "NOTICE " + target + " :" + text;
+        send(msg);
     }
 }
 void IRC::sendCTCPQuery(const std::string target, const std::string command, const std::string parameters) {
+    // TODO tags
     if (parameters.length())
         sendPRIVMSG(target, "\01" + command + " " + parameters + "\01");
     else
         sendPRIVMSG(target, "\01" + command + "\01");
 }
 void IRC::sendCTCPResponse(const std::string target, const std::string command, const std::string parameters) {
+    // TODO tags
     if (parameters.length())
         sendNOTICE(target, "\01" + command + " " + parameters + "\01");
     else
         sendNOTICE(target, "\01" + command + "\01");
 }
 
-} // namespace protocol
+std::map<std::string, std::string> IRC::parseTags(const std::string &tagString) {
+    std::map<std::string, std::string> result;
+    auto tags = splitString(tagString, ";");
+    for (auto &tag : tags) {
+        auto kv = splitString(tag, "=", 2);
+        std::string key, value;
+
+        // If the tag has a vendor prefix, it might be punycode encoded
+        // We might want to decode it. However, how likely is it to
+        // encounter such a tag. Therefore this is low priority.
+        if (kv.size() > 0)
+            key = decodeTagKey(kv[0]);
+
+        if (kv.size() > 1)
+            value = decodeTagValue(kv[1]);
+        result[key] = value;
+    }
+    return result;
+}
+
+// Parses negations from features (ISUPPORT) or capabilities (CAP *)
+std::vector<std::string> IRC::parseNegation(const std::vector<std::string> &tokens) {
+    std::vector<std::string> result;
+    for (auto &token : tokens) {
+        if (token.length() && token[0] == '-') {
+            result.push_back(token.substr(1));
+        }
+    }
+    return result;
+}
+
+// Parses Key-Value pairs from features (ISUPPORT) or capabilities (CAP *)
+// while leaving out negated keys
+std::map<std::string, std::string> IRC::parseKeyValue(const std::vector<std::string> &tokens) {
+    std::map<std::string, std::string> result;
+
+    std::string key, value;
+    for (auto &token : tokens) {
+        auto issignpos = token.find('=');
+        if (issignpos == std::string::npos) {
+            key = token;
+            value = "";
+        } else {
+            key = token.substr(0, issignpos);
+            value = token.substr(issignpos + 1);
+        }
+        LOG_DEBUG("key %s value %s", key.c_str(), value.c_str());
+        if (key.length() && key[0] != '-')
+            result[key] = value;
+    }
+    return result;
+}
+
+// Escapes Tag Values
+std::string IRC::encodeTagValue(const std::string &rawString) {
+    // TODO: Implement me
+    /*
+     * https://ircv3.net/specs/extensions/message-tags
+    ; (semicolon)  \: (backslash and colon)
+    SPACE          \s
+    \ 	           \\
+    CR 	           \r
+    LF 	           \n
+     */
+
+    return rawString;
+}
+
+// Unescapes Tag Values
+std::string IRC::decodeTagValue(const std::string &escapedString) {
+    // TODO: Implement me
+    /*
+     * https://ircv3.net/specs/extensions/message-tags
+    ; (semicolon)  \: (backslash and colon)
+    SPACE          \s
+    \ 	           \\
+    CR 	           \r
+    LF 	           \n
+
+    If a lone \ exists at the end of an escaped value (with no escape character following it),
+    then there SHOULD be no output character. For example, the escaped value test\ should unescape
+    to test. If a \ exists with no valid escape character (for example, \b), then the invalid
+    backslash SHOULD be dropped. For example, \b should unescape to just b.
+     */
+
+    return escapedString;
+}
+
+std::string IRC::encodeTagKey(const std::string &rawString) {
+    // A non-ascii key needs to be punycode encoded
+    // TODO: priority: low
+    return rawString;
+}
+
+std::string IRC::decodeTagKey(const std::string &escapedString) {
+    // Vendor Keys Prefixes, if not ascii, are punycode encoded
+    // May need to decode.
+    // TODO: priority: low
+    return escapedString;
+}
+
+// Convert IRC messages to generic format used by the Client class
+std::map<std::string, std::string> IRC::messageToClient(IRCMessage &message) {
+    std::map<std::string, std::string> result;
+    auto target = message.parameters[0];
+
+    if (message.source.nick.length()) {
+        result["sender"] = toLower(message.source.nick);
+    } else {
+        result["sender"] = toLower(message.source.raw);
+    }
+
+    result["target"] = toLower(target);
+    result["target/irc"] = target;
+    if (isChannel(target)) {
+        result["target/type"] = "channel";
+    } else {
+        if (isEqual(mNick, target)) {
+            result["target/type"] = "pm";
+        } else {
+            result["target/type"] = "other";
+        }
+    }
+
+    if (message.source.nick.length())
+        result["sender/irc/nick"] = message.source.nick;
+    if (message.source.user.length())
+        result["sender/irc/user"] = message.source.user;
+    if (message.source.host.length())
+        result["sender/irc/host"] = message.source.host;
+    if (message.tags.contains("account"))
+        result["sender/irc/account"] = message.tags["account"];
+
+    result["sender/irc/raw"] = message.source.raw;
+
+    for (auto &tag : message.tags) {
+        result["irc/tag/" + tag.first] = tag.second;
+    }
+    return result;
+}
+
+// Accept generic type message from Client class and send it as an IRC message
+// TODO: how to handle incorrect message types? Add a return value, throw an exception?
+// TODO: tags not supported yet
+void IRC::sendMessage(std::map<std::string, std::string> message) {
+    if (message.contains("target")) {
+        std::string text;
+
+        if (message.contains("text/plain"))
+            text = message["text/plain"];
+
+        if (message.contains("text/irc"))
+            text = message["text/irc"];
+
+        if (message.contains("type")) {
+            if (message["type"] == "message") {
+                sendPRIVMSG(message["target"], text);
+            }
+            if (message["type"] == "notice") {
+                sendNOTICE(message["target"], text);
+            }
+            if (message["type"] == "action") {
+                sendACTION(message["target"], text);
+            }
+        }
+    }
+}
+
+} // namespace geblaat
+
+#ifdef DYNAMIC_LIBRARY
+extern "C" {
+geblaat::IRC *newInstance(void) { return new geblaat::IRC(); }
+void delInstance(geblaat::IRC *inst) { delete inst; }
+int test = 6667;
+}
+#endif

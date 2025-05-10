@@ -12,31 +12,31 @@
 // using json = nlohmann::json;
 
 #include "clients/Client.hpp"
-
-#include "network/network.hpp"
 #include "protocol/IRC.hpp"
 #include "utils/logger.hpp"
 #include "utils/version.hpp"
 
 #include "PluginLoader.hpp"
+
+namespace geblaat {
 PluginLoader gPluginLoader; // testing
+}
 
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
 
 [[gnu::constructor]] void windows_init_utf8_console() {
-	auto a = SetConsoleOutputCP(CP_UTF8);
+    auto a = SetConsoleOutputCP(CP_UTF8);
     auto b = SetConsoleCP(CP_UTF8);
+    (void)a;
+    (void)b;
     // Note, these APIs have non-zero value for success
-    // LOG_DEBUG("WIN32 setting output to UTF8 status %d %d", a, b);
-    //
-    // Does not appear to output currectly when running under wine
-    // But it outputs correctly on real Windows (22H2 in VirtualBox)
-    // LOG_DEBUG("test: äåéëþüúíóö«»¬");
+    LOG_DEBUG("WIN32 setting output to UTF8 status %d %d", a, b);
 
-    if (! (a&&b) ) {
-    	LOG_INFO("Error setting WIN32 console to UTF-8");
-    }
+    // Does not appear to output currectly when running under wine
+    // Works in a real Windows 10
+    // Note: requires Windows 10 version 1903 or later.
+    LOG_DEBUG("test: äåéëþüúíóö«»¬");
 }
 
 #endif
@@ -95,7 +95,7 @@ int main(int argc, char *argv[]) {
     int result;
     utils::Version version;
 
-    network::init();
+    geblaat::Client *client = nullptr;
 
     result = parse_options(argc, argv);
     if (result)
@@ -103,16 +103,38 @@ int main(int argc, char *argv[]) {
 
     if (mConfigdata.size()) {
         LOG_INFO("Config file loaded");
+
+        try {
+            auto jsonClient = mConfigdata["client"];
+            client = geblaat::gPluginLoader.newClient(jsonClient["type"]);
+            if (client) {
+                client->setConfig(jsonClient["config"]);
+            } else {
+                throw std::runtime_error("Unable to get a client");
+            }
+
+        } catch (nlohmann::json::exception &ex) {
+            LOG_ERROR("JSON exception: %s", ex.what());
+            return -1;
+        } catch (std::exception &ex) {
+            LOG_ERROR("Unknown exception: %s", ex.what());
+            return -1;
+        } catch (...) {
+            LOG_ERROR("Unknown exception (not derived from std::exception)");
+            return -1;
+        }
+
     } else {
         LOG_INFO("Config file missing");
     }
 
-    client::Client client;
+    //    client::Client client;
 
     LOG_INFO("press ENTER key to quit");
     std::cin.get();
 
-    network::deinit();
+    if (client)
+        delete client;
 
     return 0;
 }

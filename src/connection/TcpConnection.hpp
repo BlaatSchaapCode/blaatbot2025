@@ -5,23 +5,45 @@
  *      Author: andre
  */
 
-#include "network.hpp"
+
+#if defined(_WIN32) || defined(_WIN64)
+#include <winsock2.h>
+#include <ws2tcpip.h>
+
+typedef SOCKET socket_t;
+#define poll WSAPoll
+
+#else
+#include <arpa/inet.h>
+#include <errno.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <poll.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+typedef int socket_t;
+#define closesocket close
+
+#endif
+
 
 #include <atomic>
 #include <thread>
-#include "Connection.hpp"
+#include "../connection/Connection.hpp"
 
-namespace network {
+namespace geblaat {
 
 class TcpConnection : public Connection {
   public:
     ~TcpConnection();
     TcpConnection();
 
-    //void connect(std::string ip_address, uint16_t port = 6667);
     int connect(void) override;
-
     void send(std::vector<char> data) override;
+
+    int setConfig(nlohmann::json) override;
 
   private:
     struct sockaddr_in6 in6 = {};
@@ -31,6 +53,10 @@ class TcpConnection : public Connection {
 
     std::atomic<bool> m_receiveThreadActive = false;
     std::thread *m_receiveThread = nullptr;
+
+#if defined(_WIN32) || defined(_WIN64)
+WSADATA d = {0};
+#endif
 
     static void receiveThreadFunc(TcpConnection *self);
 };

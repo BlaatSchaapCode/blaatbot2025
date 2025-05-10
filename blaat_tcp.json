@@ -1,0 +1,36 @@
+{
+  "client" : {
+    "type" : "bot",
+    "config" : {
+      "networks" : [ {
+        "network" : "BlaatNet",
+        "protocol" : {
+          "type" : "irc",
+          "config" : {
+            "username" : "bb25user",
+            "nickname" : "bb25nick",
+            "password" : "bb25pass",
+            "realname" : "geblaat (blaatbot2025)",
+            "autojoin" : [ {
+              "channel" : "#bscp-test"
+            }, {
+              "channel" : "#keyed_test",
+              "key" : "let_me_in"
+            } ],
+            "connections" : [ {
+              "type" : "tcp",
+              "config" : {
+                "hostname" : "irc.blaatschaap.be"
+              }
+            } ]
+          }
+        }
+      } ],
+      "modules" : [ {
+        "type" : "test",
+        "prefix" : "!",
+        "config" : { }
+      } ]
+    }
+  }
+}

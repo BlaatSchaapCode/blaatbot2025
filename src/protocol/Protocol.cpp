@@ -6,6 +6,7 @@
  */
 
 #include "Protocol.hpp"
-namespace protocol {
+
+namespace geblaat {
 Protocol::~Protocol() {}
-} // namespace protocol
+} // namespace geblaat

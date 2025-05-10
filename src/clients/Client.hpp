@@ -1,21 +1,28 @@
 #pragma once
 
+// C++ Library Includes
+#include <map>
 #include <memory>
+#include <string>
 
-#include "../protocol/IRC.hpp"
-#include "../protocol/Protocol.hpp"
-#include "../PluginLoader.hpp"
-namespace client {
+// Third Party libraries
+#include <nlohmann/json.hpp>
 
-class Client {
+// Project includes
+//#include "Protocol.hpp"
+class Protocol;
+
+#include "PluginLoadable.hpp"
+
+namespace geblaat {
+
+class Client : public PluginLoadable {
   public:
-    Client();
-    virtual ~Client();
-  protected:
-    ::protocol::IRC *mIRC;
-    ::network::Connection *mConnection;
-  private:
-    PluginLoader pl;
+    virtual ~Client() = 0;
+    virtual int setConfig(nlohmann::json) = 0;
+
+    virtual void onMessage(std::map<std::string, std::string> message) = 0;
+
 };
 
-} /* namespace client */
+} // namespace geblaat

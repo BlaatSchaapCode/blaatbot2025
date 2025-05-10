@@ -8,18 +8,16 @@
 #ifndef NETWORK_TLSCONNECTION_HPP_
 #define NETWORK_TLSCONNECTION_HPP_
 
-#include "network.hpp"
-
 #include <atomic>
 #include <string>
 #include <thread>
 
 #include <tls.h>
 
+#include "../connection/Connection.hpp"
 #include "../utils/logger.hpp"
-#include "Connection.hpp"
 
-namespace network {
+namespace geblaat {
 
 class TlsConnection : public Connection {
 
@@ -32,8 +30,8 @@ class TlsConnection : public Connection {
 
     void send(std::vector<char> data) override;
 
-    int setIgnoreInvalidCerficiate(bool ignoreInvalidCerficiate) override;
-    int setIgnoreInsecureProtocol(bool ignoreInsecureProtocol) override;
+
+    int setConfig(nlohmann::json) override;
 
 
   protected:
