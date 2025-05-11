@@ -18,6 +18,11 @@
 #include <sstream>
 #include <string>
 
+
+// Note: Look at libunistring in stead of libicu
+//       We don't really need it at the time
+// IRC servers supporting UTF8MAPPING are rare
+// Potentially make it optionally (another Module)
 #include <unicode/normalizer2.h>
 #include <unicode/translit.h>
 #include <unicode/unistr.h>
