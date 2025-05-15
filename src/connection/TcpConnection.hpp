@@ -5,11 +5,7 @@
  *      Author: andre
  */
 
-#if defined(__APPLE__) || \
-	defined(__DragonFly__) || \
-	defined(__FreeBSD__) || \
-    defined(__NetBSD__) || \
-    defined(__OpenBSD__)
+#if defined(__APPLE__) || defined(__DragonFly__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
 #define HAVE_SIN_LEN 1
 #else
 #define HAVE_SIN_LEN 0
@@ -37,10 +33,9 @@ typedef int socket_t;
 
 #endif
 
-
+#include "../connection/Connection.hpp"
 #include <atomic>
 #include <thread>
-#include "../connection/Connection.hpp"
 
 namespace geblaat {
 
@@ -64,10 +59,10 @@ class TcpConnection : public Connection {
     std::thread *m_receiveThread = nullptr;
 
 #if defined(_WIN32) || defined(_WIN64)
-WSADATA d = {0};
+    WSADATA d = {0};
 #endif
 
     static void receiveThreadFunc(TcpConnection *self);
 };
 
-} // namespace network
+} // namespace geblaat

@@ -25,18 +25,17 @@ bool __libc_single_threaded = false;
 }
 #endif
 
-
 //
-//#if defined(_WIN32) || defined(_WIN64)
-//#include <windows.h>
-//#include <logger.hpp>
+// #if defined(_WIN32) || defined(_WIN64)
+// #include <windows.h>
+// #include <logger.hpp>
 //// When we do this in the file where it is used, we override the implementation
 //// When we try to do this in another source file, we get a multiple definition linker error.
 //// This means, we'll need to do something in a linker file making it drop the definition
 //// from the library so we only have our override. Or are there other options?
 
 //
-//HRESULT SetThreadDescription(HANDLE hThread, PCWSTR lpThreadDescription) {
+// HRESULT SetThreadDescription(HANDLE hThread, PCWSTR lpThreadDescription) {
 //    // This triggers a
 //    // "redeclared without dllimport attribute: previous dllimport ignored [-Wattributes]"
 //    // So, we are actually overriding what was in there. This means the executable should
@@ -64,4 +63,4 @@ bool __libc_single_threaded = false;
 //        return f(hThread, lpThreadDescription);
 //    return E_NOTIMPL;
 //}
-//#endif
+// #endif

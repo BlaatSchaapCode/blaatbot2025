@@ -76,7 +76,7 @@ void TestBotModule::onLoadQuotes(std::string command, std::string parameters, st
         sendMessage["target"] = recvMessage["sender"];
     }
 
-    mBotClient->sendMessage(sendMessage);
+    sendMessage(sendMessage);
     loadQuotes();
 }
 void TestBotModule::onRandomQuote(std::string command, std::string parameters, std::map<std::string, std::string> recvMessage) {
@@ -91,7 +91,7 @@ void TestBotModule::onRandomQuote(std::string command, std::string parameters, s
         sendMessage["target"] = recvMessage["sender"];
     }
 
-    mBotClient->sendMessage(sendMessage);
+    sendMessage(sendMessage);
 }
 
 void TestBotModule::onTest(std::string command, std::string parameters, std::map<std::string, std::string> recvMessage) {

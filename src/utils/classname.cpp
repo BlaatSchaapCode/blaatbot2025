@@ -9,12 +9,11 @@
 #include <cxxabi.h>
 #include <string>
 std::string demangleClassName(std::string mangledName) {
-	  int     status;
-	  char   *realname;
-	  std::string result;
-	  realname = abi::__cxa_demangle(mangledName.c_str(), NULL, NULL, &status);
-	  result = realname;
-	  std::free(realname);
-	  return result;
+    int status;
+    char *realname;
+    std::string result;
+    realname = abi::__cxa_demangle(mangledName.c_str(), NULL, NULL, &status);
+    result = realname;
+    std::free(realname);
+    return result;
 }
-

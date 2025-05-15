@@ -8,9 +8,7 @@
 #ifndef UTILS_CLASSNAME_HPP_
 #define UTILS_CLASSNAME_HPP_
 
-
 #include <string>
 std::string demangleClassName(std::string mangledName);
-
 
 #endif /* UTILS_CLASSNAME_HPP_ */

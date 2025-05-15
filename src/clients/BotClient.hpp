@@ -1,10 +1,10 @@
 #pragma once
 
 // C++ Library Includes
+#include <functional>
 #include <map>
 #include <memory>
 #include <string>
-#include <functional>
 
 // Third Party libraries
 #include <nlohmann/json.hpp>
@@ -13,27 +13,27 @@
 
 #include "Client.hpp"
 
-
 namespace geblaat {
 class BotModule;
 class Protocol;
-class  BotClient : public Client {
+class BotClient : public Client {
   public:
-	BotClient();
+    BotClient();
     virtual ~BotClient();
     int setConfig(nlohmann::json) override;
     void onMessage(std::map<std::string, std::string> message) override;
 
     using OnCommand = std::function<void(std::string command, std::string parameters, std::map<std::string, std::string> message)>;
 
-    void registerBotCommand(BotModule * mod, std::string command, OnCommand cmd);
+    void registerBotCommand(BotModule *mod, std::string command, OnCommand cmd);
     void sendMessage(std::map<std::string, std::string> message);
+
   protected:
     Protocol *mProtocol = nullptr;
 
   private:
-    std::map < std::string, std::map < std::string, OnCommand >	> mCommands;
-    std::map <BotModule*, std::string> mBotModules;
+    std::map<std::string, std::map<std::string, OnCommand>> mCommands;
+    std::map<BotModule *, std::string> mBotModules;
 };
 
 } // namespace geblaat

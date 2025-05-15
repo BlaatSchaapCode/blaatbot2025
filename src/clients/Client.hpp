@@ -9,7 +9,7 @@
 #include <nlohmann/json.hpp>
 
 // Project includes
-//#include "Protocol.hpp"
+// #include "Protocol.hpp"
 class Protocol;
 
 #include "PluginLoadable.hpp"
@@ -22,7 +22,6 @@ class Client : public PluginLoadable {
     virtual int setConfig(nlohmann::json) = 0;
 
     virtual void onMessage(std::map<std::string, std::string> message) = 0;
-
 };
 
 } // namespace geblaat

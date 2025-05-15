@@ -9,8 +9,10 @@
 
 #include <exception>
 
-#include "utils/logger.hpp"
 #include "utils/classname.hpp"
+#include "utils/logger.hpp"
+
+#include "botmodule/CAPI_BotModule.hpp"
 
 namespace geblaat {
 
@@ -28,7 +30,7 @@ Client *PluginLoader::newClient(std::string name) {
         LOG_INFO("Got an instance of %s", demangleClassName(typeid(instance).name()).c_str());
         Client *clientInstance = dynamic_cast<Client *>(instance);
         if (clientInstance) {
-        	LOG_INFO("Got an instance of %s", demangleClassName(typeid(clientInstance).name()).c_str());
+            LOG_INFO("Got an instance of %s", demangleClassName(typeid(clientInstance).name()).c_str());
             this->plugins["client_" + name].refcount++;
             clientInstance->setPluginLoader(this);
             return clientInstance;
@@ -51,11 +53,11 @@ Protocol *PluginLoader::newProtocol(std::string name) {
     }
 
     if (this->plugins.contains("protocol_" + name)) {
-    	auto instance = this->plugins["protocol_" + name].newInstance();
+        auto instance = this->plugins["protocol_" + name].newInstance();
         LOG_INFO("Got an instance of %s", demangleClassName(typeid(instance).name()).c_str());
         Protocol *protocolInstance = dynamic_cast<Protocol *>(instance);
         if (protocolInstance) {
-        	LOG_INFO("Got an instance of %s", demangleClassName(typeid(protocolInstance).name()).c_str());
+            LOG_INFO("Got an instance of %s", demangleClassName(typeid(protocolInstance).name()).c_str());
             this->plugins["protocol_" + name].refcount++;
             protocolInstance->setPluginLoader(this);
             return protocolInstance;
@@ -216,21 +218,34 @@ PluginLoader::plugin PluginLoader::loadPlugin(std::string name, std::string type
         throw std::runtime_error(dlerror());
     }
 
-    newInstance = (newInstance_f)dlsym(result.handle, "newInstance");
-    if (!newInstance) {
-        throw std::runtime_error(dlerror());
-    }
+    int *test_c_api = (int *)dlsym(result.handle, "test_c_api");
+    if (test_c_api) {
 
-    delInstance = (delInstance_f)dlsym(result.handle, "delInstance");
-    if (!delInstance) {
-        throw std::runtime_error(dlerror());
-    }
+        set_botclient_f set_botclient = (set_botclient_f)dlsym(result.handle, "set_botclient");
+        get_botmodule_f get_botmodule = (get_botmodule_f)dlsym(result.handle, "get_botmodule");
+        if (set_botclient && get_botmodule) {
+            result.newInstance = [set_botclient, get_botmodule]() { return new CAPI_BotModule(set_botclient, get_botmodule); };
 
-    int *test = (int *)dlsym(result.handle, "test");
-    if (test) {
-        LOG_INFO("test exists, value %d", *test);
+            result.delInstance = [](PluginLoadable *me) {
+                auto meme = dynamic_cast<CAPI_BotModule *>(me);
+                if (meme)
+                    delete meme;
+            };
+        }
+
     } else {
-        LOG_INFO("test does not exist");
+        newInstance = (newInstance_f)dlsym(result.handle, "newInstance");
+        if (!newInstance) {
+            throw std::runtime_error(dlerror());
+        }
+
+        delInstance = (delInstance_f)dlsym(result.handle, "delInstance");
+        if (!delInstance) {
+            throw std::runtime_error(dlerror());
+        }
+
+        result.newInstance = newInstance;
+        result.delInstance = delInstance;
     }
 
     geblaat_get_info_f geblaat_get_info = (geblaat_get_info_f)dlsym(result.handle, "geblaat_get_info");
@@ -240,9 +255,6 @@ PluginLoader::plugin PluginLoader::loadPlugin(std::string name, std::string type
     } else {
         LOG_INFO("geblaat_get_info does not exist");
     }
-
-    result.newInstance = newInstance;
-    result.delInstance = delInstance;
 
     return result;
 }

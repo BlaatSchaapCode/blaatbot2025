@@ -30,14 +30,11 @@ class TlsConnection : public Connection {
 
     void send(std::vector<char> data) override;
 
-
     int setConfig(nlohmann::json) override;
 
-
   protected:
-
     bool ignoreInvalidCerficiate = false;
-	bool ignoreInsecureProtocol = false;
+    bool ignoreInsecureProtocol = false;
 
   private:
     bool m_connected = false;
@@ -51,6 +48,6 @@ class TlsConnection : public Connection {
     static void receiveThreadFunc(TlsConnection *self);
 };
 
-} // namespace network
+} // namespace geblaat
 
 #endif /* NETWORK_TLSCONNECTION_HPP_ */

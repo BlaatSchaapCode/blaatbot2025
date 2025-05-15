@@ -15,11 +15,7 @@
 
 namespace geblaat {
 
-
-
 BotClient::BotClient() {}
-
-
 
 void BotClient::registerBotCommand(BotModule *mod, std::string command, OnCommand cmd) {
     if (mBotModules.contains(mod)) {
@@ -33,7 +29,8 @@ void BotClient::registerBotCommand(BotModule *mod, std::string command, OnComman
 
 int BotClient::setConfig(nlohmann::json config) {
     try {
-    	if (!pluginLoader) throw new std::runtime_error("PluginLoader missing");
+        if (!pluginLoader)
+            throw new std::runtime_error("PluginLoader missing");
         auto networks = config["networks"];
         if (networks.is_array()) {
             for (auto &network : networks) {

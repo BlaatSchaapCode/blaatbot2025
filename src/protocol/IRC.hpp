@@ -32,8 +32,8 @@ class IRC : public Protocol {
     };
 
     struct IRCtag {
-    	std::string tag;
-    	std::string value;
+        std::string tag;
+        std::string value;
     };
 
     struct IRCMessage {
@@ -390,10 +390,10 @@ class IRC : public Protocol {
 
     void onNicknameInUse(IRCMessage &message);
 
-    void sendPRIVMSG(const std::string target, const std::string text, const std::map<std::string,std::string> tags = {});
-    void sendACTION(const std::string target, const std::string text, const std::map<std::string,std::string> tags = {});
-    void sendTAGMSG(const std::string target, const std::map<std::string,std::string> tags = {});
-    void sendNOTICE(const std::string target, const std::string text, const std::map<std::string,std::string> tags = {});
+    void sendPRIVMSG(const std::string target, const std::string text, const std::map<std::string, std::string> tags = {});
+    void sendACTION(const std::string target, const std::string text, const std::map<std::string, std::string> tags = {});
+    void sendTAGMSG(const std::string target, const std::map<std::string, std::string> tags = {});
+    void sendNOTICE(const std::string target, const std::string text, const std::map<std::string, std::string> tags = {});
     void sendCTCPQuery(const std::string target, const std::string command, const std::string parameters = "");
     void sendCTCPResponse(const std::string target, const std::string command, const std::string parameters = "");
 
@@ -408,28 +408,24 @@ class IRC : public Protocol {
 
     std::string stripFormatting(const std::string &formattedString);
     void splitUserNickHost(IRCSource &source);
-    std::map<std::string,std::string> parseTags(const std::string &tagString);
-    std::string formatTags(std::map<std::string,std::string> tags);
-    std::map<std::string,std::string> parseKeyValue(const std::vector<std::string>&);
-    std::vector<std::string> parseNegation(const std::vector<std::string>&);
-    std::string encodeTagValue(const std::string&);
-    std::string decodeTagValue(const std::string&);
-    std::string encodeTagKey(const std::string&);
-    std::string decodeTagKey(const std::string&);
+    std::map<std::string, std::string> parseTags(const std::string &tagString);
+    std::string formatTags(std::map<std::string, std::string> tags);
+    std::map<std::string, std::string> parseKeyValue(const std::vector<std::string> &);
+    std::vector<std::string> parseNegation(const std::vector<std::string> &);
+    std::string encodeTagValue(const std::string &);
+    std::string decodeTagValue(const std::string &);
+    std::string encodeTagKey(const std::string &);
+    std::string decodeTagKey(const std::string &);
 
-    void requestCapabilityIfPresent(const std::string&);
+    void requestCapabilityIfPresent(const std::string &);
 
     void ping();
 
+    std::map<std::string, std::string> messageToClient(IRCMessage &message);
 
-
-
-    std::map<std::string,std::string> messageToClient(IRCMessage &message);
   public:
     void sendMessage(std::map<std::string, std::string> message) override;
-
-
 };
 
-} // namespace protocol
+} // namespace geblaat
 #endif /* PROTOCOL_IRC_HPP_ */

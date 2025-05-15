@@ -23,6 +23,7 @@ CXX_SRC += $(SRC_DIR)/clients/BotClient.cpp
 CXX_SRC += $(SRC_DIR)/PluginLoadable.cpp
 CXX_SRC += $(SRC_DIR)/PluginLoader.cpp
 
+CXX_SRC += $(SRC_DIR)/botmodule/BotModule.cpp
 CXX_SRC += $(SRC_DIR)/botmodule/CAPI_BotModule.cpp
 
 

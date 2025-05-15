@@ -13,12 +13,11 @@
 #include <vector>
 
 // C library
-#include <cstdint>
 #include <cerrno>
+#include <cstdint>
 
 // Third Party libraries
 #include <nlohmann/json.hpp>
-
 
 // Project includes
 #include "../protocol/Protocol.hpp"
@@ -37,13 +36,13 @@ class Connection : public PluginLoadable {
     void send(std::string s);
     void setProtocol(::geblaat::Protocol *protocol);
 
-//		Replaced with setConfig
-//    int setHostName(std::string hostName);
-//    int setPort(uint16_t port);
-//
-//    virtual int setSecure(bool secure) { return -ENOTSUP; }
-//    virtual int setIgnoreInvalidCerficiate(bool ignoreInvalidCerficiate) { return -ENOTSUP; }
-//    virtual int setIgnoreInsecureProtocol(bool ignoreInsecureProtocol) { return -ENOTSUP; }
+    //		Replaced with setConfig
+    //    int setHostName(std::string hostName);
+    //    int setPort(uint16_t port);
+    //
+    //    virtual int setSecure(bool secure) { return -ENOTSUP; }
+    //    virtual int setIgnoreInvalidCerficiate(bool ignoreInvalidCerficiate) { return -ENOTSUP; }
+    //    virtual int setIgnoreInsecureProtocol(bool ignoreInsecureProtocol) { return -ENOTSUP; }
 
     virtual int connect(void) { return -ENOSYS; }
 
@@ -52,11 +51,10 @@ class Connection : public PluginLoadable {
     // without requiring all of them being in the API.
     virtual int setConfig(nlohmann::json) { return -ENOSYS; }
 
-
   protected:
     ::geblaat::Protocol *mProtocol;
     std::string mHostName;
     uint16_t mPort;
 };
 
-} // namespace network
+} // namespace geblaat

@@ -1,6 +1,3 @@
 #include "BotModule.hpp"
 
-namespace geblaat {
-
-
-}
+namespace geblaat {}
