@@ -39,10 +39,11 @@ point in time.
 
 The primary development platform is Linux.
 But it will be tested against other Operating
-Systems as well. The "haiku" branch currently
-builds under Haiku, as BeOS is forever.
-At some point a Windows (MinGW) build should
-be possible as well.
+Systems as well. The project builds and runs
+under Haiku. A MinGW build will be possible,
+but may break from time to time. FreeBSD
+has some minor issues. OpenBSD misses modern C++ support. 
+NetBSD might work once I figure out how to properly configure it.
 
 ## Dependencies
 

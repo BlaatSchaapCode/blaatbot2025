@@ -32,6 +32,7 @@ CXX_SRC += $(SRC_DIR)/botmodule/TestBotModule.cpp
 CXX_SRC += $(SRC_DIR)/utils/time.cpp
 CXX_SRC += $(SRC_DIR)/utils/logger.cpp
 CXX_SRC += $(SRC_DIR)/utils/threadName.cpp
+CXX_SRC += $(SRC_DIR)/utils/classname.cpp
 
 
 include $(PCDEV_ROOT)/build/make/all.mk

@@ -18,6 +18,11 @@ The make files in the project allow for cross compiling. By specifying
 `TARGET_OS=mingw` as parameter to `make`. Otherwise follow standard 
 instructions.
 
+To make a 32 bit build, use
+
+`make TARGET_MACHINE=i686 TARGET_OS=mingw`
+
+
 ```
 [andre@mortar core]$ make TARGET_OS=mingw 
 GIT_BRANCH: main
@@ -44,5 +49,6 @@ Compiling     ../../src/PluginLoader.cpp...
 Linking       ../../out/gcc/mingw/x86_64/debug/bin/blaatbot2025.exe...
 
 ```
+
 
 
