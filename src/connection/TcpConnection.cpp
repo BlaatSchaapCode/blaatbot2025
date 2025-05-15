@@ -14,6 +14,8 @@
 #include <cerrno>
 #include <cstring>
 
+#include <sys/time.h>
+
 #include "logger.hpp"
 #include "threadName.hpp"
 

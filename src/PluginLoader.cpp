@@ -10,6 +10,7 @@
 #include <exception>
 
 #include "utils/logger.hpp"
+#include "utils/classname.hpp"
 
 namespace geblaat {
 
@@ -23,11 +24,14 @@ Client *PluginLoader::newClient(std::string name) {
     }
 
     if (this->plugins.contains("client_" + name)) {
-        this->plugins["client_" + name].refcount++;
-        Client *instance = dynamic_cast<Client *>(this->plugins["client_" + name].newInstance());
-        if (instance) {
-        	instance->setPluginLoader(this);
-            return instance;
+        auto instance = this->plugins["client_" + name].newInstance();
+        LOG_INFO("Got an instance of %s", demangleClassName(typeid(instance).name()).c_str());
+        Client *clientInstance = dynamic_cast<Client *>(instance);
+        if (clientInstance) {
+        	LOG_INFO("Got an instance of %s", demangleClassName(typeid(clientInstance).name()).c_str());
+            this->plugins["client_" + name].refcount++;
+            clientInstance->setPluginLoader(this);
+            return clientInstance;
         }
         LOG_ERROR("Error: Not a Client plugin");
     } else {
@@ -47,11 +51,14 @@ Protocol *PluginLoader::newProtocol(std::string name) {
     }
 
     if (this->plugins.contains("protocol_" + name)) {
-        this->plugins["protocol_" + name].refcount++;
-        Protocol *instance = dynamic_cast<Protocol *>(this->plugins["protocol_" + name].newInstance());
-        if (instance) {
-        	instance->setPluginLoader(this);
-            return instance;
+    	auto instance = this->plugins["protocol_" + name].newInstance();
+        LOG_INFO("Got an instance of %s", demangleClassName(typeid(instance).name()).c_str());
+        Protocol *protocolInstance = dynamic_cast<Protocol *>(instance);
+        if (protocolInstance) {
+        	LOG_INFO("Got an instance of %s", demangleClassName(typeid(protocolInstance).name()).c_str());
+            this->plugins["protocol_" + name].refcount++;
+            protocolInstance->setPluginLoader(this);
+            return protocolInstance;
         }
         LOG_ERROR("Error: Not a Connection plugin");
     } else {
@@ -71,10 +78,10 @@ BotModule *PluginLoader::newBotModule(std::string name) {
     }
 
     if (this->plugins.contains("botmodule_" + name)) {
-        this->plugins["botmodule_" + name].refcount++;
         BotModule *instance = dynamic_cast<BotModule *>(this->plugins["botmodule_" + name].newInstance());
         if (instance) {
-        	instance->setPluginLoader(this);
+            this->plugins["botmodule_" + name].refcount++;
+            instance->setPluginLoader(this);
             return instance;
         }
         LOG_ERROR("Error: Not a BotModule plugin");
@@ -95,17 +102,16 @@ Connection *PluginLoader::newConnection(std::string name) {
     }
 
     if (this->plugins.contains("connection_" + name)) {
-        this->plugins["connection_" + name].refcount++;
         Connection *instance = dynamic_cast<Connection *>(this->plugins["connection_" + name].newInstance());
         if (instance) {
-        	instance->setPluginLoader(this);
+            this->plugins["connection_" + name].refcount++;
+            instance->setPluginLoader(this);
             return instance;
         }
         LOG_ERROR("Error: Not a Connection plugin");
     } else {
         LOG_ERROR("Error: Plugin not found");
     }
-
     return nullptr;
 }
 
@@ -227,8 +233,6 @@ PluginLoader::plugin PluginLoader::loadPlugin(std::string name, std::string type
         LOG_INFO("test does not exist");
     }
 
-    // typedef char *(__attribute__((cdecl)) (*geblaat_get_info_f)(void));
-
     geblaat_get_info_f geblaat_get_info = (geblaat_get_info_f)dlsym(result.handle, "geblaat_get_info");
 
     if (geblaat_get_info) {
@@ -236,8 +240,6 @@ PluginLoader::plugin PluginLoader::loadPlugin(std::string name, std::string type
     } else {
         LOG_INFO("geblaat_get_info does not exist");
     }
-
-    // geblaat_get_info
 
     result.newInstance = newInstance;
     result.delInstance = delInstance;
