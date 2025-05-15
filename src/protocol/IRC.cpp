@@ -18,7 +18,6 @@
 #include <sstream>
 #include <string>
 
-
 // Note: Look at libunistring in stead of libicu
 //       We don't really need it at the time
 // IRC servers supporting UTF8MAPPING are rare
@@ -1536,11 +1535,9 @@ std::string IRC::formatTags(std::map<std::string, std::string> tags) {
         if (!first)
             result += ";";
         first = false;
-        // vendor prefixes in tags should be punycode encoded
-        // TODO: punycode encode, priority: low
-        result += tag.first;
+        result += encodeTagKey(tag.first);
         if (tag.second.length())
-            result += "=" + tag.second;
+            result += "=" + encodeTagValue(tag.second);
     }
     return result;
 }
@@ -1567,9 +1564,6 @@ void IRC::sendTAGMSG(const std::string target, const std::map<std::string, std::
     if (validTarget(target)) {
         std::string msg;
         if (serverInfo.capabilities.acknowledged.contains("message-tags") && tags.size()) {
-            // TODO: escape tags
-            // TODO: consider tags as key-value pairs?
-            // send("@" + tags + " PRIVMSG " + target + " :" + text);
             msg = "@" + formatTags(tags) + " TAGMSG " + target;
             send(msg);
         }
@@ -1580,9 +1574,6 @@ void IRC::sendNOTICE(const std::string target, const std::string text, const std
     if (validTarget(target) && validText(text)) {
         std::string msg;
         if (serverInfo.capabilities.acknowledged.contains("message-tags") && tags.size()) {
-            // TODO: escape tags
-            // TODO: consider tags as key-value pairs?
-            // send("@" + tags + " PRIVMSG " + target + " :" + text);
             msg = "@" + formatTags(tags) + " ";
         }
         msg += "NOTICE " + target + " :" + text;

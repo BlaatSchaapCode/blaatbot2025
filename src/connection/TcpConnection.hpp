@@ -5,6 +5,15 @@
  *      Author: andre
  */
 
+#if defined(__APPLE__) || \
+	defined(__DragonFly__) || \
+	defined(__FreeBSD__) || \
+    defined(__NetBSD__) || \
+    defined(__OpenBSD__)
+#define HAVE_SIN_LEN 1
+#else
+#define HAVE_SIN_LEN 0
+#endif
 
 #if defined(_WIN32) || defined(_WIN64)
 #include <winsock2.h>
