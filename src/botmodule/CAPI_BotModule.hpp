@@ -32,7 +32,7 @@ class CAPI_BotModule : public BotModule {
             [](const void *s, const key_value_t *kv) {
                 CAPI_BotModule *self = (CAPI_BotModule *)s;
                 std::map<std::string, std::string> message;
-                while (kv) {
+                while (kv->key) {
                     message[kv->key] = kv->value;
                     kv++;
                 }
