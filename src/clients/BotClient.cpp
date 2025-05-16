@@ -17,6 +17,13 @@ namespace geblaat {
 
 BotClient::BotClient() {}
 
+//PluginLoader::plugin BotClient::getCapiBotModule(void* handle){
+//	PluginLoader::plugin result = {};
+//
+//	return result;
+//}
+
+
 void BotClient::registerBotCommand(BotModule *mod, std::string command, OnCommand cmd) {
     if (mBotModules.contains(mod)) {
         auto prefix = mBotModules[mod];

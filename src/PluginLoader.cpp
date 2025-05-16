@@ -227,27 +227,20 @@ PluginLoader::plugin PluginLoader::loadPlugin(std::string name, std::string type
     typedef void (*delInstance_f)(PluginLoadable *);
     delInstance_f delInstance;
 
-    // For a BotModule to call into the BotClient, we need symbols
-    // in global space.
-    // Can Windows do this?
-    // Also, this means we cannot support unloading modules on MUSL/Linux
-    result.handle = dlopen(library.c_str(), RTLD_NOW | RTLD_GLOBAL);
+    result.handle = dlopen(library.c_str(), RTLD_NOW | RTLD_LOCAL);
     if (result.handle == nullptr) {
         throw std::runtime_error(dlerror());
     }
 
     int *test_c_api = (int *)dlsym(result.handle, "test_c_api");
     if (test_c_api) {
-
         set_botclient_f set_botclient = (set_botclient_f)dlsym(result.handle, "set_botclient");
         get_botmodule_f get_botmodule = (get_botmodule_f)dlsym(result.handle, "get_botmodule");
         if (set_botclient && get_botmodule) {
             result.newInstance = [set_botclient, get_botmodule]() { return new CAPI_BotModule(set_botclient, get_botmodule); };
 
             result.delInstance = [](PluginLoadable *me) {
-                auto meme = dynamic_cast<CAPI_BotModule *>(me);
-                if (meme)
-                    delete meme;
+            	delete me;
             };
         }
 

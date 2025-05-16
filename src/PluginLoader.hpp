@@ -32,7 +32,6 @@ class PluginLoader {
     typedef char *(*geblaat_get_info_f)(void);
 #endif
 
-  private:
     struct plugin {
         std::string name;
         std::string type;
@@ -42,6 +41,7 @@ class PluginLoader {
         std::function<void(PluginLoadable *)> delInstance;
     };
 
+  private:
     std::map<std::string, plugin> plugins;
     plugin loadPlugin(std::string name, std::string type);
 };

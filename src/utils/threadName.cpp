@@ -49,7 +49,7 @@ void setThreadName(std::string threadName) {
     if (result > 0)
         SetThreadDescription(GetCurrentThread(), buff);
 }
-#elif __GNUC__
+#elif (__GNUC__ && __linux__) || __FreeBSD__
 // setThreadName for the GNU C Library
 #include <pthread.h>
 

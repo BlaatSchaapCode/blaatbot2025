@@ -41,14 +41,3 @@ void CAPI_BotModule::onBotCommand(std::string command, std::string parameters, s
 
 } // namespace geblaat
 
-// extern "C" {
-//
-// void register_bot_command(void *module, const char *command, on_bot_command_callback_f handler) {
-//     geblaat::PluginLoadable *mod = (geblaat::PluginLoadable *)module;
-//     geblaat::CAPI_BotModule *capi_botmodule = dynamic_cast<geblaat::CAPI_BotModule *>(mod);
-//     if (capi_botmodule) {
-//         capi_botmodule->registerBotCommand(command, handler);
-//     }
-// }
-//
-// } // extern "C"

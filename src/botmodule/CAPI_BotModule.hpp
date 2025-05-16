@@ -19,8 +19,8 @@ class CAPI_BotModule : public BotModule {
     void onBotCommand(std::string command, std::string parameters, std::map<std::string, std::string> recvMessage);
 
     botmodule_c_api_t *botModule = nullptr;
-    ;
     botclient_c_api_t botClient = {
+    		.size = sizeof (botclient_c_api_t) ,
         .client = this,
         .register_bot_command =
             [](const void *s, const char *command, on_bot_command_callback_f handler) {
@@ -39,7 +39,6 @@ class CAPI_BotModule : public BotModule {
                 self->mBotClient->sendMessage(message);
                 return 0;
             },
-
     };
 };
 } // namespace geblaat

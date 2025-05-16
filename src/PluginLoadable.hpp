@@ -15,6 +15,7 @@ namespace geblaat {
 class PluginLoader;
 class PluginLoadable {
   public:
+	virtual ~PluginLoadable() = 0;
     virtual int setConfig(nlohmann::json) = 0;
     virtual void setPluginLoader(PluginLoader *pl) { pluginLoader = pl; }
 

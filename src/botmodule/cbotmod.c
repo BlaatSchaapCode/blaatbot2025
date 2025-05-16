@@ -12,12 +12,15 @@
 #include <string.h>
 
 static int set_config(const char *config_json);
-static botmodule_c_api_t botmodule_c_api = {.set_config = set_config};
+static botmodule_c_api_t botmodule_c_api = {.size = sizeof(botmodule_c_api_t), .set_config = set_config};
 botmodule_c_api_t *get_botmodule(void) { return &botmodule_c_api; }
 
 static botclient_c_api_t *botclient = NULL;
 int set_botclient(botclient_c_api_t *c) {
-    botclient = c;
+    botclient = NULL;
+    if (c)
+        if (c->size == sizeof(botclient_c_api_t))
+            botclient = c;
     return !c;
 }
 

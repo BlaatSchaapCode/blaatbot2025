@@ -8,12 +8,15 @@
 // https://gcc.gnu.org/onlinedocs/libstdc++/manual/ext_demangling.html
 #include <cxxabi.h>
 #include <string>
+#include <cstdlib>
 std::string demangleClassName(std::string mangledName) {
     int status;
+    std::string result = "Unknown";
     char *realname;
-    std::string result;
     realname = abi::__cxa_demangle(mangledName.c_str(), NULL, NULL, &status);
-    result = realname;
-    std::free(realname);
+    if (!status && realname)
+    	result = realname;
+    if (realname)
+    free(realname);
     return result;
 }
