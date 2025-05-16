@@ -25,4 +25,18 @@ CXX_SRC += $(SRC_DIR)/utils/timer.cpp
 CXX_SRC += $(SRC_DIR)/main.cpp
 CXX_SRC += $(SRC_DIR)/PluginLoader.cpp
 
+
+
+# Temporary added here to fix some linker errors
+# We should split the PluginLoader off its own library
+# Also, the plugin loader should be extendible such that
+# CAPI_BotModule can live in the BotClient library
+# without causing the linker issues requiring it
+# to be linked into unrelated components
+CXX_SRC += $(SRC_DIR)/botmodule/CAPI_BotModule.cpp
+CXX_SRC += $(SRC_DIR)/clients/BotClient.cpp
+CXX_SRC += $(SRC_DIR)/clients/Client.cpp
+
+
+
 include $(PCDEV_ROOT)/build/make/all.mk
