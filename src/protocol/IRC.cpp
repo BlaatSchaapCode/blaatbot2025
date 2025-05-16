@@ -31,6 +31,7 @@
 #include "timer.hpp"
 #include "version.hpp"
 
+#include "Client.hpp"
 #include "PluginLoader.hpp"
 
 namespace geblaat {
@@ -149,7 +150,8 @@ int IRC::setConfig(nlohmann::json config) {
             // the json to be able to handle multiple. If there are multiple
             // the default behaviour is intended to be to pick server at random
             auto jsonConnection = config["connections"][0];
-            mConnection = pluginLoader->newConnection(jsonConnection["type"]);
+            // mConnection = pluginLoader->newConnection(jsonConnection["type"]);
+            mConnection = dynamic_cast<Connection *>(pluginLoader->newInstance(jsonConnection["type"], "connection"));
             if (mConnection) {
                 mConnection->setConfig(jsonConnection["config"]);
                 mConnection->setProtocol(this);

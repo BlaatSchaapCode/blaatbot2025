@@ -13,13 +13,11 @@
 
 #include "Client.hpp"
 
-
-
 // So this is my issue... once I include the PluginLoader here I get errors
 // regarding BotClient not found in PluginLoader. A circular reference problem.
 // Well.. I wish to handle CAPI botmodules inside BotClient rather then in the
 // PluginLoader, that should be more of a generic thing.
-//#include "PluginLoader.hpp"
+#include "PluginLoader.hpp"
 
 namespace geblaat {
 class BotModule;
@@ -36,7 +34,7 @@ class BotClient : public Client {
     void registerBotCommand(BotModule *mod, std::string command, OnCommand cmd);
     void sendMessage(std::map<std::string, std::string> message);
 
-    //PluginLoader::plugin getCapiBotModule(void* handle);
+    PluginLoader::plugin getCapiBotModule(void *handle);
 
   protected:
     Protocol *mProtocol = nullptr;

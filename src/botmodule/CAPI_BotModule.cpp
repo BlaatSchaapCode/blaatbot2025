@@ -40,4 +40,3 @@ void CAPI_BotModule::onBotCommand(std::string command, std::string parameters, s
 }
 
 } // namespace geblaat
-

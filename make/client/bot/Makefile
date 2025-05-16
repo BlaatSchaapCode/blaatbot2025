@@ -14,6 +14,7 @@ BUILD_LIBRARY=D
 
 CXX_INCLUDES += $(SRC_DIR)
 CXX_INCLUDES += $(SRC_DIR)/clients
+CXX_INCLUDES += $(SRC_DIR)/botmodule/
 CXX_INCLUDES += $(SRC_DIR)/connection
 CXX_INCLUDES += $(SRC_DIR)/protocol
 CXX_INCLUDES += $(SRC_DIR)/utils

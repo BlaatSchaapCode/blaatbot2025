@@ -8,10 +8,10 @@
 #ifndef SRC_PLUGINLOADER_HPP_
 #define SRC_PLUGINLOADER_HPP_
 
-#include "PluginLoadable.hpp"
-#include "botmodule/BotModule.hpp"
-#include "clients/Client.hpp"
-#include "protocol/Protocol.hpp"
+// #include "PluginLoadable.hpp"
+// #include "botmodule/BotModule.hpp"
+// #include "clients/Client.hpp"
+// #include "protocol/Protocol.hpp"
 
 #include "connection/Connection.hpp"
 #include <functional>
@@ -19,15 +19,14 @@
 
 namespace geblaat {
 
-
-
-
 class PluginLoader {
   public:
-    Connection *newConnection(std::string type);
-    Client *newClient(std::string type);
-    Protocol *newProtocol(std::string type);
-    BotModule *newBotModule(std::string type);
+    // Connection *newConnection(std::string name);
+    // Client *newClient(std::string name);
+    // Protocol *newProtocol(std::string name);
+    // BotModule *newBotModule(std::string name);
+
+    PluginLoadable *newInstance(std::string name, std::string type);
 
 #ifdef __i386__
     [[gnu::cdecl]] typedef char *(*geblaat_get_info_f)(void);
@@ -43,6 +42,11 @@ class PluginLoader {
         std::function<PluginLoadable *(void)> newInstance;
         std::function<void(PluginLoadable *)> delInstance;
     };
+
+    void *dlsym(void *handle, const char *symbol);
+    void *dlopen(std::string type, std::string name);
+    int dlclose(void *handle);
+    std::string dlerror(void);
 
   private:
     std::map<std::string, plugin> plugins;

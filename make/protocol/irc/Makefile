@@ -14,6 +14,7 @@ CXX_INCLUDES += $(SRC_DIR)
 CXX_INCLUDES += $(SRC_DIR)/connection
 CXX_INCLUDES += $(SRC_DIR)/protocol
 CXX_INCLUDES += $(SRC_DIR)/utils
+CXX_INCLUDES += $(SRC_DIR)/clients
 CXX_INCLUDES += ../ext/base64/include/
 
 CXX_SRC += $(SRC_DIR)/protocol/Protocol.cpp

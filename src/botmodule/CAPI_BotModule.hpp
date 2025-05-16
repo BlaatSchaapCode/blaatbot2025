@@ -20,7 +20,7 @@ class CAPI_BotModule : public BotModule {
 
     botmodule_c_api_t *botModule = nullptr;
     botclient_c_api_t botClient = {
-    		.size = sizeof (botclient_c_api_t) ,
+        .size = sizeof(botclient_c_api_t),
         .client = this,
         .register_bot_command =
             [](const void *s, const char *command, on_bot_command_callback_f handler) {

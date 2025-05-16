@@ -3,8 +3,6 @@
 #include "PluginLoadable.hpp"
 #include "clients/BotClient.hpp"
 
-
-
 namespace geblaat {
 class BotClient;
 class BotModule : public PluginLoadable {

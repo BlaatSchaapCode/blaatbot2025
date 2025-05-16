@@ -106,7 +106,8 @@ int main(int argc, char *argv[]) {
 
         try {
             auto jsonClient = mConfigdata["client"];
-            client = geblaat::gPluginLoader.newClient(jsonClient["type"]);
+            // client = geblaat::gPluginLoader.newClient(jsonClient["type"]);
+            client = dynamic_cast<geblaat::Client *>(geblaat::gPluginLoader.newInstance(jsonClient["type"], "client"));
             if (client) {
                 client->setConfig(jsonClient["config"]);
             } else {

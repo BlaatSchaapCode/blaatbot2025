@@ -11,18 +11,27 @@
 #include "Protocol.hpp"
 #include "logger.hpp"
 
+#include "BotModule.hpp"
+#include "CAPI_BotModule.h"
+#include "CAPI_BotModule.hpp"
+
 #include "PluginLoader.hpp"
 
 namespace geblaat {
 
 BotClient::BotClient() {}
 
-//PluginLoader::plugin BotClient::getCapiBotModule(void* handle){
-//	PluginLoader::plugin result = {};
-//
-//	return result;
-//}
-
+PluginLoader::plugin BotClient::getCapiBotModule(void *handle) {
+    PluginLoader::plugin result = {};
+    result.handle = handle;
+    set_botclient_f set_botclient = (set_botclient_f)pluginLoader->dlsym(handle, "set_botclient");
+    get_botmodule_f get_botmodule = (get_botmodule_f)pluginLoader->dlsym(handle, "get_botmodule");
+    if (set_botclient && get_botmodule) {
+        result.newInstance = [set_botclient, get_botmodule]() { return new CAPI_BotModule(set_botclient, get_botmodule); };
+        result.delInstance = [](PluginLoadable *me) { delete me; };
+    }
+    return result;
+}
 
 void BotClient::registerBotCommand(BotModule *mod, std::string command, OnCommand cmd) {
     if (mBotModules.contains(mod)) {
@@ -43,14 +52,17 @@ int BotClient::setConfig(nlohmann::json config) {
             for (auto &network : networks) {
                 auto jsonProtocol = network["protocol"];
 
-                mProtocol = pluginLoader->newProtocol(jsonProtocol["type"]);
+                // mProtocol = pluginLoader->newProtocol(jsonProtocol["type"]);
+                mProtocol = dynamic_cast<Protocol *>(pluginLoader->newInstance(jsonProtocol["type"], "protocol"));
                 if (mProtocol) {
                     mProtocol->setClient(this);
 
                     auto modules = config["modules"];
                     if (modules.is_array()) {
                         for (auto &module : modules) {
-                            auto botModule = pluginLoader->newBotModule(module["type"]);
+                            // auto botModule = pluginLoader->newBotModule(module["type"]);
+                            BotModule *botModule =
+                                dynamic_cast<BotModule *>(pluginLoader->newInstance(module["type"], "botmodule"));
                             if (!botModule) {
                                 LOG_ERROR("Could not load Botmodule");
                                 continue;
