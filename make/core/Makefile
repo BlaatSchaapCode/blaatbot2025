@@ -5,6 +5,8 @@ SRC_DIR      := ../../src
 
 LIBS +=  icu-uc nlohmann_json
 
+
+
 #CXXFLAGS += -DENABLE_LOG_DEBUG
 
 CXX_INCLUDES += $(SRC_DIR)
@@ -23,7 +25,6 @@ CXX_SRC += $(SRC_DIR)/utils/classname.cpp
 CXX_SRC += $(SRC_DIR)/utils/time.cpp
 CXX_SRC += $(SRC_DIR)/utils/timer.cpp
 CXX_SRC += $(SRC_DIR)/main.cpp
-CXX_SRC += $(SRC_DIR)/PluginLoader.cpp
 
 
 
@@ -33,10 +34,14 @@ CXX_SRC += $(SRC_DIR)/PluginLoader.cpp
 # CAPI_BotModule can live in the BotClient library
 # without causing the linker issues requiring it
 # to be linked into unrelated components
-CXX_SRC += $(SRC_DIR)/botmodule/CAPI_BotModule.cpp
-CXX_SRC += $(SRC_DIR)/clients/BotClient.cpp
-CXX_SRC += $(SRC_DIR)/clients/Client.cpp
+#CXX_SRC += $(SRC_DIR)/botmodule/CAPI_BotModule.cpp
+#CXX_SRC += $(SRC_DIR)/clients/BotClient.cpp
+#CXX_SRC += $(SRC_DIR)/clients/Client.cpp
+#CXX_SRC += $(SRC_DIR)/PluginLoader.cpp
 
 
 
 include $(PCDEV_ROOT)/build/make/all.mk
+
+
+LDFLAGS += -lgeblaat_pluginloader -L$(SO_DIR)

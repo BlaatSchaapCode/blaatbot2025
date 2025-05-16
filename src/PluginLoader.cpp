@@ -159,14 +159,35 @@ PluginLoader::plugin PluginLoader::loadPlugin(std::string name, std::string type
         throw std::runtime_error(getWin32ErrorString());
     }
 
-    newInstance = (newInstance_f)GetProcAddress((HMODULE)result.handle, "newInstance");
-    if (!newInstance) {
-        throw std::runtime_error(getWin32ErrorString());
-    }
+    int *test_c_api = (int *)GetProcAddress((HMODULE)result.handle, "test_c_api");
+    if (test_c_api) {
 
-    delInstance = (delInstance_f)GetProcAddress((HMODULE)result.handle, "delInstance");
-    if (!delInstance) {
-        throw std::runtime_error(getWin32ErrorString());
+        set_botclient_f set_botclient = (set_botclient_f)GetProcAddress((HMODULE)result.handle, "set_botclient");
+        get_botmodule_f get_botmodule = (get_botmodule_f)GetProcAddress((HMODULE)result.handle, "get_botmodule");
+        if (set_botclient && get_botmodule) {
+            result.newInstance = [set_botclient, get_botmodule]() { return new CAPI_BotModule(set_botclient, get_botmodule); };
+
+            result.delInstance = [](PluginLoadable *me) {
+                auto meme = dynamic_cast<CAPI_BotModule *>(me);
+                if (meme)
+                    delete meme;
+            };
+        }
+
+    } else {
+
+        newInstance = (newInstance_f)GetProcAddress((HMODULE)result.handle, "newInstance");
+        if (!newInstance) {
+            throw std::runtime_error(getWin32ErrorString());
+        }
+
+        delInstance = (delInstance_f)GetProcAddress((HMODULE)result.handle, "delInstance");
+        if (!delInstance) {
+            throw std::runtime_error(getWin32ErrorString());
+        }
+
+        result.newInstance = newInstance;
+        result.delInstance = delInstance;
     }
 
     int *test = (int *)GetProcAddress((HMODULE)result.handle, "test");
@@ -183,9 +204,6 @@ PluginLoader::plugin PluginLoader::loadPlugin(std::string name, std::string type
     } else {
         LOG_INFO("geblaat_get_info does not exist");
     }
-
-    result.newInstance = newInstance;
-    result.delInstance = delInstance;
 
     return result;
 }

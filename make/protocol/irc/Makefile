@@ -33,3 +33,5 @@ include $(PCDEV_ROOT)/build/make/all.mk
 
 $(info target os is $(TARGET_OS) )
 
+
+LDFLAGS += -lgeblaat_pluginloader -L$(SO_DIR)
