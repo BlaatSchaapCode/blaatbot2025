@@ -12,7 +12,14 @@
 // Project includes
 
 #include "Client.hpp"
-#include "PluginLoader.hpp"
+
+
+
+// So this is my issue... once I include the PluginLoader here I get errors
+// regarding BotClient not found in PluginLoader. A circular reference problem.
+// Well.. I wish to handle CAPI botmodules inside BotClient rather then in the
+// PluginLoader, that should be more of a generic thing.
+//#include "PluginLoader.hpp"
 
 namespace geblaat {
 class BotModule;

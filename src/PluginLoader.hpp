@@ -19,6 +19,9 @@
 
 namespace geblaat {
 
+
+
+
 class PluginLoader {
   public:
     Connection *newConnection(std::string type);
