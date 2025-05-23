@@ -54,6 +54,7 @@ class PluginLoader {
     Plugin loadPlugin(std::string name, std::string type);
     void loadCppPlugin(Plugin &);
     std::vector<Loader> loaders;
+    std::string pluginDirectory;
 };
 
 }; // namespace geblaat

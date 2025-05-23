@@ -6,6 +6,7 @@
  */
 
 #include "PluginLoader.hpp"
+#include "executablePath.hpp"
 
 #include <exception>
 
@@ -23,6 +24,10 @@
 namespace geblaat {
 
 PluginLoader::PluginLoader() {
+    LOG_INFO("Executable path:  %s", getExecutablePath().c_str());
+    LOG_INFO("Plugin directory: %s", getPluginDir().c_str());
+
+    pluginDirectory = getPluginDir(); // TODO: Allow for settings to override this
     registerPluginLoader([this](Plugin &plugin) { loadCppPlugin(plugin); });
 }
 
@@ -109,7 +114,7 @@ PluginLoader::Plugin PluginLoader::loadPlugin(std::string name, std::string type
 
 void *PluginLoader::dlsym(void *handle, const char *symbol) { return (void *)GetProcAddress((HMODULE)handle, symbol); }
 void *PluginLoader::dlopen(std::string type, std::string name) {
-    std::string library = "geblaat_" + type + "_" + name + ".dll";
+    std::string library = pluginDirectory + "\\geblaat_" + type + "_" + name + ".dll";
     return LoadLibrary(TEXT(library.c_str()));
 }
 int PluginLoader::dlclose(void *handle) { return !FreeLibrary((HMODULE)handle); }
@@ -136,13 +141,13 @@ std::string PluginLoader::dlerror(void) {
 // For now, Operating Systems that do not implement the WIN32 API
 // are expected to implement the POSIX API.
 // Are there more to consider?
-// Note: code will not work as-in on Darwin (macOS) as there doesn't
-// seem an actively maintained Darwin distro and I don't own any Apple
-// hardware.
+// Note: code will not work as-in on Darwin (macOS).
+// There appears no currently maintained Darwin distro around
+// and I don't have any Apple hardware.
 
 void *PluginLoader::dlsym(void *handle, const char *symbol) { return ::dlsym(handle, symbol); }
 void *PluginLoader::dlopen(std::string type, std::string name) {
-    std::string library = "libgeblaat_" + type + "_" + name + ".so";
+    std::string library = pluginDirectory + "/libgeblaat_" + type + "_" + name + ".so";
     return ::dlopen(library.c_str(), RTLD_NOW | RTLD_LOCAL);
 }
 int PluginLoader::dlclose(void *handle) { return ::dlclose(handle); }

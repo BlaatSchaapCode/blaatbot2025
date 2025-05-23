@@ -30,6 +30,7 @@ CXX_SRC += $(SRC_DIR)/utils/time.cpp
 CXX_SRC += $(SRC_DIR)/utils/logger.cpp
 CXX_SRC += $(SRC_DIR)/utils/threadName.cpp
 CXX_SRC += $(SRC_DIR)/utils/classname.cpp
+CXX_SRC += $(SRC_DIR)/utils/executablePath.cpp
 
 
 include $(PCDEV_ROOT)/build/make/all.mk
@@ -41,6 +42,5 @@ ifeq ($(TARGET_OS),haiku)
 endif
 
 ifeq ($(TARGET_OS),mingw)
-	#LDFLAGS += -lwsock32
-	LDFLAGS += -lws2_32
+	LDFLAGS += -lws2_32 -lshlwapi
 endif
