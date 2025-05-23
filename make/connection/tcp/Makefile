@@ -34,6 +34,9 @@ ifeq ($(TARGET_OS),haiku)
 endif
 
 ifeq ($(TARGET_OS),mingw)
-	#LDFLAGS += -lwsock32
 	LDFLAGS += -lws2_32
+endif
+
+ifeq ($(TARGET_OS),sunos)
+	LDFLAGS += -lsocket -lnsl
 endif
