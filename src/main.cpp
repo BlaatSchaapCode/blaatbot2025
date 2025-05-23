@@ -9,7 +9,6 @@
 // Library Includes
 #include <cxxopts.hpp>
 #include <nlohmann/json.hpp>
-// using json = nlohmann::json;
 
 #include "clients/Client.hpp"
 #include "protocol/IRC.hpp"
@@ -17,10 +16,8 @@
 #include "utils/version.hpp"
 
 #include "PluginLoader.hpp"
+static geblaat::PluginLoader mPluginLoader;
 
-namespace geblaat {
-PluginLoader gPluginLoader; // testing
-}
 
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
@@ -103,17 +100,14 @@ int main(int argc, char *argv[]) {
 
     if (mConfigdata.size()) {
         LOG_INFO("Config file loaded");
-
         try {
             auto jsonClient = mConfigdata["client"];
-            // client = geblaat::gPluginLoader.newClient(jsonClient["type"]);
-            client = dynamic_cast<geblaat::Client *>(geblaat::gPluginLoader.newInstance(jsonClient["type"], "client"));
+            client = dynamic_cast<geblaat::Client *>(mPluginLoader.newInstance(jsonClient["type"], "client"));
             if (client) {
                 client->setConfig(jsonClient["config"]);
             } else {
                 throw std::runtime_error("Unable to get a client");
             }
-
         } catch (nlohmann::json::exception &ex) {
             LOG_ERROR("JSON exception: %s", ex.what());
             return -1;
@@ -128,8 +122,6 @@ int main(int argc, char *argv[]) {
     } else {
         LOG_INFO("Config file missing");
     }
-
-    //    client::Client client;
 
     LOG_INFO("press ENTER key to quit");
     std::cin.get();

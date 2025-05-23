@@ -37,9 +37,9 @@ include $(PCDEV_ROOT)/build/make/all.mk
 
 $(info target os is $(TARGET_OS) )
 
-ifeq ($(TARGET_OS),haiku)
-	LDFLAGS += -lnetwork
-endif
+#ifeq ($(TARGET_OS),haiku)
+#	LDFLAGS += -lnetwork
+#endif
 
 ifeq ($(TARGET_OS),mingw)
 	LDFLAGS += -lws2_32 -lshlwapi
