@@ -45,3 +45,7 @@ include $(PCDEV_ROOT)/build/make/all.mk
 
 
 LDFLAGS += -lgeblaat_pluginloader -L$(SO_DIR)
+
+ifeq ($(TARGET_OS),freebsd)
+	LDFLAGS += -lpthread
+endif
