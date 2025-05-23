@@ -71,7 +71,7 @@ PluginLoadable *PluginLoader::newInstance(std::string name, std::string type) {
         try {
             this->plugins[type + "_" + name] = loadPlugin(name, type);
         } catch (std::exception &ex) {
-            LOG_ERROR("Error: %s", ex.what());
+            LOG_ERROR("Error loading %s %s: %s", name.c_str(), type.c_str(), ex.what());
         }
     }
     if (this->plugins.contains(type + "_" + name)) {
@@ -80,9 +80,8 @@ PluginLoadable *PluginLoader::newInstance(std::string name, std::string type) {
         this->plugins[type + "_" + name].refcount++;
         instance->setPluginLoader(this);
         return instance;
-
     } else {
-        LOG_ERROR("Error: Plugin not found");
+    	LOG_ERROR("Error loading %s %s: %s", name.c_str(), type.c_str(), "Plugin not found");
     }
 
     return nullptr;
