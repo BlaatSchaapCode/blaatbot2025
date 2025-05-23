@@ -53,6 +53,10 @@ void setThreadName(std::string threadName) {
 // setThreadName for the GNU C Library
 #include <pthread.h>
 
+#ifdef __FreeBSD__
+#include <pthread_np.h>
+#endif
+
 void setThreadName(std::string threadName) {
     /*
        The thread name is a
