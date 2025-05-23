@@ -93,6 +93,8 @@ PluginLoader::Plugin PluginLoader::loadPlugin(std::string name, std::string type
     result.name = name;
     result.type = type;
 
+    std::string lastError = "Plugin not found";
+
     for (Loader &loader : loaders) {
         try {
             loader(result);
@@ -101,11 +103,12 @@ PluginLoader::Plugin PluginLoader::loadPlugin(std::string name, std::string type
             // Look into error handling
             // keep using  Exceptions or use something else
             // Do we wnat to return not found, or look into them more
+        	lastError = ex.what();
             continue;
         }
     }
 
-    throw std::runtime_error("Plugin not found");
+    throw std::runtime_error(lastError);
 }
 
 ///-------------
