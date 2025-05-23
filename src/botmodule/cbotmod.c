@@ -6,6 +6,7 @@
  */
 
 #include "cbotmod.h"
+#include "PluginLoadable.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -70,11 +71,8 @@ static int set_config(const char *config_json) {
     return botclient->register_bot_command(botclient->client, "see", on_bot_command);
 }
 
-// int test_c_api = 42;
-
-typedef struct {
-    const char a[32];
-    const char b[16];
-    const int c;
-} test_c_api_t;
-test_c_api_t test_c_api = {"blaat", "schaap", 2005};
+pluginloadable_t plugin_info = {
+    .name = "C bot module",
+    .description = "Example bot module using C API",
+    .abi = {.abi = pluginloadable_abi_c, .version = 0},
+};

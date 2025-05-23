@@ -6,6 +6,7 @@ SRC_DIR      := $(PROJ_DIR)/src
 
 BUILD_LIBRARY=D
 
+C_INCLUDES += $(SRC_DIR)
 C_INCLUDES += $(SRC_DIR)/botmodule
 C_SRC      += $(SRC_DIR)/botmodule/cbotmod.c
 

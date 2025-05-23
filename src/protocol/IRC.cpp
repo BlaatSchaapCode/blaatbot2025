@@ -1064,10 +1064,10 @@ void IRC::onJOIN(IRCMessage &message) {
         auto channel = toLower(message.parameters[0]);
         if (isEqual(mNick, message.source.nick)) {
             // We have joined a channel
-            mIRCChannels[channel].joined = true;
+            ircChannels[channel].joined = true;
             // We index on the lowe case string, we store the string with case
             // preserved for displaying purposes
-            mIRCChannels[toLower(message.parameters[0])].name = message.parameters[0];
+            ircChannels[toLower(message.parameters[0])].name = message.parameters[0];
             // Obtain the channel modes
             send("MODE " + channel);
         } else {
@@ -1083,7 +1083,7 @@ void IRC::onJOIN(IRCMessage &message) {
                 joined.account = message.parameters[1];
                 joined.realname = message.parameters[2];
             }
-            mIRCChannels[channel].nicks[toLower(message.source.nick)] = joined;
+            ircChannels[channel].nicks[toLower(message.source.nick)] = joined;
         }
     }
 }
@@ -1219,15 +1219,15 @@ void IRC::onTopic(IRCMessage &message) {
     // <client> <channel> :<topic>"
     // Do we have to care about the client in the message?
     if (message.parameters.size() >= 3) {
-        mIRCChannels[toLower(message.parameters[1])].topic = message.parameters[2];
-        mIRCChannels[toLower(message.parameters[1])].topicStripped = stripFormatting(message.parameters[2]);
+        ircChannels[toLower(message.parameters[1])].topic = message.parameters[2];
+        ircChannels[toLower(message.parameters[1])].topicStripped = stripFormatting(message.parameters[2]);
     }
 }
 
 void IRC::onTopicWhoTime(IRCMessage &message) {
     if (message.parameters.size() >= 4) {
-        mIRCChannels[toLower(message.parameters[1])].topicNick = message.parameters[2];
-        mIRCChannels[toLower(message.parameters[1])].topicSetAt = atoi(message.parameters[3].c_str());
+        ircChannels[toLower(message.parameters[1])].topicNick = message.parameters[2];
+        ircChannels[toLower(message.parameters[1])].topicSetAt = atoi(message.parameters[3].c_str());
     }
 }
 
@@ -1258,7 +1258,7 @@ void IRC::onEndOfNames(IRCMessage &message) {
             std::default_random_engine e1(r());
             std::uniform_int_distribution<unsigned> uniform_dist(1, 99);
             unsigned token = uniform_dist(e1);
-            mIRCChannels[toLower(message.parameters[1])].token = token;
+            ircChannels[toLower(message.parameters[1])].token = token;
             send("WHO " + toLower(message.parameters[1]) + " %t%c%u%i%h%s%n%f%d%l%a%o%r," + std::to_string(token));
         } else {
             send("WHO " + toLower(message.parameters[1]));
@@ -1291,7 +1291,7 @@ void IRC::onWhoSpcReply(IRCMessage &message) {
         user.realname = message.parameters[13];
 
         if (isChannel(channel))
-            mIRCChannels[toLower(channel)].nicks[toLower(user.nick)] = user;
+            ircChannels[toLower(channel)].nicks[toLower(user.nick)] = user;
     }
 }
 void IRC::onWhoReply(IRCMessage &message) {
@@ -1310,7 +1310,7 @@ void IRC::onWhoReply(IRCMessage &message) {
         user.realname = message.parameters[8];
 
         if (isChannel(channel))
-            mIRCChannels[toLower(channel)].nicks[toLower(user.nick)] = user;
+            ircChannels[toLower(channel)].nicks[toLower(user.nick)] = user;
     }
 }
 
@@ -1321,7 +1321,7 @@ void IRC::onEndOfWho(IRCMessage &message) {
         auto channel = toLower(message.parameters[1]);
         if (isChannel(channel)) {
             LOG_DEBUG("Channel: %s", channel.c_str());
-            for (auto &nick : mIRCChannels[toLower(channel)].nicks) {
+            for (auto &nick : ircChannels[toLower(channel)].nicks) {
                 LOG_DEBUG("Nick: %s", nick.second.nick.c_str());
             }
         }
@@ -1771,6 +1771,10 @@ void IRC::sendMessage(std::map<std::string, std::string> message) {
 extern "C" {
 geblaat::IRC *newInstance(void) { return new geblaat::IRC(); }
 void delInstance(geblaat::IRC *inst) { delete inst; }
-int test = 6667;
+pluginloadable_t plugin_info = {
+    .name = "IRC",
+    .description = "IRC Protocol support",
+    .abi = {.abi = pluginloadable_abi_cpp, .version = 0},
+};
 }
 #endif

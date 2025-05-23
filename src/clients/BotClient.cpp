@@ -25,9 +25,27 @@ BotClient::BotClient() {}
 void BotClient::CapiBotModuleLoader(PluginLoader::Plugin &plugin) {
     set_botclient_f set_botclient = nullptr;
     get_botmodule_f get_botmodule = nullptr;
+    const char *customError = nullptr;
+    pluginloadable_t *plugin_info = nullptr;
 
     plugin.handle = pluginLoader->dlopen(plugin.type, plugin.name);
     if (!plugin.handle) {
+        goto handleError;
+    }
+
+    plugin_info = (pluginloadable_t *)pluginLoader->dlsym(plugin.handle, "plugin_info");
+    if (!plugin_info) {
+        customError = "Not a geblaat-plugin";
+        goto handleError;
+    }
+
+    if (plugin_info->abi.abi != pluginloadable_abi_c) {
+        customError = "Not a geblaat C plugin";
+        goto handleError;
+    }
+
+    if (plugin_info->abi.version != 0) {
+        customError = "Incompatible version";
         goto handleError;
     }
 
@@ -45,6 +63,8 @@ handleError:
     plugin.handle = nullptr;
     plugin.newInstance = nullptr;
     plugin.delInstance = nullptr;
+    if (customError)
+        throw std::runtime_error(customError);
     throw std::runtime_error(pluginLoader->dlerror());
     return;
 }
@@ -180,7 +200,12 @@ void BotClient::onMessage(std::map<std::string, std::string> message) {
 extern "C" {
 [[gnu::cdecl]] geblaat::BotClient *newInstance(void) { return new geblaat::BotClient(); }
 [[gnu::cdecl]] void delInstance(geblaat::BotClient *inst) { delete inst; }
-[[gnu::cdecl]] const char *geblaat_get_info(void) { return "blaat"; };
+
+pluginloadable_t plugin_info = {
+    .name = "Bot Client",
+    .description = "Bot functionality",
+    .abi = {.abi = pluginloadable_abi_cpp, .version = 0},
+};
 }
 
 #pragma GCC diagnostic pop

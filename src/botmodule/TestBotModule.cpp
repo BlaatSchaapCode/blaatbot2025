@@ -118,7 +118,12 @@ void TestBotModule::onTest(std::string command, std::string parameters, std::map
 extern "C" {
 [[gnu::cdecl]] geblaat::TestBotModule *newInstance(void) { return new geblaat::TestBotModule(); }
 [[gnu::cdecl]] void delInstance(geblaat::TestBotModule *inst) { delete inst; }
-[[gnu::cdecl]] const char *geblaat_get_info(void) { return "blaat"; };
+
+pluginloadable_t plugin_info = {
+    .name = "C++ bot module",
+    .description = "Example bot module using C++ API",
+    .abi = {.abi = pluginloadable_abi_cpp, .version = 0},
+};
 }
 
 #pragma GCC diagnostic pop

@@ -1,12 +1,6 @@
-/*
- * PluginLoadable.hpp
- *
- *  Created on: 9 mei 2025
- *      Author: andre
- */
+#pragma once
 
-#ifndef SRC_PLUGINLOADABLE_HPP_
-#define SRC_PLUGINLOADABLE_HPP_
+#include "PluginLoadable.h"
 
 // Third Party libraries
 #include <nlohmann/json.hpp>
@@ -24,5 +18,3 @@ class PluginLoadable {
 };
 
 }; // namespace geblaat
-
-#endif /* SRC_PLUGINLOADABLE_HPP_ */

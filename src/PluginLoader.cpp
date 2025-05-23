@@ -38,9 +38,27 @@ void PluginLoader::loadCppPlugin(Plugin &plugin) {
     newInstance_f newInstance;
     typedef void (*delInstance_f)(PluginLoadable *);
     delInstance_f delInstance;
+    const char *customError = nullptr;
+    pluginloadable_t *plugin_info = nullptr;
 
     plugin.handle = dlopen(plugin.type, plugin.name);
     if (!plugin.handle) {
+        goto handleError;
+    }
+
+    plugin_info = (pluginloadable_t *)dlsym(plugin.handle, "plugin_info");
+    if (!plugin_info) {
+        customError = "Not a geblaat-plugin";
+        goto handleError;
+    }
+
+    if (plugin_info->abi.abi != pluginloadable_abi_cpp) {
+        customError = "Not a geblaat C++ plugin";
+        goto handleError;
+    }
+
+    if (plugin_info->abi.version != 0) {
+        customError = "Incompatible version";
         goto handleError;
     }
 
@@ -62,6 +80,8 @@ handleError:
     plugin.handle = nullptr;
     plugin.newInstance = nullptr;
     plugin.delInstance = nullptr;
+    if (customError)
+        throw std::runtime_error(customError);
     throw std::runtime_error(dlerror());
     return;
 }
@@ -81,7 +101,7 @@ PluginLoadable *PluginLoader::newInstance(std::string name, std::string type) {
         instance->setPluginLoader(this);
         return instance;
     } else {
-    	LOG_ERROR("Error loading %s %s: %s", name.c_str(), type.c_str(), "Plugin not found");
+        LOG_ERROR("Error loading %s %s: %s", name.c_str(), type.c_str(), "Plugin not found");
     }
 
     return nullptr;
@@ -103,7 +123,7 @@ PluginLoader::Plugin PluginLoader::loadPlugin(std::string name, std::string type
             // Look into error handling
             // keep using  Exceptions or use something else
             // Do we wnat to return not found, or look into them more
-        	lastError = ex.what();
+            lastError = ex.what();
             continue;
         }
     }

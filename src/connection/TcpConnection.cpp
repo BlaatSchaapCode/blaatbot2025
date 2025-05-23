@@ -229,6 +229,10 @@ TcpConnection::~TcpConnection() {
 extern "C" {
 geblaat::TcpConnection *newInstance(void) { return new geblaat::TcpConnection(); }
 void delInstance(geblaat::TcpConnection *inst) { delete inst; }
-int test = 4;
+pluginloadable_t plugin_info = {
+    .name = "TCP Connection",
+    .description = "TCP connection support",
+    .abi = {.abi = pluginloadable_abi_cpp, .version = 0},
+};
 }
 #endif

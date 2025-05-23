@@ -261,7 +261,7 @@ class IRC : public Protocol {
         unsigned token;
         std::map<std::string, IRCUser> nicks;
     };
-    std::map<std::string, IRCChannel> mIRCChannels;
+    std::map<std::string, IRCChannel> ircChannels;
 
     IRC();
     ~IRC();

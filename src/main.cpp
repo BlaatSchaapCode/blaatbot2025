@@ -18,7 +18,6 @@
 #include "PluginLoader.hpp"
 static geblaat::PluginLoader mPluginLoader;
 
-
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
 

@@ -208,5 +208,10 @@ TlsConnection::~TlsConnection() {
 extern "C" {
 geblaat::TlsConnection *newInstance(void) { return new geblaat::TlsConnection(); }
 void delInstance(geblaat::TlsConnection *inst) { delete inst; }
+pluginloadable_t plugin_info = {
+    .name = "LibreTLS",
+    .description = "TLS Connection support using LibreTLS",
+    .abi = {.abi = pluginloadable_abi_cpp, .version = 0},
+};
 }
 #endif
