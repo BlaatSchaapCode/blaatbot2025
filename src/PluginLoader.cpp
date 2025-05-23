@@ -22,6 +22,45 @@
 
 namespace geblaat {
 
+PluginLoader::PluginLoader() {
+    registerPluginLoader([this](Plugin &plugin) { loadCppPlugin(plugin); });
+}
+
+void PluginLoader::registerPluginLoader(Loader loader) { loaders.push_back(loader); }
+
+void PluginLoader::loadCppPlugin(Plugin &plugin) {
+    typedef PluginLoadable *(*newInstance_f)();
+    newInstance_f newInstance;
+    typedef void (*delInstance_f)(PluginLoadable *);
+    delInstance_f delInstance;
+
+    plugin.handle = dlopen(plugin.type, plugin.name);
+    if (!plugin.handle) {
+        goto handleError;
+    }
+
+    newInstance = (newInstance_f)dlsym(plugin.handle, "newInstance");
+    if (!newInstance) {
+        goto handleError;
+    }
+
+    delInstance = (delInstance_f)dlsym(plugin.handle, "delInstance");
+    if (!delInstance) {
+        goto handleError;
+    }
+    plugin.newInstance = newInstance;
+    plugin.delInstance = delInstance;
+    return;
+handleError:
+    if (plugin.handle)
+        dlclose(plugin.handle);
+    plugin.handle = nullptr;
+    plugin.newInstance = nullptr;
+    plugin.delInstance = nullptr;
+    throw std::runtime_error(dlerror());
+    return;
+}
+
 PluginLoadable *PluginLoader::newInstance(std::string name, std::string type) {
     if (!this->plugins.contains(type + "_" + name)) {
         try {
@@ -44,6 +83,28 @@ PluginLoadable *PluginLoader::newInstance(std::string name, std::string type) {
     return nullptr;
 }
 
+PluginLoader::Plugin PluginLoader::loadPlugin(std::string name, std::string type) {
+    Plugin result;
+    result.refcount = 0;
+    result.name = name;
+    result.type = type;
+
+    for (Loader &loader : loaders) {
+        try {
+            loader(result);
+            return result;
+        } catch (std::exception &ex) {
+            // Look into error handling
+            // keep using  Exceptions or use something else
+            // Do we wnat to return not found, or look into them more
+            continue;
+        }
+    }
+
+    throw std::runtime_error("Plugin not found");
+}
+
+///-------------
 #if defined(_WIN32) || defined(_WIN64)
 
 void *PluginLoader::dlsym(void *handle, const char *symbol) { return (void *)GetProcAddress((HMODULE)handle, symbol); }
@@ -72,9 +133,12 @@ std::string PluginLoader::dlerror(void) {
 }
 
 #else
-// For now, Operating Systems that are not Microsoft Windows compatible
-// are expected to be POSIX compatible. At the time of writing, no OS
-// is considered not matching this requirement. Do you know any?
+// For now, Operating Systems that do not implement the WIN32 API
+// are expected to implement the POSIX API.
+// Are there more to consider?
+// Note: code will not work as-in on Darwin (macOS) as there doesn't
+// seem an actively maintained Darwin distro and I don't own any Apple
+// hardware.
 
 void *PluginLoader::dlsym(void *handle, const char *symbol) { return ::dlsym(handle, symbol); }
 void *PluginLoader::dlopen(std::string type, std::string name) {
@@ -84,51 +148,6 @@ void *PluginLoader::dlopen(std::string type, std::string name) {
 int PluginLoader::dlclose(void *handle) { return ::dlclose(handle); }
 std::string PluginLoader::dlerror(void) { return ::dlerror(); }
 #endif
-
-PluginLoader::plugin PluginLoader::loadPlugin(std::string name, std::string type) {
-    plugin result;
-    result.refcount = 0;
-    result.name = name;
-    typedef PluginLoadable *(*newInstance_f)();
-    newInstance_f newInstance;
-    typedef void (*delInstance_f)(PluginLoadable *);
-    delInstance_f delInstance;
-
-    result.handle = dlopen(type, name);
-    if (result.handle == nullptr) {
-        throw std::runtime_error(dlerror());
-    }
-
-    int *test_c_api = (int *)dlsym(result.handle, "test_c_api");
-    if (test_c_api) {
-        // I have the C API loader for botmodule into BotClient
-        // Now I need to access it from here. The BotClient
-        // has to register module loaders here for APIs.
-
-    } else {
-        newInstance = (newInstance_f)dlsym(result.handle, "newInstance");
-        if (!newInstance) {
-            throw std::runtime_error(dlerror());
-        }
-
-        delInstance = (delInstance_f)dlsym(result.handle, "delInstance");
-        if (!delInstance) {
-            throw std::runtime_error(dlerror());
-        }
-
-        result.newInstance = newInstance;
-        result.delInstance = delInstance;
-    }
-
-    geblaat_get_info_f geblaat_get_info = (geblaat_get_info_f)dlsym(result.handle, "geblaat_get_info");
-
-    if (geblaat_get_info) {
-        LOG_INFO("geblaat_get_info exists, value %s", geblaat_get_info());
-    } else {
-        LOG_INFO("geblaat_get_info does not exist");
-    }
-
-    return result;
-}
+//--------------
 
 } // namespace geblaat

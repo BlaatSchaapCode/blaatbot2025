@@ -21,16 +21,32 @@ namespace geblaat {
 
 BotClient::BotClient() {}
 
-PluginLoader::plugin BotClient::getCapiBotModule(void *handle) {
-    PluginLoader::plugin result = {};
-    result.handle = handle;
-    set_botclient_f set_botclient = (set_botclient_f)pluginLoader->dlsym(handle, "set_botclient");
-    get_botmodule_f get_botmodule = (get_botmodule_f)pluginLoader->dlsym(handle, "get_botmodule");
-    if (set_botclient && get_botmodule) {
-        result.newInstance = [set_botclient, get_botmodule]() { return new CAPI_BotModule(set_botclient, get_botmodule); };
-        result.delInstance = [](PluginLoadable *me) { delete me; };
+// PluginLoader::plugin BotClient::getCapiBotModule(void *handle) {
+void BotClient::CapiBotModuleLoader(PluginLoader::Plugin &plugin) {
+    set_botclient_f set_botclient = nullptr;
+    get_botmodule_f get_botmodule = nullptr;
+
+    plugin.handle = pluginLoader->dlopen(plugin.type, plugin.name);
+    if (!plugin.handle) {
+        goto handleError;
     }
-    return result;
+
+    set_botclient = (set_botclient_f)pluginLoader->dlsym(plugin.handle, "set_botclient");
+    get_botmodule = (get_botmodule_f)pluginLoader->dlsym(plugin.handle, "get_botmodule");
+    if (set_botclient && get_botmodule) {
+        plugin.newInstance = [set_botclient, get_botmodule]() { return new CAPI_BotModule(set_botclient, get_botmodule); };
+        plugin.delInstance = [](PluginLoadable *me) { delete me; };
+        return;
+    }
+
+handleError:
+    if (plugin.handle)
+        pluginLoader->dlclose(plugin.handle);
+    plugin.handle = nullptr;
+    plugin.newInstance = nullptr;
+    plugin.delInstance = nullptr;
+    throw std::runtime_error(pluginLoader->dlerror());
+    return;
 }
 
 void BotClient::registerBotCommand(BotModule *mod, std::string command, OnCommand cmd) {
@@ -47,6 +63,9 @@ int BotClient::setConfig(nlohmann::json config) {
     try {
         if (!pluginLoader)
             throw new std::runtime_error("PluginLoader missing");
+
+        pluginLoader->registerPluginLoader([this](PluginLoader::Plugin &plugin) { CapiBotModuleLoader(plugin); });
+
         auto networks = config["networks"];
         if (networks.is_array()) {
             for (auto &network : networks) {

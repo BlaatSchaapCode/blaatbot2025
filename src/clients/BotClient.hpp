@@ -34,7 +34,8 @@ class BotClient : public Client {
     void registerBotCommand(BotModule *mod, std::string command, OnCommand cmd);
     void sendMessage(std::map<std::string, std::string> message);
 
-    PluginLoader::plugin getCapiBotModule(void *handle);
+    // PluginLoader::plugin getCapiBotModule(void *handle);
+    void CapiBotModuleLoader(PluginLoader::Plugin &);
 
   protected:
     Protocol *mProtocol = nullptr;
