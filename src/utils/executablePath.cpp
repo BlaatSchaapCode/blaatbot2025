@@ -21,6 +21,11 @@
 #define LINK_TO_SELF "/proc/curproc/file"
 #endif
 
+#if defined __illumos__
+#include <limits.h>
+#define LINK_TO_SELF "/proc/self/path/a.out"
+#endif
+
 #if defined(_WIN32) || defined(_WIN64)
 #include <shlwapi.h>
 #include <windows.h>
@@ -121,5 +126,5 @@ std::string getPluginDir(void) {
 }
 #elif !(defined(_WIN32) || defined(_WIN64))
 // Unknown/Unsupported OS
-std::string getPluginDir(void) { return ""; }
+std::string getPluginDir(void) { return "../lib"; }
 #endif
