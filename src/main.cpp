@@ -93,8 +93,10 @@ int main(int argc, char *argv[]) {
     int result;
     utils::Version version;
 
+#if defined(_WIN32) || defined(_WIN64)
     // Testing
     detectWindowsVersion();
+#endif
 
     geblaat::Client *client = nullptr;
 
