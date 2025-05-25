@@ -41,8 +41,9 @@ class Connection : public PluginLoadable {
     //    int setPort(uint16_t port);
     //
     //    virtual int setSecure(bool secure) { return -ENOTSUP; }
-    //    virtual int setIgnoreInvalidCerficiate(bool ignoreInvalidCerficiate) { return -ENOTSUP; }
-    //    virtual int setIgnoreInsecureProtocol(bool ignoreInsecureProtocol) { return -ENOTSUP; }
+    //    virtual int setIgnoreInvalidCerficiate(bool ignoreInvalidCerficiate) {
+    //    return -ENOTSUP; } virtual int setIgnoreInsecureProtocol(bool
+    //    ignoreInsecureProtocol) { return -ENOTSUP; }
 
     virtual int connect(void) { return -ENOSYS; }
 

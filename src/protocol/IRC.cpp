@@ -1676,10 +1676,11 @@ std::string IRC::decodeTagValue(const std::string &escapedString) {
     CR 	           \r
     LF 	           \n
 
-    If a lone \ exists at the end of an escaped value (with no escape character following it),
-    then there SHOULD be no output character. For example, the escaped value test\ should unescape
-    to test. If a \ exists with no valid escape character (for example, \b), then the invalid
-    backslash SHOULD be dropped. For example, \b should unescape to just b.
+    If a lone \ exists at the end of an escaped value (with no escape character
+    following it), then there SHOULD be no output character. For example, the
+    escaped value test\ should unescape to test. If a \ exists with no valid
+    escape character (for example, \b), then the invalid backslash SHOULD be
+    dropped. For example, \b should unescape to just b.
      */
 
     return escapedString;
@@ -1739,7 +1740,8 @@ std::map<std::string, std::string> IRC::messageToClient(IRCMessage &message) {
 }
 
 // Accept generic type message from Client class and send it as an IRC message
-// TODO: how to handle incorrect message types? Add a return value, throw an exception?
+// TODO: how to handle incorrect message types? Add a return value, throw an
+// exception?
 // TODO: tags not supported yet
 void IRC::sendMessage(std::map<std::string, std::string> message) {
     if (message.contains("target")) {

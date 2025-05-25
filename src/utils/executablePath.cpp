@@ -114,9 +114,10 @@ std::string getPluginDir(void) {
 
     std::string libraryDir = executableDir + "/../lib/";
     // manpage realpath(3) states:
-    // If  resolved_path  is  specified  as  NULL,  then  realpath() uses malloc(3)
-    // to allocate a buffer of up to PATH_MAX bytes to hold the resolved pathname,
-    // and returns a pointer to this buffer.  The caller should deallocate this buffer using free(3).
+    // If  resolved_path  is  specified  as  NULL,  then  realpath() uses
+    // malloc(3) to allocate a buffer of up to PATH_MAX bytes to hold the resolved
+    // pathname, and returns a pointer to this buffer.  The caller should
+    // deallocate this buffer using free(3).
     char *realLibraryPath = realpath((char *)libraryDir.c_str(), nullptr);
     if (realLibraryPath) {
         result = realLibraryPath;

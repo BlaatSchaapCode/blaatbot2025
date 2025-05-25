@@ -12,7 +12,8 @@
 #include "threadName.hpp"
 
 namespace geblaat {
-// void cTlsConnection::connect(std::string ip_address, uint16_t port, bool ignoreBadCertificate, bool ignoreLegacyServer) {
+// void cTlsConnection::connect(std::string ip_address, uint16_t port, bool
+// ignoreBadCertificate, bool ignoreLegacyServer) {
 int TlsConnection::connect(void) {
     int rc;
     rc = tls_init();
@@ -139,7 +140,8 @@ void TlsConnection::receiveThreadFunc(TlsConnection *self) {
             // Todo: pass data to parser
             LOG_DEBUG("Received %d bytes ", bytes_received);
 
-            // Please note: we want a copy of the data so the receive buffer is available for the next message
+            // Please note: we want a copy of the data so the receive buffer is
+            // available for the next message
             std::vector<char> received_data(recv_buffer, recv_buffer + bytes_received);
             self->mProtocol->onData(received_data);
         }

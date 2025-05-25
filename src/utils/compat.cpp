@@ -29,28 +29,33 @@ bool __libc_single_threaded = false;
 // #if defined(_WIN32) || defined(_WIN64)
 // #include <windows.h>
 // #include <logger.hpp>
-//// When we do this in the file where it is used, we override the implementation
-//// When we try to do this in another source file, we get a multiple definition linker error.
-//// This means, we'll need to do something in a linker file making it drop the definition
-//// from the library so we only have our override. Or are there other options?
+//// When we do this in the file where it is used, we override the
+/// implementation / When we try to do this in another source file, we get a
+/// multiple definition linker error. / This means, we'll need to do something
+/// in a linker file making it drop the definition / from the library so we only
+/// have our override. Or are there other options?
 
 //
 // HRESULT SetThreadDescription(HANDLE hThread, PCWSTR lpThreadDescription) {
 //    // This triggers a
-//    // "redeclared without dllimport attribute: previous dllimport ignored [-Wattributes]"
-//    // So, we are actually overriding what was in there. This means the executable should
-//    // be able to run on older windows versions. Then if we open the dll here and try
-//    // to get the function pointer, if it succeeds, we call it, otherwise we do nothing.
+//    // "redeclared without dllimport attribute: previous dllimport ignored
+//    [-Wattributes]"
+//    // So, we are actually overriding what was in there. This means the
+//    executable should
+//    // be able to run on older windows versions. Then if we open the dll here
+//    and try
+//    // to get the function pointer, if it succeeds, we call it, otherwise we
+//    do nothing.
 //    // This is a debug feature after all, nothing essential for it to run.
 //    static bool initialised = false;
-//    typedef HRESULT (*SetThreadDescription_f)(HANDLE hThread, PCWSTR lpThreadDescription);
-//    static SetThreadDescription_f f = nullptr;
-//    static HMODULE handle = nullptr;
-//    if (!initialised) {
+//    typedef HRESULT (*SetThreadDescription_f)(HANDLE hThread, PCWSTR
+//    lpThreadDescription); static SetThreadDescription_f f = nullptr; static
+//    HMODULE handle = nullptr; if (!initialised) {
 //        initialised = true;
 //        handle = LoadLibrary("Kernel32.dll");
 //        if (handle) {
-//            f = (SetThreadDescription_f)GetProcAddress(handle, "SetThreadDescription");
+//            f = (SetThreadDescription_f)GetProcAddress(handle,
+//            "SetThreadDescription");
 //        }
 //        if (f) {
 //            LOG_INFO("SetThreadDescription is supported on this kernel");
