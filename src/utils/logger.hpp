@@ -5,6 +5,11 @@
 #include <cstdio>
 #include <string_view>
 
+#ifndef __FILENAME__
+#define __FILENAME__ "unknown"
+// Are you using the correct Makefiles????
+#endif
+
 /*
  * How to use logging:
  * For logging we use printf like macro's.

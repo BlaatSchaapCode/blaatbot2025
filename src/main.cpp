@@ -87,9 +87,14 @@ int parse_options(int argc, char *argv[]) {
     }
 }
 
+#include "osVersion.hpp"
+
 int main(int argc, char *argv[]) {
     int result;
     utils::Version version;
+
+    // Testing
+    detectWindowsVersion();
 
     geblaat::Client *client = nullptr;
 
