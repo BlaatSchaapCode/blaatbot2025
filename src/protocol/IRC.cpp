@@ -11,7 +11,6 @@
 #include <algorithm>
 #include <chrono>
 #include <cstring>
-#include <format>
 #include <iomanip>
 #include <iostream>
 #include <random>
