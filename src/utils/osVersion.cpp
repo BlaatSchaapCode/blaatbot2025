@@ -174,6 +174,14 @@ void detectWindowsVersion(void) {
             char name[128];
         } registeryVersion;
 
+        /*
+
+        // Note RegGetValueA
+        // Requirements
+        // Minimum supported client 	Windows Vista, Windows XP Professional x64 Edition
+        // Minimum supported server 	Windows Server 2008, Windows Server 2003 with SP1
+        // Thus to support XP, we need the RegOpenKeyExA RegQueryValueExA RegCloseKey
+
         // Windows XP:
         // SZ CurrentVersion
         // SZ CurrentBuildNumber
@@ -278,6 +286,7 @@ void detectWindowsVersion(void) {
         printf("Product Name: %s\n", registeryVersion.name);
         printf("Version Name: %s\n", registeryVersion.sp);
         printf("Version     : %d.%d.%d\n", registeryVersion.major, registeryVersion.minor, registeryVersion.patch);
+	*/
 
 
     } break;
