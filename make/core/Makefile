@@ -21,6 +21,7 @@ CXX_SRC += $(SRC_DIR)/utils/threadName.cpp
 CXX_SRC += $(SRC_DIR)/utils/classname.cpp
 CXX_SRC += $(SRC_DIR)/utils/time.cpp
 CXX_SRC += $(SRC_DIR)/utils/timer.cpp
+CXX_SRC += $(SRC_DIR)/utils/osVersion.cpp
 CXX_SRC += $(SRC_DIR)/main.cpp
 
 include $(PCDEV_ROOT)/build/make/all.mk
@@ -29,4 +30,8 @@ LDFLAGS += -lgeblaat_pluginloader -L$(SO_DIR)
 
 ifeq ($(TARGET_OS),freebsd)
 	LDFLAGS += -lpthread
+endif
+
+ifeq ($(TARGET_OS),mingw)
+	LDFLAGS += -ldbghelp
 endif

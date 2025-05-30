@@ -3,13 +3,13 @@
 #include "logger.hpp"
 
 #include "time.hpp"
-#include <chrono>
 #include <cstring>
-#include <format>
+
 
 namespace utils::logger {
-// template <size_t N> static consteval size_t compile_time_strlen(char const (&)[N]) { return N - 1; }
-// const constexpr size_t FILE_SKIP = compile_time_strlen(__FILE__) - compile_time_strlen("utils/logger.cpp");
+// template <size_t N> static consteval size_t compile_time_strlen(char const
+// (&)[N]) { return N - 1; } const constexpr size_t FILE_SKIP =
+// compile_time_strlen(__FILE__) - compile_time_strlen("utils/logger.cpp");
 //// Note: FILE_SKIP is machine dependent
 
 const char *get_label(LogLevel level) {

@@ -37,6 +37,10 @@ ifeq ($(TARGET_OS),mingw)
 	LDFLAGS += -lws2_32
 endif
 
+ifdef MSYSTEM
+	LDFLAGS += -lws2_32
+endif
+
 ifeq ($(TARGET_OS),sunos)
 	LDFLAGS += -lsocket -lnsl
 endif

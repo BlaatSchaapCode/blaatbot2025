@@ -12,15 +12,17 @@
 #define WSTRING_SIZE (16)
 
 // When we do this in the file where it is used, we override the implementation
-// When we try to do this in another source file, we get a multiple definition linker error
+// When we try to do this in another source file, we get a multiple definition
+// linker error
 
-HRESULT SetThreadDescription(HANDLE hThread, PCWSTR lpThreadDescription) {
+HRESULT setThreadDescription(HANDLE hThread, PCWSTR lpThreadDescription) {
     // This triggers a
-    // "redeclared without dllimport attribute: previous dllimport ignored [-Wattributes]"
-    // So, we are actually overriding what was in there. This means the executable should
-    // be able to run on older windows versions. Then if we open the dll here and try
-    // to get the function pointer, if it succeeds, we call it, otherwise we do nothing.
-    // This is a debug feature after all, nothing essential for it to run.
+    // "redeclared without dllimport attribute: previous dllimport ignored
+    // [-Wattributes]" So, we are actually overriding what was in there. This
+    // means the executable should be able to run on older windows versions. Then
+    // if we open the dll here and try to get the function pointer, if it
+    // succeeds, we call it, otherwise we do nothing. This is a debug feature
+    // after all, nothing essential for it to run.
     static bool initialised = false;
     typedef HRESULT (*SetThreadDescription_f)(HANDLE hThread, PCWSTR lpThreadDescription);
     static SetThreadDescription_f f = nullptr;
@@ -47,7 +49,7 @@ void setThreadName(std::string threadName) {
     wchar_t buff[WSTRING_SIZE];
     auto result = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, threadName.c_str(), -1, buff, WSTRING_SIZE);
     if (result > 0)
-        SetThreadDescription(GetCurrentThread(), buff);
+        setThreadDescription(GetCurrentThread(), buff);
 }
 #elif (__GNUC__ && __linux__) || __FreeBSD__
 // setThreadName for the GNU C Library
