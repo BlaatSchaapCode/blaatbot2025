@@ -6,7 +6,34 @@
 
 #include <dbghelp.h>
 
+#include <cstdint>
 #include <string>
+
+int getRegistryDword(HKEY hKey, const char *subkey, const char *value_name, int32_t *value) {
+    // RegOpenKeyExA RegQueryValueExA RegCloseKey
+    int status;
+    HKEY hkResult;
+    DWORD pcbData = sizeof(int32_t);
+    status = RegOpenKeyExA(hKey, subkey, 0, KEY_READ, &hkResult);
+    if (status)
+        return status;
+    status = RegQueryValueExA(hkResult, value_name, nullptr, nullptr, (LPBYTE)value, &pcbData);
+    RegCloseKey(hkResult);
+    return status;
+}
+
+int getRegistryString(HKEY hKey, const char *subkey, const char *value_name, char *value, size_t len) {
+    int status;
+    HKEY hkResult;
+    DWORD pcbData = len - 1;
+    status = RegOpenKeyExA(hKey, subkey, 0, KEY_READ, &hkResult);
+    if (status)
+        return status;
+    status = RegQueryValueExA(hkResult, value_name, nullptr, nullptr, (LPBYTE)value, &pcbData);
+    value[len - 1] = 0; // ensure null termination
+    RegCloseKey(hkResult);
+    return status;
+}
 
 void detectWindowsVersion(void) {
     // WIN32 API programming is screaming at you with all those ALL-CAPS datatypes.
@@ -174,8 +201,6 @@ void detectWindowsVersion(void) {
             char name[128];
         } registeryVersion;
 
-        /*
-
         // Note RegGetValueA
         // Requirements
         // Minimum supported client 	Windows Vista, Windows XP Professional x64 Edition
@@ -197,97 +222,135 @@ void detectWindowsVersion(void) {
 
         // https://learn.microsoft.com/en-us/windows/win32/debug/system-error-codes--0-499-
         // ERROR_FILE_NOT_FOUND
-        DWORD CurrentMajorVersionNumber = 0;
-        pcbData = sizeof(CurrentMajorVersionNumber);
-        status = RegGetValueA(HKEY_LOCAL_MACHINE,                                // hkey
-                              "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", // lpSubKey
-                              "CurrentMajorVersionNumber",                       // lpValue
-                              RRF_RT_DWORD | RRF_ZEROONFAILURE,                  // dwFlags
-                              nullptr,                                           // pdwType
-                              &CurrentMajorVersionNumber,                        // pvData
-                              &pcbData                                           // pcbData
-        );
+        // DWORD CurrentMajorVersionNumber = 0;
+        // pcbData = sizeof(CurrentMajorVersionNumber);
+        // status = RegGetValueA(HKEY_LOCAL_MACHINE,                                // hkey
+        //                       "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", // lpSubKey
+        //                       "CurrentMajorVersionNumber",                       // lpValue
+        //                       RRF_RT_DWORD | RRF_ZEROONFAILURE,                  // dwFlags
+        //                       nullptr,                                           // pdwType
+        //                       &CurrentMajorVersionNumber,                        // pvData
+        //                       &pcbData                                           // pcbData
+
+        int32_t CurrentMajorVersionNumber = 0;
+        status = getRegistryDword(HKEY_LOCAL_MACHINE,                                // hkey
+                                  "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", // lpSubKey
+                                  "CurrentMajorVersionNumber",                       // lpValue
+                                  &CurrentMajorVersionNumber);
+
         printf("Reg CurrentMajorVersionNumber status %x Value %d\n", status, CurrentMajorVersionNumber);
         if (!status) {
             // Windows 10 or later
             registeryVersion.major = CurrentMajorVersionNumber;
 
-            DWORD CurrentMinorVersionNumber = 0;
-            pcbData = sizeof(CurrentMinorVersionNumber);
-            status = RegGetValueA(HKEY_LOCAL_MACHINE,                                // hkey
-                                  "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", // lpSubKey
-                                  "CurrentMinorVersionNumber",                       // lpValue
-                                  RRF_RT_DWORD | RRF_ZEROONFAILURE,                  // dwFlags
-                                  nullptr,                                           // pdwType
-                                  &CurrentMinorVersionNumber,                        // pvData
-                                  &pcbData                                           // pcbData
-            );
+            // DWORD CurrentMinorVersionNumber = 0;
+            // pcbData = sizeof(CurrentMinorVersionNumber);
+            // status = RegGetValueA(HKEY_LOCAL_MACHINE,                                // hkey
+            //                       "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", // lpSubKey
+            //                       "CurrentMinorVersionNumber",                       // lpValue
+            //                       RRF_RT_DWORD | RRF_ZEROONFAILURE,                  // dwFlags
+            //                       nullptr,                                           // pdwType
+            //                       &CurrentMinorVersionNumber,                        // pvData
+            //                       &pcbData                                           // pcbData
+            // );
+
+            int32_t CurrentMinorVersionNumber = 0;
+            status = getRegistryDword(HKEY_LOCAL_MACHINE,                                // hkey
+                                      "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", // lpSubKey
+                                      "CurrentMinorVersionNumber",                       // lpValue
+                                      &CurrentMinorVersionNumber);
             registeryVersion.minor = CurrentMinorVersionNumber;
 
-            pcbData = sizeof(registeryVersion.sp);
-            status = RegGetValueA(HKEY_LOCAL_MACHINE,                                // hkey
-                                  "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", // lpSubKey
-                                  "DisplayVersion",                                  // lpValue
-                                  RRF_RT_REG_SZ | RRF_ZEROONFAILURE,                 // dwFlags
-                                  nullptr,                                           // pdwType
-                                  &registeryVersion.sp,                              // pvData
-                                  &pcbData                                           // pcbData
-            );
+            // pcbData = sizeof(registeryVersion.sp);
+            // status = RegGetValueA(HKEY_LOCAL_MACHINE,                                // hkey
+            //                       "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", // lpSubKey
+            //                       "DisplayVersion",                                  // lpValue
+            //                       RRF_RT_REG_SZ | RRF_ZEROONFAILURE,                 // dwFlags
+            //                       nullptr,                                           // pdwType
+            //                       registeryVersion.sp,                              // pvData
+            //                       &pcbData                                           // pcbData
+            //);
+
+            // int getRegistryString(HKEY hKey, const char *subkey, const char *value_name, char *value, size_t len)
+            status = getRegistryString(HKEY_LOCAL_MACHINE,                                // hkey
+                                       "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", // lpSubKey
+                                       "DisplayVersion",                                  // lpValue)
+                                       registeryVersion.sp,                               // pvData
+                                       sizeof(registeryVersion.sp));
 
         } else {
             // Prior to Windows 10
             char CurrentVersion[32] = {};
-            pcbData = sizeof(CurrentVersion);
-            status = RegGetValueA(HKEY_LOCAL_MACHINE,                                // hkey
-                                  "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", // lpSubKey
-                                  "CurrentVersion",                                  // lpValue
-                                  RRF_RT_REG_SZ | RRF_ZEROONFAILURE,                 // dwFlags
-                                  nullptr,                                           // pdwType
-                                  &CurrentVersion,                                   // pvData
-                                  &pcbData                                           // pcbData
-            );
+            // pcbData = sizeof(CurrentVersion);
+            // status = RegGetValueA(HKEY_LOCAL_MACHINE,                                // hkey
+            //                       "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", // lpSubKey
+            //                       "CurrentVersion",                                  // lpValue
+            //                       RRF_RT_REG_SZ | RRF_ZEROONFAILURE,                 // dwFlags
+            //                       nullptr,                                           // pdwType
+            //                       &CurrentVersion,                                   // pvData
+            //                       &pcbData                                           // pcbData
+            //);
+            status = getRegistryString(HKEY_LOCAL_MACHINE,                                // hkey
+                                       "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", // lpSubKey
+                                       "CurrentVersion",                                  // lpValue)
+                                       CurrentVersion,                                    // pvData
+                                       sizeof(CurrentVersion));
+
             printf("Reg CurrentVersion status %x Value %s\n", status, CurrentVersion);
             sscanf(CurrentVersion, "%d.%d", &registeryVersion.major, &registeryVersion.minor);
 
-            pcbData = sizeof(registeryVersion.sp);
-            status = RegGetValueA(HKEY_LOCAL_MACHINE,                                // hkey
-                                  "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", // lpSubKey
-                                  "CSDVersion",                                      // lpValue
-                                  RRF_RT_REG_SZ | RRF_ZEROONFAILURE,                 // dwFlags
-                                  nullptr,                                           // pdwType
-                                  &registeryVersion.sp,                              // pvData
-                                  &pcbData                                           // pcbData
-            );
+            // pcbData = sizeof(registeryVersion.sp);
+            // status = RegGetValueA(HKEY_LOCAL_MACHINE,                                // hkey
+            //                       "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", // lpSubKey
+            //                       "CSDVersion",                                      // lpValue
+            //                       RRF_RT_REG_SZ | RRF_ZEROONFAILURE,                 // dwFlags
+            //                       nullptr,                                           // pdwType
+            //                       registeryVersion.sp,                              // pvData
+            //                       &pcbData                                           // pcbData
+            //);
+            status = getRegistryString(HKEY_LOCAL_MACHINE,                                // hkey
+                                       "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", // lpSubKey
+                                       "CSDVersion",                                      // lpValue)
+                                       registeryVersion.sp,                               // pvData
+                                       sizeof(registeryVersion.sp));
         }
 
         char CurrentBuildNumber[32] = {};
-        pcbData = sizeof(CurrentBuildNumber);
-        status = RegGetValueA(HKEY_LOCAL_MACHINE,                                // hkey
-                              "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", // lpSubKey
-                              "CurrentBuildNumber",                              // lpValue
-                              RRF_RT_REG_SZ | RRF_ZEROONFAILURE,                 // dwFlags
-                              nullptr,                                           // pdwType
-                              &CurrentBuildNumber,                               // pvData
-                              &pcbData                                           // pcbData
-        );
+        // pcbData = sizeof(CurrentBuildNumber);
+        // status = RegGetValueA(HKEY_LOCAL_MACHINE,                                // hkey
+        //                       "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", // lpSubKey
+        //                       "CurrentBuildNumber",                              // lpValue
+        //                       RRF_RT_REG_SZ | RRF_ZEROONFAILURE,                 // dwFlags
+        //                       nullptr,                                           // pdwType
+        //                       &CurrentBuildNumber,                               // pvData
+        //                       &pcbData                                           // pcbData
+        //);
+        status = getRegistryString(HKEY_LOCAL_MACHINE,                                // hkey
+                                   "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", // lpSubKey
+                                   "CurrentBuildNumber",                              // lpValue)
+                                   CurrentBuildNumber,                                // pvData
+                                   sizeof(CurrentBuildNumber));
         sscanf(CurrentBuildNumber, "%d", &registeryVersion.patch);
 
         pcbData = sizeof(registeryVersion.name);
-        status = RegGetValueA(HKEY_LOCAL_MACHINE,                                // hkey
-                              "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", // lpSubKey
-                              "ProductName",                                     // lpValue
-                              RRF_RT_REG_SZ | RRF_ZEROONFAILURE,                 // dwFlags
-                              nullptr,                                           // pdwType
-                              &registeryVersion.name,                            // pvData
-                              &pcbData                                           // pcbData
-        );
+        // status = RegGetValueA(HKEY_LOCAL_MACHINE,                                // hkey
+        //                       "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", // lpSubKey
+        //                       "ProductName",                                     // lpValue
+        //                       RRF_RT_REG_SZ | RRF_ZEROONFAILURE,                 // dwFlags
+        //                       nullptr,                                           // pdwType
+        //                       &registeryVersion.name,                            // pvData
+        //                       &pcbData                                           // pcbData
+        //);
+        status = getRegistryString(HKEY_LOCAL_MACHINE,                                // hkey
+                                   "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", // lpSubKey
+                                   "ProductName",                                     // lpValue)
+                                   registeryVersion.name,                             // pvData
+                                   sizeof(registeryVersion.name));
 
         puts("Registry information:");
         printf("Product Name: %s\n", registeryVersion.name);
         printf("Version Name: %s\n", registeryVersion.sp);
         printf("Version     : %d.%d.%d\n", registeryVersion.major, registeryVersion.minor, registeryVersion.patch);
-	*/
-
 
     } break;
 
