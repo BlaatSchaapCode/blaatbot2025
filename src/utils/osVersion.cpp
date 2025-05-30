@@ -112,6 +112,33 @@ void detectWindowsVersion(void) {
 
         RTL_OSVERSIONINFOW rtl_osversioninfow = {0};
         rtl_osversioninfow.dwOSVersionInfoSize = sizeof(rtl_osversioninfow);
+		
+		// We need to disable redirection if we want to capture the true version.
+		// see https://learn.microsoft.com/en-us/windows/win32/api/wow64apiset/nf-wow64apiset-wow64disablewow64fsredirection
+		// Wow64DisableWow64FsRedirection
+		// Wow64RevertWow64FsRedirection
+		// Note: we need to get the function from the dll to be compatible with 32 bit xp.
+		// Note: we need to verify this also affects when running x86_64 binaries on an aarch64 kernel
+		//       as this is what we want to detect.
+		// Note: Also test if IsWow64Process2 could provide the answer.
+		
+		
+		// Min version Windows 10, version 1709
+		auto kernel32_library_handle = LoadLibrary("kernel32.dll");
+		if (kernel32_library_handle) {
+			typedef BOOL (*IsWow64Process2_f)(HANDLE hProcess, USHORT *pProcessMachine, USHORT *pNativeMachine);		
+			IsWow64Process2_f isWow64Process2 = (IsWow64Process2_f)GetProcAddress(kernel32_library_handle, "IsWow64Process2");
+			if (isWow64Process2)  {
+				USHORT ProcessMachine;
+				USHORT NativeMachine;
+				auto success = isWow64Process2(GetCurrentProcess(), &ProcessMachine, &NativeMachine);
+				printf("IsWow64Process2 returned %d %X %X\n", success, ProcessMachine, NativeMachine);
+			} else {
+				puts("IsWow64Process2 not availble on this kernel");
+			}
+		}
+				
+				
 
         auto kernel_library_handle = LoadLibrary("ntoskrnl.exe");
         if (kernel_library_handle) {
