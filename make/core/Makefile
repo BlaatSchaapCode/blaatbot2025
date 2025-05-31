@@ -29,6 +29,3 @@ ifeq ($(TARGET_OS),freebsd)
 	LDFLAGS += -lpthread
 endif
 
-ifeq ($(TARGET_OS),mingw)
-	LDFLAGS += -ldbghelp
-endif
