@@ -17,13 +17,17 @@
 #include <sstream>
 #include <string>
 
+
 // Note: Look at libunistring in stead of libicu
 //       We don't really need it at the time
 // IRC servers supporting UTF8MAPPING are rare
 // Potentially make it optionally (another Module)
+#ifdef ENABLE_ICU
 #include <unicode/normalizer2.h>
 #include <unicode/translit.h>
 #include <unicode/unistr.h>
+#endif
+
 
 #include "logger.hpp"
 #include "time.hpp"
@@ -279,6 +283,7 @@ std::string IRC::toLower(std::string s) {
         }
     }
 
+#ifdef ENABLE_ICU
     if (utf8Mapping) {
         // UTF8 case mapping
 
@@ -341,6 +346,7 @@ std::string IRC::toLower(std::string s) {
         // Processing done: Convert it back to a std::string
         u.toUTF8String(s);
     }
+	#endif
 
     return s;
 }
@@ -1259,6 +1265,7 @@ void IRC::onEndOfNames(IRCMessage &message) {
 				std::uniform_int_distribution<unsigned> uniform_dist(1, 99);
 				token = uniform_dist(e1);
         	} catch (...) {
+			LOG_INFO("Fallback for random_device");
         		// random_device fails on Windows 2000
         		token = rand() % 100;
         	}
