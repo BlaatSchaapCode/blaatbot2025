@@ -1252,11 +1252,16 @@ void IRC::onNamReply(IRCMessage &message) {
 void IRC::onEndOfNames(IRCMessage &message) {
     if (message.parameters.size() >= 3) {
         if (serverInfo.features.count("WHOX")) {
-            // unsigned token = rand() % 100;
-            std::random_device r;
-            std::default_random_engine e1(r());
-            std::uniform_int_distribution<unsigned> uniform_dist(1, 99);
-            unsigned token = uniform_dist(e1);
+        	unsigned token;
+        	try {
+				std::random_device r;
+				std::default_random_engine e1(r());
+				std::uniform_int_distribution<unsigned> uniform_dist(1, 99);
+				token = uniform_dist(e1);
+        	} catch (...) {
+        		// random_device fails on Windows 2000
+        		token = rand() % 100;
+        	}
             ircChannels[toLower(message.parameters[1])].token = token;
             send("WHO " + toLower(message.parameters[1]) + " %t%c%u%i%h%s%n%f%d%l%a%o%r," + std::to_string(token));
         } else {

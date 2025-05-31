@@ -84,6 +84,11 @@ int TcpConnection::connect(void) {
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags |= AI_CANONNAME;
 
+    // getaddrinfo was added in Windows XP (NT 5.1)
+    // How to resolve a host name on Windows 2000?
+    // WspiapiGetAddrInfo
+    // https://learn.microsoft.com/en-us/windows/win32/api/ws2tcpip/nf-ws2tcpip-getaddrinfo
+    // seems including Wspiapi.h should automatically fix this for us
     errcode = getaddrinfo(mHostName.c_str(), NULL, &hints, &result);
     if (errcode != 0) {
         LOG_ERROR("getaddrinfo");
@@ -101,8 +106,12 @@ int TcpConnection::connect(void) {
             in = *(struct sockaddr_in *)res->ai_addr;
             in.sin_port = htons(mPort);
 
-            char temp[INET_ADDRSTRLEN];
-            LOG_INFO("%s resolved to %s", mHostName.c_str(), inet_ntop(AF_INET, &in.sin_addr, temp, INET_ADDRSTRLEN));
+
+            // Note: inet_ntop was added in Vista (NT 6.0)
+            // On earlier Windows it seems we had to use WSAAddressToString
+            // As it's only debug output, disable it for for now to test
+            // char temp[INET_ADDRSTRLEN];
+            // LOG_INFO("%s resolved to %s", mHostName.c_str(), inet_ntop(AF_INET, &in.sin_addr, temp, INET_ADDRSTRLEN));
 
             m_socket = ::socket(AF_INET, SOCK_STREAM, 0);
             if (m_socket < 0) {
@@ -121,8 +130,10 @@ int TcpConnection::connect(void) {
         case AF_INET6: {
             in6 = *(struct sockaddr_in6 *)res->ai_addr;
             in6.sin6_port = htons(mPort);
-            char temp[INET6_ADDRSTRLEN];
-            LOG_INFO("%s resolved to %s", mHostName.c_str(), inet_ntop(AF_INET6, &in6.sin6_addr, temp, INET6_ADDRSTRLEN));
+
+            // Disable to test on old windows
+            //char temp[INET6_ADDRSTRLEN];
+            //LOG_INFO("%s resolved to %s", mHostName.c_str(), inet_ntop(AF_INET6, &in6.sin6_addr, temp, INET6_ADDRSTRLEN));
 
             m_socket = ::socket(AF_INET6, SOCK_STREAM, 0);
             if (m_socket < 0) {
