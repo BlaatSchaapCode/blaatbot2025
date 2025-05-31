@@ -5,6 +5,8 @@ SRC_DIR      := ../../src
 
 LIBS +=  nlohmann_json
 
+LDFLAGS += -lunicows
+
 #CXXFLAGS += -DENABLE_LOG_DEBUG
 
 CXX_INCLUDES += $(SRC_DIR)
@@ -33,5 +35,5 @@ ifeq ($(TARGET_OS),freebsd)
 endif
 
 ifeq ($(TARGET_OS),mingw)
-	LDFLAGS += -ldbghelp
+	#LDFLAGS += -ldbghelp
 endif

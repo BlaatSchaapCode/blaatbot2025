@@ -101,8 +101,8 @@ int TcpConnection::connect(void) {
             in = *(struct sockaddr_in *)res->ai_addr;
             in.sin_port = htons(mPort);
 
-            char temp[INET_ADDRSTRLEN];
-            LOG_INFO("%s resolved to %s", mHostName.c_str(), inet_ntop(AF_INET, &in.sin_addr, temp, INET_ADDRSTRLEN));
+            //char temp[INET_ADDRSTRLEN];
+            //LOG_INFO("%s resolved to %s", mHostName.c_str(), inet_ntop(AF_INET, &in.sin_addr, temp, INET_ADDRSTRLEN));
 
             m_socket = ::socket(AF_INET, SOCK_STREAM, 0);
             if (m_socket < 0) {
@@ -121,8 +121,8 @@ int TcpConnection::connect(void) {
         case AF_INET6: {
             in6 = *(struct sockaddr_in6 *)res->ai_addr;
             in6.sin6_port = htons(mPort);
-            char temp[INET6_ADDRSTRLEN];
-            LOG_INFO("%s resolved to %s", mHostName.c_str(), inet_ntop(AF_INET6, &in6.sin6_addr, temp, INET6_ADDRSTRLEN));
+            //char temp[INET6_ADDRSTRLEN];
+            //LOG_INFO("%s resolved to %s", mHostName.c_str(), inet_ntop(AF_INET6, &in6.sin6_addr, temp, INET6_ADDRSTRLEN));
 
             m_socket = ::socket(AF_INET6, SOCK_STREAM, 0);
             if (m_socket < 0) {

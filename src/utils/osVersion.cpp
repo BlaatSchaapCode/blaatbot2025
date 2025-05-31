@@ -168,12 +168,13 @@ void detectWindowsVersion(void) {
         // We can query GetSystemInfo and GetNativeSystemInfo.
         // This will correctly identify an i686 binary running on an x86_64 kernel
 
+		// GetNativeSystemInfo is not supported on NT4.
         SYSTEM_INFO system_info = {0};
         GetSystemInfo(&system_info);
-        SYSTEM_INFO native_system_info = {0};
-        GetNativeSystemInfo(&native_system_info);
+        //SYSTEM_INFO native_system_info = {0};
+        //GetNativeSystemInfo(&native_system_info);
         printf("GetSystemInfo report ProcessorArchitecture as       %x\n", system_info.wProcessorArchitecture);
-        printf("GetNativeSystemInfo report ProcessorArchitecture as %x\n", native_system_info.wProcessorArchitecture);
+        //printf("GetNativeSystemInfo report ProcessorArchitecture as %x\n", native_system_info.wProcessorArchitecture);
 
         // However, if we are an x86_64 binary running on an aarch64 kernel (supported starting Windows 11)
         // This will not return the expected values. Instead we'll need to call IsWow64Process2()
