@@ -10,10 +10,21 @@ TestBotModule::~TestBotModule() {}
 
 std::string TestBotModule::getRandomQuote(void) {
     if (mQuotes.size()) {
-        std::random_device r;
-        std::default_random_engine e1(r());
-        std::uniform_int_distribution<int> uniform_dist(0, mQuotes.size());
-        int qid = uniform_dist(e1);
+        unsigned qid;
+        try {
+            std::random_device r;
+            std::default_random_engine e1(r());
+            std::uniform_int_distribution<int> uniform_dist(0, mQuotes.size());
+            qid = uniform_dist(e1);
+        } catch (...) {
+            // random_device fails on Windows 2000
+            static bool seeded = false;
+            if (!seeded) {
+                srand(time(nullptr));
+                seeded = true;
+            }
+            qid = (rand() % mQuotes.size());
+        }
         LOG_INFO("Quote %d is %s", qid, mQuotes[qid].c_str());
         return mQuotes[qid];
     }
