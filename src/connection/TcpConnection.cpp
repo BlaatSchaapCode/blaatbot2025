@@ -54,7 +54,7 @@ void TcpConnection::onData(std::vector<char> received_data) { mProtocol->onData(
 void TcpConnection::onConnected() {
     m_receiveThreadActive = true;
     m_receiveThread = new std::thread(TcpConnection::receiveThreadFunc, this);
-	mProtocol->onConnected();
+    mProtocol->onConnected();
 }
 void TcpConnection::onDisconnected() { mProtocol->onDisconnected(); }
 

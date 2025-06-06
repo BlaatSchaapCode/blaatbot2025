@@ -36,14 +36,15 @@
 #include <tls.h>
 
 #include "../utils/logger.hpp"
-#include "TlsConnection.hpp"
+
+#include "Connection.hpp"
 
 namespace geblaat {
 
 class LibreTlsConnection : public Connection {
 
   public:
-     using Connection::Connection;
+    using Connection::Connection;
     LibreTlsConnection();
     ~LibreTlsConnection();
 

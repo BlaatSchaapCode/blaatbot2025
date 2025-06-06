@@ -60,7 +60,7 @@ typedef int socket_t;
 
 namespace geblaat {
 
-class TcpConnection : virtual  public Connection {
+class TcpConnection : public Connection {
   public:
     ~TcpConnection();
     TcpConnection();

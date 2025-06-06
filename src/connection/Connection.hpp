@@ -48,7 +48,7 @@ class C2SProtocol;
 
 namespace geblaat {
 
-class Connection : virtual public PluginLoadable {
+class Connection : public PluginLoadable {
 
   public:
     virtual ~Connection();
