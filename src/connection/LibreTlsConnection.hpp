@@ -51,7 +51,8 @@ class LibreTlsConnection : public Connection {
 
     void send(std::vector<char> data) override;
 
-    int setConfig(nlohmann::json) override;
+    int setConfig(const nlohmann::json&) override;
+    nlohmann::json getConfig(void) override;
 
   protected:
     bool ignoreInvalidCerficiate = false;
@@ -59,7 +60,7 @@ class LibreTlsConnection : public Connection {
 
   private:
     bool m_connected = false;
-
+    nlohmann::json config;
     std::atomic<bool> m_receiveThreadActive = false;
     std::thread *m_receiveThread = nullptr;
 

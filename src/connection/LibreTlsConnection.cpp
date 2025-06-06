@@ -177,8 +177,13 @@ void LibreTlsConnection::send(std::vector<char> data) {
     }
 }
 
-int LibreTlsConnection::setConfig(nlohmann::json config) {
+ nlohmann::json LibreTlsConnection::getConfig(void) {
+	 return config;
+}
+
+int LibreTlsConnection::setConfig(const nlohmann::json &cfg) {
     try {
+    	config = cfg;
         if (config.contains("hostname") && config["hostname"].is_string()) {
             mHostName = config["hostname"];
         }
