@@ -4,7 +4,8 @@ PCDEV_ROOT   := $(PROJ_DIR)/pcdev
 OUT_DIR      := $(PROJ_DIR)/out
 SRC_DIR      := $(PROJ_DIR)/src
 
-LIBS +=  nlohmann_json  icu-uc
+#LIBS +=  nlohmann_json  icu-uc
+LIBS +=  nlohmann_json  
 
 #CXXFLAGS += -DENABLE_LOG_DEBUG
 
