@@ -32,12 +32,18 @@
 // C API Wrapper for BotModule
 namespace geblaat {
 
-int CAPI_BotModule::setConfig(nlohmann::json config) {
+int CAPI_BotModule::setConfig(const nlohmann::json &config) {
     if (!botModule)
         return -1;
     if (!botModule->set_config)
         return -1;
     return botModule->set_config(config.dump(4).c_str());
+}
+
+nlohmann::json CAPI_BotModule::getConfig(void) {
+    nlohmann::json result;
+    // TODO: C api for retrieving config from C botmodule
+    return result;
 }
 
 CAPI_BotModule::CAPI_BotModule(set_botclient_f bc, get_botmodule_f bm) {

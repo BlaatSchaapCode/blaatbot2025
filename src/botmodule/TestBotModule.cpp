@@ -64,7 +64,8 @@ void TestBotModule::loadQuotes(void) {
     LOG_INFO("There are %d quotes in the file", mQuotes.size());
 }
 
-int TestBotModule::setConfig(nlohmann::json config) {
+int TestBotModule::setConfig(const nlohmann::json &cfg) {
+    config = cfg;
     if (mBotClient) {
         mBotClient->registerBotCommand(
             this, "test", [this](std::string command, std::string parameters, std::map<std::string, std::string> message) {

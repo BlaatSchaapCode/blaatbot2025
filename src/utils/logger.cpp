@@ -31,7 +31,6 @@
 #include "time.hpp"
 #include <cstring>
 
-
 namespace utils::logger {
 // template <size_t N> static consteval size_t compile_time_strlen(char const
 // (&)[N]) { return N - 1; } const constexpr size_t FILE_SKIP =

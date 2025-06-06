@@ -100,8 +100,12 @@ void BotClient::registerBotCommand(BotModule *mod, std::string command, OnComman
     }
 }
 
-int BotClient::setConfig(nlohmann::json config) {
+nlohmann::json BotClient::getConfig(void) { return config; }
+
+int BotClient::setConfig(const nlohmann::json &cfg) {
     try {
+        config = cfg;
+
         if (!pluginLoader)
             throw new std::runtime_error("PluginLoader missing");
 

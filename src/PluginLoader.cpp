@@ -185,11 +185,10 @@ std::string PluginLoader::dlerror(void) {
 // For now, Operating Systems that do not implement the WIN32 API
 // are expected to implement the POSIX API.
 
-
-#if defined __ELF__ // Platform uses the ELF binary format
-	constexpr std::string library_suffix = ".so";
-#elif defined  __MACH__ // Platform uses the Mach-O binary format
-	constexpr std::string library_suffix = ".dlsym";
+#if defined __ELF__    // Platform uses the ELF binary format
+constexpr std::string library_suffix = ".so";
+#elif defined __MACH__ // Platform uses the Mach-O binary format
+constexpr std::string library_suffix = ".dlsym";
 #else
 #error "Cannot determine the platform binary format"
 #endif

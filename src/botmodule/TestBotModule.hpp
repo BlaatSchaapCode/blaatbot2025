@@ -39,17 +39,21 @@ namespace geblaat {
 class TestBotModule : public BotModule {
   public:
     virtual ~TestBotModule();
-    int setConfig(nlohmann::json) override;
+    int setConfig(const nlohmann::json &) override;
+    nlohmann::json getConfig(void) override { return config; }
 
   private:
     void onTest(std::string command, std::string parameters, std::map<std::string, std::string> message);
     void onRandomQuote(std::string command, std::string parameters, std::map<std::string, std::string> message);
     void onLoadQuotes(std::string command, std::string parameters, std::map<std::string, std::string> me);
 
-    std::string quoteFileName;
-    std::vector<std::string> mQuotes;
     std::string getRandomQuote(void);
     void loadQuotes(void);
+
+    nlohmann::json config;
+
+    std::string quoteFileName;
+    std::vector<std::string> mQuotes;
 };
 
 } // namespace geblaat

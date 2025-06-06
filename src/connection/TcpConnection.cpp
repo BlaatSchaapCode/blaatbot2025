@@ -193,8 +193,9 @@ int TcpConnection::connect(void) {
     return 0;
 }
 
-int TcpConnection::setConfig(nlohmann::json config) {
+int TcpConnection::setConfig(const nlohmann::json &cfg) {
     try {
+        config = cfg;
         if (config.contains("hostname") && config["hostname"].is_string()) {
             mHostName = config["hostname"];
         }

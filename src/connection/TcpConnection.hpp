@@ -68,11 +68,12 @@ class TcpConnection : public Connection {
     int connect(void) override;
     void send(std::vector<char> data) override;
 
-    int setConfig(nlohmann::json) override;
+    int setConfig(const nlohmann::json &) override;
+    nlohmann::json getConfig(void) override { return config; }
 
   private:
-    struct sockaddr_in6 in6 = {};
-    struct sockaddr_in in = {};
+    nlohmann::json config;
+
     socket_t m_socket = 0;
     bool m_connected = false;
 

@@ -26,16 +26,15 @@
 
  */
 
-#include "../connection/TlsConnection.hpp"
+#include "LibreTlsConnection.hpp"
 
 #include <cstring>
 
 #include "threadName.hpp"
 
 namespace geblaat {
-// void cTlsConnection::connect(std::string ip_address, uint16_t port, bool
-// ignoreBadCertificate, bool ignoreLegacyServer) {
-int TlsConnection::connect(void) {
+
+int LibreTlsConnection::connect(void) {
     int rc;
     rc = tls_init();
     m_tls_config = tls_config_new();
@@ -127,16 +126,16 @@ int TlsConnection::connect(void) {
         return rc;
     }
 
-    printf("tls_conn_cipher = %s\n", tls_conn_cipher(m_tls_socket));
-    printf("tls_conn_version = %s\n", tls_conn_version(m_tls_socket));
+    LOG_INFO("tls_conn_cipher = %s", tls_conn_cipher(m_tls_socket));
+    LOG_INFO("tls_conn_version = %s", tls_conn_version(m_tls_socket));
 
     m_receiveThreadActive = true;
-    m_receiveThread = new std::thread(TlsConnection::receiveThreadFunc, this);
+    m_receiveThread = new std::thread(LibreTlsConnection::receiveThreadFunc, this);
     this->mProtocol->onConnected();
     return 0;
 }
 
-void TlsConnection::receiveThreadFunc(TlsConnection *self) {
+void LibreTlsConnection::receiveThreadFunc(LibreTlsConnection *self) {
     LOG_INFO("Starting Receive Thread");
     setThreadName("TlsRecv");
     char recv_buffer[8191] = {0};
@@ -169,7 +168,7 @@ void TlsConnection::receiveThreadFunc(TlsConnection *self) {
     }
 }
 
-void TlsConnection::send(std::vector<char> data) {
+void LibreTlsConnection::send(std::vector<char> data) {
     size_t sent_bytes = ::tls_write(m_tls_socket, (const char *)data.data(), (int)data.size());
     if (sent_bytes == data.size()) {
         LOG_DEBUG("Sent %d bytes", sent_bytes);
@@ -178,7 +177,7 @@ void TlsConnection::send(std::vector<char> data) {
     }
 }
 
-int TlsConnection::setConfig(nlohmann::json config) {
+int LibreTlsConnection::setConfig(nlohmann::json config) {
     try {
         if (config.contains("hostname") && config["hostname"].is_string()) {
             mHostName = config["hostname"];
@@ -213,8 +212,8 @@ int TlsConnection::setConfig(nlohmann::json config) {
     return 0;
 }
 
-TlsConnection::TlsConnection() { mPort = 6697; }
-TlsConnection::~TlsConnection() {
+LibreTlsConnection::LibreTlsConnection() { mPort = 6697; }
+LibreTlsConnection::~LibreTlsConnection() {
     LOG_INFO("Stopping receive thread ");
     m_receiveThreadActive = false;
     LOG_INFO("Closing socket");
@@ -229,8 +228,8 @@ TlsConnection::~TlsConnection() {
 
 #ifdef DYNAMIC_LIBRARY
 extern "C" {
-geblaat::TlsConnection *newInstance(void) { return new geblaat::TlsConnection(); }
-void delInstance(geblaat::TlsConnection *inst) { delete inst; }
+geblaat::LibreTlsConnection *newInstance(void) { return new geblaat::LibreTlsConnection(); }
+void delInstance(geblaat::LibreTlsConnection *inst) { delete inst; }
 pluginloadable_t plugin_info = {
     .name = "LibreTLS",
     .description = "TLS Connection support using LibreTLS",

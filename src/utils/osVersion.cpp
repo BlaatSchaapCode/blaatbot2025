@@ -32,7 +32,7 @@
 
 #include <windows.h>
 
-//#include <dbghelp.h>
+// #include <dbghelp.h>
 
 #include <string>
 
@@ -160,14 +160,12 @@ void detectWindowsVersion(void) {
     // SZ CSDVersion
     // SZ ProductName
 
-
     // Windows 10:
     // DWORD CurrentMajorVersionNumber;
     // DWORD CurrentMinorVersionNumber;
     // SZ CurrentBuildNumber
     // SZ CSDVersion
     // SZ ProductName
-
 
     // https://learn.microsoft.com/en-us/windows/win32/debug/system-error-codes--0-499-
     // ERROR_FILE_NOT_FOUND

@@ -291,9 +291,12 @@ class IRC : public C2SProtocol {
     void onConnected() override;
     void onDisconnected() override;
 
-    int setConfig(nlohmann::json) override;
+    int setConfig(const nlohmann::json &) override;
+    nlohmann::json getConfig(void) override { return config; }
 
   private:
+    nlohmann::json config;
+
     using IRCMessageParser = std::function<void(IRCMessage &message)>;
     std::map<std::string, IRCMessageParser> mMessageParsers;
 

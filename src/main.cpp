@@ -28,7 +28,6 @@
 
  */
 
-
 // C++ Library Includes
 #include <cstdint>
 #include <fstream>

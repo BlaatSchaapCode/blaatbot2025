@@ -54,7 +54,8 @@ class BotClient : public Client {
   public:
     BotClient();
     virtual ~BotClient();
-    int setConfig(nlohmann::json) override;
+    int setConfig(const nlohmann::json &) override;
+    nlohmann::json getConfig(void) override;
     void onMessage(std::map<std::string, std::string> message) override;
 
     using OnCommand = std::function<void(std::string command, std::string parameters, std::map<std::string, std::string> message)>;
@@ -69,6 +70,8 @@ class BotClient : public Client {
     C2SProtocol *mProtocol = nullptr;
 
   private:
+    nlohmann::json config;
+
     std::map<std::string, std::map<std::string, OnCommand>> mCommands;
     std::map<BotModule *, std::string> mBotModules;
 };

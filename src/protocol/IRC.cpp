@@ -124,8 +124,9 @@ IRC::~IRC() {
         send("QUIT exited");
 }
 
-int IRC::setConfig(nlohmann::json config) {
+int IRC::setConfig(const nlohmann::json &cfg) {
     try {
+        config = cfg;
 
         if (config.contains("username") && config["username"].is_string()) {
             mUser = config["username"];

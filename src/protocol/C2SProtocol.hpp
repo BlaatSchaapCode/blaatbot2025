@@ -51,7 +51,6 @@ class C2SProtocol : public PluginLoadable {
     void setConnection(Connection *connection) { mConnection = connection; }
     void setClient(Client *client) { mClient = client; }
 
-    virtual int setConfig(nlohmann::json) = 0;
     virtual void sendMessage(std::map<std::string, std::string> message) = 0;
 
   protected:

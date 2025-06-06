@@ -70,7 +70,7 @@ class Connection : public PluginLoadable {
     // Going to passing the configuration as a json, to allow for
     // different configuration options per connection type
     // without requiring all of them being in the API.
-    virtual int setConfig(nlohmann::json) { return -ENOSYS; }
+    virtual int setConfig(const nlohmann::json &) override { return -ENOSYS; }
 
   protected:
     ::geblaat::C2SProtocol *mProtocol;

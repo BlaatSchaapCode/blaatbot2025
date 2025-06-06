@@ -36,8 +36,8 @@ namespace geblaat {
 
 class CAPI_BotModule : public BotModule {
   public:
-    int setConfig(nlohmann::json) override;
-
+    int setConfig(const nlohmann::json &) override;
+    nlohmann::json getConfig(void) override;
     CAPI_BotModule(set_botclient_f, get_botmodule_f);
     virtual ~CAPI_BotModule() {}
     void registerBotCommand(const char *command, on_bot_command_callback_f handler);

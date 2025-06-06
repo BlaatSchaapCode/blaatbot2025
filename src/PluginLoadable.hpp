@@ -38,7 +38,8 @@ class PluginLoader;
 class PluginLoadable {
   public:
     virtual ~PluginLoadable() {};
-    virtual int setConfig(nlohmann::json) = 0;
+    virtual int setConfig(const nlohmann::json &) = 0;
+    virtual nlohmann::json getConfig(void) = 0;
     virtual void setPluginLoader(PluginLoader *pl) { pluginLoader = pl; }
 
   protected:

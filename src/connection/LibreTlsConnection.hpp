@@ -40,12 +40,12 @@
 
 namespace geblaat {
 
-class TlsConnection : public Connection {
+class LibreTlsConnection : public Connection {
 
   public:
     using Connection::Connection;
-    TlsConnection();
-    ~TlsConnection();
+    LibreTlsConnection();
+    ~LibreTlsConnection();
 
     int connect() override;
 
@@ -66,7 +66,7 @@ class TlsConnection : public Connection {
     struct tls_config *m_tls_config = nullptr;
     struct tls *m_tls_socket = nullptr;
 
-    static void receiveThreadFunc(TlsConnection *self);
+    static void receiveThreadFunc(LibreTlsConnection *self);
 };
 
 } // namespace geblaat
