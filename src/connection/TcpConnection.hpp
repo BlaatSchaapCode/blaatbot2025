@@ -71,7 +71,7 @@ class TcpConnection : public Connection {
     int setConfig(const nlohmann::json &) override;
     nlohmann::json getConfig(void) override { return config; }
 
-  private:
+  protected:
     nlohmann::json config;
 
     socket_t m_socket = 0;
@@ -80,6 +80,11 @@ class TcpConnection : public Connection {
     std::atomic<bool> m_receiveThreadActive = false;
     std::thread *m_receiveThread = nullptr;
 
+    virtual void onData(std::vector<char> data);
+    virtual void onConnected();
+    virtual void onDisconnected();
+
+  private:
 #if defined(_WIN32) || defined(_WIN64)
     WSADATA d = {0};
 #endif

@@ -35,8 +35,9 @@
 
 #include <tls.h>
 
-#include "../connection/Connection.hpp"
 #include "../utils/logger.hpp"
+
+#include "Connection.hpp"
 
 namespace geblaat {
 
@@ -50,19 +51,18 @@ class LibreTlsConnection : public Connection {
     int connect() override;
 
     void send(std::vector<char> data) override;
-
-    int setConfig(const nlohmann::json&) override;
-    nlohmann::json getConfig(void) override;
-
-  protected:
-    bool ignoreInvalidCerficiate = false;
-    bool ignoreInsecureProtocol = false;
+    int setConfig(const nlohmann::json &config) override;
 
   private:
     bool m_connected = false;
-    nlohmann::json config;
+    bool ignoreInvalidCerficiate = false;
+    bool ignoreInsecureProtocol = false;
+
     std::atomic<bool> m_receiveThreadActive = false;
     std::thread *m_receiveThread = nullptr;
+
+    std::string mHostName;
+    uint16_t mPort;
 
     struct tls_config *m_tls_config = nullptr;
     struct tls *m_tls_socket = nullptr;

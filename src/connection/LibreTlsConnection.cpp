@@ -131,7 +131,7 @@ int LibreTlsConnection::connect(void) {
 
     m_receiveThreadActive = true;
     m_receiveThread = new std::thread(LibreTlsConnection::receiveThreadFunc, this);
-    this->mProtocol->onConnected();
+    mProtocol->onConnected();
     return 0;
 }
 
@@ -177,13 +177,8 @@ void LibreTlsConnection::send(std::vector<char> data) {
     }
 }
 
- nlohmann::json LibreTlsConnection::getConfig(void) {
-	 return config;
-}
-
-int LibreTlsConnection::setConfig(const nlohmann::json &cfg) {
+int LibreTlsConnection::setConfig(const nlohmann::json &config) {
     try {
-    	config = cfg;
         if (config.contains("hostname") && config["hostname"].is_string()) {
             mHostName = config["hostname"];
         }
@@ -218,11 +213,14 @@ int LibreTlsConnection::setConfig(const nlohmann::json &cfg) {
 }
 
 LibreTlsConnection::LibreTlsConnection() { mPort = 6697; }
+
 LibreTlsConnection::~LibreTlsConnection() {
     LOG_INFO("Stopping receive thread ");
     m_receiveThreadActive = false;
     LOG_INFO("Closing socket");
-    tls_close(m_tls_socket);
+    if (m_tls_socket)
+        tls_close(m_tls_socket);
+
     if (m_receiveThread->joinable())
         m_receiveThread->join();
     LOG_INFO("Deleting Receive Thread", 0);

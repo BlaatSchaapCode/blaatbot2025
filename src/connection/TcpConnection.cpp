@@ -50,6 +50,14 @@ void TcpConnection::send(std::vector<char> data) {
     }
 }
 
+void TcpConnection::onData(std::vector<char> received_data) { mProtocol->onData(received_data); }
+void TcpConnection::onConnected() {
+    m_receiveThreadActive = true;
+    m_receiveThread = new std::thread(TcpConnection::receiveThreadFunc, this);
+    mProtocol->onConnected();
+}
+void TcpConnection::onDisconnected() { mProtocol->onDisconnected(); }
+
 void TcpConnection::receiveThreadFunc(TcpConnection *self) {
     LOG_INFO("Starting Receive Thread");
     setThreadName("TcpRecv");
@@ -79,7 +87,7 @@ void TcpConnection::receiveThreadFunc(TcpConnection *self) {
         } else if (bytes_received == 0) {
             LOG_ERROR("Remote disconnected");
             // on_disconnect(self);  // TODO
-            self->mProtocol->onDisconnected();
+            self->onDisconnected();
             break;
         } else {
             LOG_DEBUG("Received %d bytes ", bytes_received);
@@ -87,7 +95,7 @@ void TcpConnection::receiveThreadFunc(TcpConnection *self) {
             // Please note: we want a copy of the data so the receive buffer is
             // available for the next message
             std::vector<char> received_data(recv_buffer, recv_buffer + bytes_received);
-            self->mProtocol->onData(received_data);
+            self->onData(received_data);
         }
     }
 }
@@ -187,9 +195,7 @@ int TcpConnection::connect(void) {
 
     setsockopt(m_socket, SOL_SOCKET, SO_KEEPALIVE, (const char *)&yes, sizeof(yes));
 
-    m_receiveThreadActive = true;
-    m_receiveThread = new std::thread(TcpConnection::receiveThreadFunc, this);
-    this->mProtocol->onConnected();
+    onConnected();
     return 0;
 }
 
@@ -247,11 +253,11 @@ TcpConnection::~TcpConnection() {
 
 } // namespace geblaat
 
-#ifdef DYNAMIC_LIBRARY
+#if (defined DYNAMIC_LIBRARY)
 extern "C" {
-geblaat::TcpConnection *newInstance(void) { return new geblaat::TcpConnection(); }
-void delInstance(geblaat::TcpConnection *inst) { delete inst; }
-pluginloadable_t plugin_info = {
+[[gnu::weak]] geblaat::TcpConnection *newInstance(void) { return new geblaat::TcpConnection(); }
+[[gnu::weak]] void delInstance(geblaat::TcpConnection *inst) { delete inst; }
+[[gnu::weak]] pluginloadable_t plugin_info = {
     .name = "TCP Connection",
     .description = "TCP connection support",
     .abi = {.abi = pluginloadable_abi_cpp, .version = 0},
