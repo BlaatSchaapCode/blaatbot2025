@@ -29,7 +29,8 @@
       "modules" : [ {
         "type" : "test",
         "prefix" : "!",
-        "config" : { }
+        "config" : { 
+        	"quotefile" : "quotes"}
       } 
       ,
       {

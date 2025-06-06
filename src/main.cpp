@@ -1,4 +1,33 @@
-// SPDX-License-Identifier: MIT
+/*
+
+ File: 		main.cpp
+ Author:	André van Schoubroeck <andre@blaatschaap.be>
+ License:	MIT
+
+
+ SPDX-License-Identifier: MIT
+
+ Copyright (c) 2025 André van Schoubroeck <andre@blaatschaap.be>
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
+
+ */
+
 
 // C++ Library Includes
 #include <cstdint>
@@ -21,6 +50,7 @@ static geblaat::PluginLoader mPluginLoader;
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
 
+// Configures the console to use UTF8 on WIN32
 [[gnu::constructor]] void windows_init_utf8_console() {
     auto a = SetConsoleOutputCP(CP_UTF8);
     auto b = SetConsoleCP(CP_UTF8);
@@ -34,7 +64,6 @@ static geblaat::PluginLoader mPluginLoader;
     // Note: requires Windows 10 version 1903 or later.
     LOG_DEBUG("test: äåéëþüúíóö«»¬");
 }
-
 #endif
 
 static nlohmann::json mConfigdata;
@@ -86,8 +115,6 @@ int parse_options(int argc, char *argv[]) {
         return -1;
     }
 }
-
-#include "osVersion.hpp"
 
 int main(int argc, char *argv[]) {
     int result;

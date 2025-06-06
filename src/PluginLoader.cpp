@@ -1,8 +1,29 @@
 /*
- * PluginLoader.cpp
- *
- *  Created on: 26 apr. 2025
- *      Author: andre
+
+ Author:	André van Schoubroeck <andre@blaatschaap.be>
+ License:	MIT
+
+ SPDX-License-Identifier: MIT
+
+ Copyright (c) 2025 André van Schoubroeck <andre@blaatschaap.be>
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
+
  */
 
 #include "PluginLoader.hpp"
@@ -163,14 +184,19 @@ std::string PluginLoader::dlerror(void) {
 #else
 // For now, Operating Systems that do not implement the WIN32 API
 // are expected to implement the POSIX API.
-// Are there more to consider?
-// Note: code will not work as-in on Darwin (macOS).
-// There appears no currently maintained Darwin distro around
-// and I don't have any Apple hardware.
+
+
+#if defined __ELF__ // Platform uses the ELF binary format
+	constexpr std::string library_suffix = ".so";
+#elif defined  __MACH__ // Platform uses the Mach-O binary format
+	constexpr std::string library_suffix = ".dlsym";
+#else
+#error "Cannot determine the platform binary format"
+#endif
 
 void *PluginLoader::dlsym(void *handle, const char *symbol) { return ::dlsym(handle, symbol); }
 void *PluginLoader::dlopen(std::string type, std::string name) {
-    std::string library = pluginDirectory + "/libgeblaat_" + type + "_" + name + ".so";
+    std::string library = pluginDirectory + "/libgeblaat_" + type + "_" + name + library_suffix;
     return ::dlopen(library.c_str(), RTLD_NOW | RTLD_LOCAL);
 }
 int PluginLoader::dlclose(void *handle) { return ::dlclose(handle); }
