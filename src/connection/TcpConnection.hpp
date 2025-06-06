@@ -80,6 +80,12 @@ class TcpConnection : public Connection {
     std::atomic<bool> m_receiveThreadActive = false;
     std::thread *m_receiveThread = nullptr;
 
+    virtual void onData(std::vector<char> data);
+    virtual void onConnected();
+    virtual void onDisconnected();
+
+
+
 #if defined(_WIN32) || defined(_WIN64)
     WSADATA d = {0};
 #endif

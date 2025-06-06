@@ -45,9 +45,11 @@ class C2SProtocol : public PluginLoadable {
 
   public:
     virtual ~C2SProtocol() = 0;
+
     virtual void onData(std::vector<char> data) = 0;
     virtual void onConnected() = 0;
     virtual void onDisconnected() = 0;
+
     void setConnection(Connection *connection) { mConnection = connection; }
     void setClient(Client *client) { mClient = client; }
 

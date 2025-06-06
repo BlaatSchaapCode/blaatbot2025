@@ -40,7 +40,7 @@
 
 namespace geblaat {
 
-class LibreTlsConnection : public Connection {
+class LibreTlsConnection : public TlsConnection {
 
   public:
     using Connection::Connection;
@@ -51,11 +51,7 @@ class LibreTlsConnection : public Connection {
 
     void send(std::vector<char> data) override;
 
-    int setConfig(nlohmann::json) override;
 
-  protected:
-    bool ignoreInvalidCerficiate = false;
-    bool ignoreInsecureProtocol = false;
 
   private:
     bool m_connected = false;
