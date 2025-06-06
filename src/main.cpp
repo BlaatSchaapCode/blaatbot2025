@@ -129,7 +129,7 @@ int main(int argc, char *argv[]) {
         LOG_INFO("Config file loaded");
         try {
             auto jsonClient = mConfigdata["client"];
-            client = dynamic_cast<geblaat::Client *>(mPluginLoader.newInstance(jsonClient["type"], "client"));
+            client = dynamic_cast<geblaat::Client *>(mPluginLoader.newInstance(jsonClient["name"], "client"));
             if (client) {
                 client->setConfig(jsonClient["config"]);
             } else {

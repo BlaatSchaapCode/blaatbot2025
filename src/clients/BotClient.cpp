@@ -115,18 +115,15 @@ int BotClient::setConfig(const nlohmann::json &cfg) {
         if (networks.is_array()) {
             for (auto &network : networks) {
                 auto jsonProtocol = network["protocol"];
-
-                // mProtocol = pluginLoader->newProtocol(jsonProtocol["type"]);
-                mProtocol = dynamic_cast<C2SProtocol *>(pluginLoader->newInstance(jsonProtocol["type"], "protocol"));
+                mProtocol = dynamic_cast<C2SProtocol *>(pluginLoader->newInstance(jsonProtocol["name"], "protocol"));
                 if (mProtocol) {
                     mProtocol->setClient(this);
 
                     auto modules = config["modules"];
                     if (modules.is_array()) {
                         for (auto &module : modules) {
-                            // auto botModule = pluginLoader->newBotModule(module["type"]);
                             BotModule *botModule =
-                                dynamic_cast<BotModule *>(pluginLoader->newInstance(module["type"], "botmodule"));
+                                dynamic_cast<BotModule *>(pluginLoader->newInstance(module["name"], "botmodule"));
                             if (!botModule) {
                                 LOG_ERROR("Could not load Botmodule");
                                 continue;
@@ -140,7 +137,7 @@ int BotClient::setConfig(const nlohmann::json &cfg) {
                     mProtocol->setConfig(jsonProtocol["config"]);
 
                 } else {
-                    std::string prototolName = jsonProtocol["type"];
+                    std::string prototolName = jsonProtocol["name"];
                     LOG_ERROR("Cannot load protocol %s", prototolName.c_str());
                 }
             }

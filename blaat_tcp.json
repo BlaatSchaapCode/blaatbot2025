@@ -1,11 +1,11 @@
 {
   "client" : {
-    "type" : "bot",
+    "name" : "bot",
     "config" : {
       "networks" : [ {
         "network" : "BlaatNet",
         "protocol" : {
-          "type" : "irc",
+          "name" : "irc",
           "config" : {
             "username" : "bb25user",
             "nickname" : "bb25nick",
@@ -18,7 +18,7 @@
               "key" : "let_me_in"
             } ],
             "connections" : [ {
-              "type" : "tcp",
+              "name" : "tcp",
               "config" : {
                 "hostname" : "irc.blaatschaap.be"
               }
@@ -27,14 +27,14 @@
         }
       } ],
       "modules" : [ {
-        "type" : "test",
+        "name" : "test",
         "prefix" : "!",
         "config" : { 
         	"quotefile" : "quotes"}
       } 
       ,
       {
-        "type" : "cbotmod",
+        "name" : "cbotmod",
         "prefix" : "!",
         "config" : { }
       }

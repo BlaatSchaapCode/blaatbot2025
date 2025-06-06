@@ -173,8 +173,7 @@ int IRC::setConfig(const nlohmann::json &cfg) {
             // the json to be able to handle multiple. If there are multiple
             // the default behaviour is intended to be to pick server at random
             auto jsonConnection = config["connections"][0];
-            // mConnection = pluginLoader->newConnection(jsonConnection["type"]);
-            auto conn = pluginLoader->newInstance(jsonConnection["type"], "connection");
+            auto conn = pluginLoader->newInstance(jsonConnection["name"], "connection");
             mConnection = dynamic_cast<Connection *>(conn);
 
             if (mConnection) {
