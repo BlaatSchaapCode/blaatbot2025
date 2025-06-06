@@ -49,7 +49,7 @@
 
 namespace geblaat {
 class BotModule;
-class Protocol;
+class C2SProtocol;
 class BotClient : public Client {
   public:
     BotClient();
@@ -66,7 +66,7 @@ class BotClient : public Client {
     void CapiBotModuleLoader(PluginLoader::Plugin &);
 
   protected:
-    Protocol *mProtocol = nullptr;
+    C2SProtocol *mProtocol = nullptr;
 
   private:
     std::map<std::string, std::map<std::string, OnCommand>> mCommands;

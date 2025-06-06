@@ -41,10 +41,10 @@ namespace geblaat {
 class Client;
 class Connection;
 
-class Protocol : public PluginLoadable {
+class C2SProtocol : public PluginLoadable {
 
   public:
-    virtual ~Protocol() = 0;
+    virtual ~C2SProtocol() = 0;
     virtual void onData(std::vector<char> data) = 0;
     virtual void onConnected() = 0;
     virtual void onDisconnected() = 0;

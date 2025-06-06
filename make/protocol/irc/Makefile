@@ -17,18 +17,16 @@ CXX_INCLUDES += $(SRC_DIR)/utils
 CXX_INCLUDES += $(SRC_DIR)/clients
 CXX_INCLUDES += ../ext/base64/include/
 
-CXX_SRC += $(SRC_DIR)/protocol/Protocol.cpp
+CXX_SRC += $(SRC_DIR)/protocol/C2SProtocol.cpp
 CXX_SRC += $(SRC_DIR)/protocol/IRC.cpp
 CXX_SRC += $(SRC_DIR)/connection/Connection.cpp
 CXX_SRC += $(SRC_DIR)/PluginLoadable.cpp
-#CXX_SRC += $(SRC_DIR)/PluginLoader.cpp
 
 CXX_SRC += $(SRC_DIR)/utils/time.cpp
 CXX_SRC += $(SRC_DIR)/utils/timer.cpp
 CXX_SRC += $(SRC_DIR)/utils/logger.cpp
 CXX_SRC += $(SRC_DIR)/utils/threadName.cpp
 CXX_SRC += $(SRC_DIR)/utils/splitString.cpp
-
 
 include $(PCDEV_ROOT)/build/make/all.mk
 

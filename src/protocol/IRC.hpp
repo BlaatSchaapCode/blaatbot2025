@@ -37,12 +37,12 @@
 #include <vector>
 
 #include "../connection/Connection.hpp"
-#include "Protocol.hpp"
+#include "C2SProtocol.hpp"
 #include "timer.hpp"
 
 namespace geblaat {
 
-class IRC : public Protocol {
+class IRC : public C2SProtocol {
   public:
     struct IRCSource {
         std::string raw;

@@ -28,8 +28,8 @@
 
 #include "BotClient.hpp"
 
+#include "../protocol/C2SProtocol.hpp"
 #include "Connection.hpp"
-#include "Protocol.hpp"
 #include "logger.hpp"
 
 #include "BotModule.hpp"
@@ -113,7 +113,7 @@ int BotClient::setConfig(nlohmann::json config) {
                 auto jsonProtocol = network["protocol"];
 
                 // mProtocol = pluginLoader->newProtocol(jsonProtocol["type"]);
-                mProtocol = dynamic_cast<Protocol *>(pluginLoader->newInstance(jsonProtocol["type"], "protocol"));
+                mProtocol = dynamic_cast<C2SProtocol *>(pluginLoader->newInstance(jsonProtocol["type"], "protocol"));
                 if (mProtocol) {
                     mProtocol->setClient(this);
 

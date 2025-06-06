@@ -26,8 +26,8 @@
 
  */
 
-#include "Protocol.hpp"
+#include "C2SProtocol.hpp"
 
 namespace geblaat {
-Protocol::~Protocol() {}
+C2SProtocol::~C2SProtocol() {}
 } // namespace geblaat

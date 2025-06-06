@@ -41,7 +41,7 @@ void Connection::send(std::string s) {
     send(v);
 }
 
-void Connection::setProtocol(::geblaat::Protocol *protocol) { mProtocol = protocol; }
+void Connection::setProtocol(::geblaat::C2SProtocol *protocol) { mProtocol = protocol; }
 
 // int Connection::setHostName(std::string hostName) {
 //     mHostName = hostName;
