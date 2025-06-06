@@ -1,4 +1,4 @@
-TARGET       := geblaat_botmodule_cbotmod
+MODULE       := geblaat_botmodule_cbotmod
 PROJ_DIR     := ../../..
 PCDEV_ROOT   := $(PROJ_DIR)/pcdev
 OUT_DIR      := $(PROJ_DIR)/out

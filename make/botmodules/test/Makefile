@@ -1,4 +1,4 @@
-TARGET       := geblaat_botmodule_test
+MODULE       := geblaat_botmodule_test
 PROJ_DIR     := ../../..
 PCDEV_ROOT   := $(PROJ_DIR)/pcdev
 OUT_DIR      := $(PROJ_DIR)/out

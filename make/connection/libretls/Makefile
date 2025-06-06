@@ -1,4 +1,4 @@
-TARGET       := geblaat_connection_libretls
+MODULE       := geblaat_connection_libretls
 PROJ_DIR     := ../../..
 PCDEV_ROOT   := $(PROJ_DIR)/pcdev
 OUT_DIR      := $(PROJ_DIR)/out

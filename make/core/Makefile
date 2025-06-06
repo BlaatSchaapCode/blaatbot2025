@@ -1,4 +1,4 @@
-TARGET       := blaatbot2025
+MODULE       := blaatbot2025
 PCDEV_ROOT   := ../../pcdev
 OUT_DIR      := ../../out
 SRC_DIR      := ../../src

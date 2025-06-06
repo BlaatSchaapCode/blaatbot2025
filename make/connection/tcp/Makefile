@@ -1,4 +1,4 @@
-TARGET       := geblaat_connection_tcp
+MODULE       := geblaat_connection_tcp
 PROJ_DIR     := ../../..
 PCDEV_ROOT   := $(PROJ_DIR)/pcdev
 OUT_DIR      := $(PROJ_DIR)/out

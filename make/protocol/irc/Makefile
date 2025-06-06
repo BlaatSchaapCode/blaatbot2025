@@ -1,4 +1,4 @@
-TARGET       := geblaat_protocol_irc
+MODULE       := geblaat_protocol_irc
 PROJ_DIR     := ../../..
 PCDEV_ROOT   := $(PROJ_DIR)/pcdev
 OUT_DIR      := $(PROJ_DIR)/out
