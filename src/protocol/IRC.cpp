@@ -172,7 +172,9 @@ int IRC::setConfig(const nlohmann::json &cfg) {
             // the default behaviour is intended to be to pick server at random
             auto jsonConnection = config["connections"][0];
             // mConnection = pluginLoader->newConnection(jsonConnection["type"]);
-            mConnection = dynamic_cast<Connection *>(pluginLoader->newInstance(jsonConnection["type"], "connection"));
+            auto conn = pluginLoader->newInstance(jsonConnection["type"], "connection");
+            mConnection = dynamic_cast<Connection *>(conn);
+
             if (mConnection) {
                 mConnection->setConfig(jsonConnection["config"]);
                 mConnection->setProtocol(this);

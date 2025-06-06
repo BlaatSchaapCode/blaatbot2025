@@ -60,7 +60,7 @@ typedef int socket_t;
 
 namespace geblaat {
 
-class TcpConnection : public Connection {
+class TcpConnection : virtual  public Connection {
   public:
     ~TcpConnection();
     TcpConnection();
@@ -71,7 +71,7 @@ class TcpConnection : public Connection {
     int setConfig(const nlohmann::json &) override;
     nlohmann::json getConfig(void) override { return config; }
 
-  private:
+  protected:
     nlohmann::json config;
 
     socket_t m_socket = 0;
@@ -84,8 +84,7 @@ class TcpConnection : public Connection {
     virtual void onConnected();
     virtual void onDisconnected();
 
-
-
+  private:
 #if defined(_WIN32) || defined(_WIN64)
     WSADATA d = {0};
 #endif

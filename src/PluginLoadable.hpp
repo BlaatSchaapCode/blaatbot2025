@@ -39,11 +39,12 @@ class PluginLoadable {
   public:
     virtual ~PluginLoadable() {};
     virtual int setConfig(const nlohmann::json &) = 0;
-    virtual nlohmann::json getConfig(void) = 0;
+    virtual nlohmann::json getConfig(void) { return config; }
     virtual void setPluginLoader(PluginLoader *pl) { pluginLoader = pl; }
 
   protected:
     PluginLoader *pluginLoader = nullptr;
+    nlohmann::json config;
 };
 
 }; // namespace geblaat

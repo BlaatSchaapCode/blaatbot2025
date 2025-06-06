@@ -9,6 +9,7 @@ all:
 	$(MAKE) -j -C connection/tcp
 	$(MAKE) -j -C protocol/irc
 	$(MAKE) -j -C connection/libretls
+	$(MAKE) -j -C connection/gnutls
 
 format:
 	find ../src/ -iname '*.hpp' -o -iname '*.cpp' -o -iname '*.h' -o -iname '*.c' | xargs clang-format -i

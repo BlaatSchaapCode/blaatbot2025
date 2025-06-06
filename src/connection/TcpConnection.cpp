@@ -253,11 +253,11 @@ TcpConnection::~TcpConnection() {
 
 } // namespace geblaat
 
-#if (defined DYNAMIC_LIBRARY) && (!defined USING_TCPCONNECTION)
+#if (defined DYNAMIC_LIBRARY)
 extern "C" {
-geblaat::TcpConnection *newInstance(void) { return new geblaat::TcpConnection(); }
-void delInstance(geblaat::TcpConnection *inst) { delete inst; }
-pluginloadable_t plugin_info = {
+[[gnu::weak]] geblaat::TcpConnection *newInstance(void) { return new geblaat::TcpConnection(); }
+[[gnu::weak]] void delInstance(geblaat::TcpConnection *inst) { delete inst; }
+[[gnu::weak]] pluginloadable_t plugin_info = {
     .name = "TCP Connection",
     .description = "TCP connection support",
     .abi = {.abi = pluginloadable_abi_cpp, .version = 0},

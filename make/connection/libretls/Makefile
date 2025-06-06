@@ -18,6 +18,7 @@ CXX_INCLUDES += ../ext/base64/include/
 
 CXX_SRC += $(SRC_DIR)/connection/Connection.cpp
 CXX_SRC += $(SRC_DIR)/connection/TlsConnection.cpp
+CXX_SRC += $(SRC_DIR)/connection/LibreTlsConnection.cpp
 CXX_SRC += $(SRC_DIR)/PluginLoadable.cpp
 
 CXX_SRC += $(SRC_DIR)/utils/time.cpp
