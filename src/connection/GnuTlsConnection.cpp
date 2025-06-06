@@ -34,9 +34,10 @@ int GnuTlsConnection::connect() {
 
     gnutls_init(&session, GNUTLS_CLIENT);
 
-    gnutls_server_name_set(session, GNUTLS_NAME_DNS, mHostName.c_str(), mHostName.length());
-    gnutls_session_set_verify_cert(session, mHostName.c_str(), 0);
-
+    if (!ignoreInvalidCerficiate) {
+		gnutls_server_name_set(session, GNUTLS_NAME_DNS, mHostName.c_str(), mHostName.length());
+		gnutls_session_set_verify_cert(session, mHostName.c_str(), 0);
+    }
     gnutls_credentials_set(session, GNUTLS_CRD_CERTIFICATE, xcred);
 
     gnutls_set_default_priority(session);
