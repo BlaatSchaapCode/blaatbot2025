@@ -79,16 +79,19 @@ void GnuTlsConnection::onConnected() {
     LOG_INFO("   cipher:   %s",
              gnutls_cipher_suite_get_name(gnutls_kx_get(session), gnutls_cipher_get(session), gnutls_mac_get(session)));
 
+    m_connected = true;
     m_receiveThreadActive = true;
     m_receiveThread = new std::thread(GnuTlsConnection::receiveThreadFunc, this);
-    mProtocol->onConnected();
+    if (mProtocol) mProtocol->onConnected();
 }
 
 void GnuTlsConnection::onDisconnected() {
     gnutls_bye(session, GNUTLS_SHUT_RDWR);
     gnutls_deinit(session);
     closesocket(m_socket);
-    mProtocol->onDisconnected();
+    m_receiveThreadActive = false;
+    m_connected = false;
+    if (mProtocol) mProtocol->onDisconnected();
 }
 
 void GnuTlsConnection::send(std::vector<char> data) {

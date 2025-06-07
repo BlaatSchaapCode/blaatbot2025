@@ -1502,7 +1502,7 @@ void IRC::onData(std::vector<char> data) {
 void IRC::send(std::string message) {
     // LOG_DEBUG(("<<< " + message).c_str());
     LOG_DEBUG("<<< %s", message.c_str());
-    this->mConnection->send(message + "\r\n");
+    this->mConnection->sendLine(message);
 }
 
 bool IRC::isChannel(const std::string target) {

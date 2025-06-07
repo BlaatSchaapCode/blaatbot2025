@@ -36,7 +36,7 @@
 #include <string>
 #include <vector>
 
-#include "../connection/Connection.hpp"
+#include "Connection.hpp"
 #include "C2SProtocol.hpp"
 #include "timer.hpp"
 

@@ -116,7 +116,10 @@ PluginLoadable *PluginLoader::newInstance(std::string name, std::string type) {
         }
     }
     if (this->plugins.contains(type + "_" + name)) {
-        auto instance = this->plugins[type + "_" + name].newInstance();
+        auto plugin = this->plugins[type + "_" + name];
+        auto instance = plugin.newInstance();
+    	//auto instance = this->plugins[type + "_" + name].newInstance();
+
         LOG_INFO("Got an instance of %s", demangleClassName(typeid(instance).name()).c_str());
         this->plugins[type + "_" + name].refcount++;
         instance->setPluginLoader(this);
@@ -129,8 +132,7 @@ PluginLoadable *PluginLoader::newInstance(std::string name, std::string type) {
 }
 
 PluginLoader::Plugin PluginLoader::loadPlugin(std::string name, std::string type) {
-    Plugin result;
-    result.refcount = 0;
+    Plugin result = {};
     result.name = name;
     result.type = type;
 

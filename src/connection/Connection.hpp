@@ -54,16 +54,13 @@ class Connection : public PluginLoadable {
     virtual ~Connection();
     virtual void send(std::vector<char> data) = 0;
     void send(std::string s);
+    virtual void sendLine(std::string s) { send(s + "\r\n");}
     void setProtocol(::geblaat::C2SProtocol *protocol);
 
-    //		Replaced with setConfig
-    //    int setHostName(std::string hostName);
-    //    int setPort(uint16_t port);
-    //
-    //    virtual int setSecure(bool secure) { return -ENOTSUP; }
-    //    virtual int setIgnoreInvalidCerficiate(bool ignoreInvalidCerficiate) {
-    //    return -ENOTSUP; } virtual int setIgnoreInsecureProtocol(bool
-    //    ignoreInsecureProtocol) { return -ENOTSUP; }
+    // re-introduced for things like http
+	int setHostName(std::string hostName) {mHostName = hostName; return 0; }
+	int setPort(uint16_t port) {mPort = port; return 0; }
+
 
     virtual int connect(void) { return -ENOSYS; }
 
@@ -73,7 +70,8 @@ class Connection : public PluginLoadable {
     virtual int setConfig(const nlohmann::json &) override { return -ENOSYS; }
 
   protected:
-    ::geblaat::C2SProtocol *mProtocol;
+    C2SProtocol *mProtocol;
+
     std::string mHostName;
     uint16_t mPort;
 };
