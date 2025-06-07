@@ -4,8 +4,7 @@
 // based upon https://stackoverflow.com/a/11040947/188450
 
 namespace uriparser {
-class Uri
-{
+class Uri {
   public:
     Uri(std::string uri) : uri_(uri) {
         UriParserStateA state_ = {};

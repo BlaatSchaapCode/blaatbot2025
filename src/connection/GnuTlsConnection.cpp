@@ -82,7 +82,8 @@ void GnuTlsConnection::onConnected() {
     m_connected = true;
     m_receiveThreadActive = true;
     m_receiveThread = new std::thread(GnuTlsConnection::receiveThreadFunc, this);
-    if (mProtocol) mProtocol->onConnected();
+    if (mProtocol)
+        mProtocol->onConnected();
 }
 
 void GnuTlsConnection::onDisconnected() {
@@ -91,7 +92,8 @@ void GnuTlsConnection::onDisconnected() {
     closesocket(m_socket);
     m_receiveThreadActive = false;
     m_connected = false;
-    if (mProtocol) mProtocol->onDisconnected();
+    if (mProtocol)
+        mProtocol->onDisconnected();
 }
 
 void GnuTlsConnection::send(std::vector<char> data) {

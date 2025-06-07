@@ -61,8 +61,8 @@ class LibreTlsConnection : public Connection {
     std::atomic<bool> m_receiveThreadActive = false;
     std::thread *m_receiveThread = nullptr;
 
-//    std::string mHostName;
-//    uint16_t mPort;
+    //    std::string mHostName;
+    //    uint16_t mPort;
 
     struct tls_config *m_tls_config = nullptr;
     struct tls *m_tls_socket = nullptr;

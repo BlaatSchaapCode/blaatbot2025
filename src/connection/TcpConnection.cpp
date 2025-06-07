@@ -50,13 +50,20 @@ void TcpConnection::send(std::vector<char> data) {
     }
 }
 
-void TcpConnection::onData(std::vector<char> received_data) { if (mProtocol) mProtocol->onData(received_data); }
+void TcpConnection::onData(std::vector<char> received_data) {
+    if (mProtocol)
+        mProtocol->onData(received_data);
+}
 void TcpConnection::onConnected() {
     m_receiveThreadActive = true;
     m_receiveThread = new std::thread(TcpConnection::receiveThreadFunc, this);
-    if (mProtocol) mProtocol->onConnected();
+    if (mProtocol)
+        mProtocol->onConnected();
 }
-void TcpConnection::onDisconnected() { if (mProtocol) mProtocol->onDisconnected(); }
+void TcpConnection::onDisconnected() {
+    if (mProtocol)
+        mProtocol->onDisconnected();
+}
 
 void TcpConnection::receiveThreadFunc(TcpConnection *self) {
     LOG_INFO("Starting Receive Thread");

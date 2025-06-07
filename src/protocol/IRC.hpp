@@ -36,8 +36,8 @@
 #include <string>
 #include <vector>
 
-#include "Connection.hpp"
 #include "C2SProtocol.hpp"
+#include "Connection.hpp"
 #include "timer.hpp"
 
 namespace geblaat {

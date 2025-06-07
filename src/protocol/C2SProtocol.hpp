@@ -36,27 +36,22 @@
 #include <nlohmann/json.hpp>
 
 #include "PluginLoadable.hpp"
+#include "Protocol.hpp"
 
 namespace geblaat {
 class Client;
 class Connection;
 
-class C2SProtocol : public PluginLoadable {
+class C2SProtocol : public PluginLoadable, public Protocol {
 
   public:
     virtual ~C2SProtocol() = 0;
 
-    virtual void onData(std::vector<char> data) = 0;
-    virtual void onConnected() = 0;
-    virtual void onDisconnected() = 0;
-
-    void setConnection(Connection *connection) { mConnection = connection; }
     void setClient(Client *client) { mClient = client; }
 
     virtual void sendMessage(std::map<std::string, std::string> message) = 0;
 
   protected:
-    Connection *mConnection = nullptr;
     Client *mClient = nullptr;
 };
 

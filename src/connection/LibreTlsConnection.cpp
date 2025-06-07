@@ -131,7 +131,8 @@ int LibreTlsConnection::connect(void) {
 
     m_receiveThreadActive = true;
     m_receiveThread = new std::thread(LibreTlsConnection::receiveThreadFunc, this);
-    if (mProtocol) mProtocol->onConnected();
+    if (mProtocol)
+        mProtocol->onConnected();
     return 0;
 }
 
@@ -154,7 +155,8 @@ void LibreTlsConnection::receiveThreadFunc(LibreTlsConnection *self) {
             continue;
         } else if (bytes_received == 0) {
             LOG_ERROR("Remote disconnected");
-            if (self->mProtocol) self->mProtocol->onDisconnected();
+            if (self->mProtocol)
+                self->mProtocol->onDisconnected();
             break;
         } else {
             // Todo: pass data to parser
@@ -163,7 +165,8 @@ void LibreTlsConnection::receiveThreadFunc(LibreTlsConnection *self) {
             // Please note: we want a copy of the data so the receive buffer is
             // available for the next message
             std::vector<char> received_data(recv_buffer, recv_buffer + bytes_received);
-            if (self->mProtocol) self->mProtocol->onData(received_data);
+            if (self->mProtocol)
+                self->mProtocol->onData(received_data);
         }
     }
 }

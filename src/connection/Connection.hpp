@@ -39,28 +39,31 @@
 // Third Party libraries
 #include <nlohmann/json.hpp>
 
-#include "../protocol/C2SProtocol.hpp"
 // Project includes
 #include "PluginLoadable.hpp"
-namespace geblaat {
-class C2SProtocol;
-}
+#include "protocol/Protocol.hpp"
 
 namespace geblaat {
-
+class Protocol;
 class Connection : public PluginLoadable {
 
   public:
     virtual ~Connection();
     virtual void send(std::vector<char> data) = 0;
     void send(std::string s);
-    virtual void sendLine(std::string s) { send(s + "\r\n");}
-    void setProtocol(::geblaat::C2SProtocol *protocol);
+    virtual void sendLine(std::string s) { send(s + "\r\n"); }
+    // void setProtocol(::geblaat::C2SProtocol *protocol);
+    void setProtocol(Protocol *protocol);
 
     // re-introduced for things like http
-	int setHostName(std::string hostName) {mHostName = hostName; return 0; }
-	int setPort(uint16_t port) {mPort = port; return 0; }
-
+    int setHostName(std::string hostName) {
+        mHostName = hostName;
+        return 0;
+    }
+    int setPort(uint16_t port) {
+        mPort = port;
+        return 0;
+    }
 
     virtual int connect(void) { return -ENOSYS; }
 
@@ -70,7 +73,7 @@ class Connection : public PluginLoadable {
     virtual int setConfig(const nlohmann::json &) override { return -ENOSYS; }
 
   protected:
-    C2SProtocol *mProtocol;
+    Protocol *mProtocol;
 
     std::string mHostName;
     uint16_t mPort;
