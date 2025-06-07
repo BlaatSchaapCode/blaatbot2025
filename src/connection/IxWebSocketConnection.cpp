@@ -11,12 +11,7 @@ void IXWebSocketConnection::onMessageCallback(const ix::WebSocketMessagePtr &msg
     switch (msg->type) {
     case ix::WebSocketMessageType::Message:
         LOG_DEBUG(">>>: %s", msg->str.c_str());
-        if (mProtocol) {
-            std::vector<char> v(msg->str.begin(), msg->str.end());
-            v.emplace_back('\r');
-            v.emplace_back('\n');
-            mProtocol->onData(v);
-        }
+        onData(msg->str);
         break;
     case ix::WebSocketMessageType::Open:
         LOG_INFO("Connected");
