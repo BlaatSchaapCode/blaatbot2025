@@ -115,40 +115,64 @@ int parse_options(int argc, char *argv[]) {
     }
 }
 
+#include "HTTP.hpp"
+
+
+void test() {
+	auto httplib_instance = mPluginLoader.newInstance("httplib", "protocol");
+
+	auto pr = dynamic_cast<geblaat::Protocol*> (httplib_instance);
+
+	geblaat::HTTP * httplib = dynamic_cast<geblaat::HTTP*> (httplib_instance);
+	if (httplib) {
+		httplib->get("https://www.blaatschaap.be");
+		httplib->get("https://www.blaatschaap.be/test");
+	}
+
+	auto simplehttp_instance = mPluginLoader.newInstance("simplehttp", "protocol");
+	geblaat::HTTP * simplehttp = dynamic_cast<geblaat::HTTP*> (simplehttp_instance);
+	if (simplehttp) {
+		simplehttp->get("https://www.blaatschaap.be");
+	}
+
+}
+
 int main(int argc, char *argv[]) {
     int result;
     utils::Version version;
 
+    test();
+
     geblaat::Client *client = nullptr;
-
-    result = parse_options(argc, argv);
-    if (result)
-        return result;
-
-    if (mConfigdata.size()) {
-        LOG_INFO("Config file loaded");
-        try {
-            auto jsonClient = mConfigdata["client"];
-            client = dynamic_cast<geblaat::Client *>(mPluginLoader.newInstance(jsonClient["name"], "client"));
-            if (client) {
-                client->setConfig(jsonClient["config"]);
-            } else {
-                throw std::runtime_error("Unable to get a client");
-            }
-        } catch (nlohmann::json::exception &ex) {
-            LOG_ERROR("JSON exception: %s", ex.what());
-            return -1;
-        } catch (std::exception &ex) {
-            LOG_ERROR("Unknown exception: %s", ex.what());
-            return -1;
-        } catch (...) {
-            LOG_ERROR("Unknown exception (not derived from std::exception)");
-            return -1;
-        }
-
-    } else {
-        LOG_INFO("Config file missing");
-    }
+//
+//    result = parse_options(argc, argv);
+//    if (result)
+//        return result;
+//
+//    if (mConfigdata.size()) {
+//        LOG_INFO("Config file loaded");
+//        try {
+//            auto jsonClient = mConfigdata["client"];
+//            client = dynamic_cast<geblaat::Client *>(mPluginLoader.newInstance(jsonClient["name"], "client"));
+//            if (client) {
+//                client->setConfig(jsonClient["config"]);
+//            } else {
+//                throw std::runtime_error("Unable to get a client");
+//            }
+//        } catch (nlohmann::json::exception &ex) {
+//            LOG_ERROR("JSON exception: %s", ex.what());
+//            return -1;
+//        } catch (std::exception &ex) {
+//            LOG_ERROR("Unknown exception: %s", ex.what());
+//            return -1;
+//        } catch (...) {
+//            LOG_ERROR("Unknown exception (not derived from std::exception)");
+//            return -1;
+//        }
+//
+//    } else {
+//        LOG_INFO("Config file missing");
+//    }
 
     LOG_INFO("press ENTER key to quit");
     std::cin.get();
