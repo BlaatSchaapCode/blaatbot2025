@@ -51,11 +51,10 @@ int HttpLibHTTP::get(std::string url, int version) {
     } else {
         std::cout << "error code: " << res.error() << std::endl;
 
-		auto result = client->get_openssl_verify_result();
-		if (result) {
-			std::cout << "verify error: " << X509_verify_cert_error_string(result) << std::endl;
-		}
-
+        auto result = client->get_openssl_verify_result();
+        if (result) {
+            std::cout << "verify error: " << X509_verify_cert_error_string(result) << std::endl;
+        }
     }
 
     delete client;

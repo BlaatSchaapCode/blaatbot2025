@@ -7,7 +7,7 @@
 
 #include <uriParser.hpp>
 
-#define  CPPHTTPLIB_OPENSSL_SUPPORT
+#define CPPHTTPLIB_OPENSSL_SUPPORT
 #include <httplib.h>
 
 #include "Connection.hpp"
@@ -16,14 +16,15 @@
 
 namespace geblaat {
 
-class HttpLibHTTP :  public PluginLoadable, public HTTP {
-public:
+// Order of the inheritance is important. PluginLoadable should
+// come first otherwise casting the object will fail
+class HttpLibHTTP : public PluginLoadable, public HTTP {
+  public:
     int get(std::string url, int version = 11) override;
 
-
-//    // These are not applicable, might need another refactor
-    void onData(std::vector<char> data) override  {};
-    void onConnected() override  {};
+    //    // These are not applicable, might need another refactor
+    void onData(std::vector<char> data) override {};
+    void onConnected() override {};
     void onDisconnected() override {};
 
     int setConfig(const nlohmann::json &cfg) {
@@ -35,7 +36,6 @@ public:
   private:
     nlohmann::json config;
 
-private:
-
+  private:
 };
 } // namespace geblaat

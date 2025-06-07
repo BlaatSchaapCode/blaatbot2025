@@ -13,6 +13,8 @@
 
 namespace geblaat {
 
+// Order of the inheritance is important. PluginLoadable should
+// come first otherwise casting the object will fail
 class SimpleHTTP : public PluginLoadable, public HTTP {
     enum Method {
         GET,
