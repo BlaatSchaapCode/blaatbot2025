@@ -22,14 +22,4 @@ private:
 };
 }
 
-#ifdef DYNAMIC_LIBRARY
-extern "C" {
-geblaat::IXWebSocketConnection *newInstance(void) { return new geblaat::IXWebSocketConnection(); }
-void delInstance(geblaat::IXWebSocketConnection *inst) { delete inst; }
-pluginloadable_t plugin_info = {
-    .name = "IxWebSocketConnection",
-    .description = "WebSocket Connection support using IxWebSocket",
-    .abi = {.abi = pluginloadable_abi_cpp, .version = 0},
-};
-}
-#endif
+
