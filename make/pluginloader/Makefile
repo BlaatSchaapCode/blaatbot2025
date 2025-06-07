@@ -21,9 +21,9 @@ CXX_SRC += $(SRC_DIR)/PluginLoader.cpp
 CXX_SRC += $(SRC_DIR)/PluginLoadable.cpp
 
 # Temporary here
-CXX_SRC += $(SRC_DIR)/botmodule/CAPI_BotModule.cpp
-CXX_SRC += $(SRC_DIR)/clients/BotClient.cpp
-CXX_SRC += $(SRC_DIR)/clients/Client.cpp
+#CXX_SRC += $(SRC_DIR)/botmodule/CAPI_BotModule.cpp
+#CXX_SRC += $(SRC_DIR)/clients/BotClient.cpp
+#CXX_SRC += $(SRC_DIR)/clients/Client.cpp
 
 
 CXX_SRC += $(SRC_DIR)/utils/time.cpp
