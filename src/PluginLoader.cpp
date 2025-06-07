@@ -116,13 +116,14 @@ PluginLoadable *PluginLoader::newInstance(std::string name, std::string type) {
         }
     }
     if (this->plugins.contains(type + "_" + name)) {
-        auto plugin = this->plugins[type + "_" + name];
-        auto instance = plugin.newInstance();
-    	//auto instance = this->plugins[type + "_" + name].newInstance();
-
-        LOG_INFO("Got an instance of %s", demangleClassName(typeid(instance).name()).c_str());
-        this->plugins[type + "_" + name].refcount++;
-        instance->setPluginLoader(this);
+        auto instance = this->plugins[type + "_" + name].newInstance();
+        if (instance) {
+            LOG_INFO("Got an instance of %s", demangleClassName(typeid(instance).name()).c_str());
+            this->plugins[type + "_" + name].refcount++;
+            instance->setPluginLoader(this);
+        } else {
+            LOG_ERROR("Failed to get an instance");
+        }
         return instance;
     } else {
         LOG_ERROR("Error loading %s %s: %s", name.c_str(), type.c_str(), "Plugin not found");
