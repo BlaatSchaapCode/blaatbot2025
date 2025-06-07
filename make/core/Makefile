@@ -13,13 +13,20 @@ CXX_INCLUDES += $(SRC_DIR)/protocol
 CXX_INCLUDES += $(SRC_DIR)/utils
 
 CXX_SRC += $(SRC_DIR)/connection/Connection.cpp
-CXX_SRC += $(SRC_DIR)/protocol/Protocol.cpp
+CXX_SRC += $(SRC_DIR)/protocol/C2SProtocol.cpp
 CXX_SRC += $(SRC_DIR)/utils/logger.cpp
 CXX_SRC += $(SRC_DIR)/utils/threadName.cpp
 CXX_SRC += $(SRC_DIR)/utils/classname.cpp
 CXX_SRC += $(SRC_DIR)/utils/time.cpp
 CXX_SRC += $(SRC_DIR)/utils/timer.cpp
 CXX_SRC += $(SRC_DIR)/main.cpp
+
+
+LIBS += liburiparser
+
+#CXX_SRC += $(SRC_DIR)/protocol/SimpleHTTP.cpp
+CXX_SRC += $(SRC_DIR)/protocol/HTTP.cpp
+
 
 include $(PCDEV_ROOT)/build/make/all.mk
 
