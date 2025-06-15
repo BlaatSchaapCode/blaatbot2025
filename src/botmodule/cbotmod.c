@@ -67,8 +67,8 @@ int on_bot_command(const void *m, const char *command, const char *parameters, c
     printf("parameters %s\n", parameters);
     const key_value_t *kv = message;
     while (kv->key) {
-        printf("       key %s\n", message->key);
-        printf("     value %s\n", message->value);
+        printf("       key %s\n", kv->key);
+        printf("     value %s\n", kv->value);
         kv++;
     }
 
@@ -105,5 +105,5 @@ static int set_config(const void *m, const char *config_json) {
 pluginloadable_t plugin_info = {
     .name = "C bot module",
     .description = "Example bot module using C API",
-    .abi = {.abi = pluginloadable_abi_c, .version = 1},
+    .abi = {.abi = pluginloadable_abi_c, .version = 0},
 };

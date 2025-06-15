@@ -56,6 +56,7 @@ typedef struct {
 typedef struct {
     uint32_t size;
     botclient_c_api_t *botclient;
+    void *module_data; // specific to module
     set_config_f set_config;
 } botmodule_c_api_t;
 

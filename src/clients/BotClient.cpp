@@ -67,18 +67,10 @@ void BotClient::CapiBotModuleLoader(PluginLoader::Plugin &plugin) {
         goto handleError;
     }
 
-    if (plugin_info->abi.version != 1) {
+    if (plugin_info->abi.version != 0) {
         customError = "Incompatible version";
         goto handleError;
     }
-
-    //    set_botclient = (set_botclient_f)pluginLoader->dlsym(plugin.handle, "set_botclient");
-    //    get_botmodule = (get_botmodule_f)pluginLoader->dlsym(plugin.handle, "get_botmodule");
-    //    if (set_botclient && get_botmodule) {
-    //        plugin.newInstance = [set_botclient, get_botmodule]() { return new CAPI_BotModule(set_botclient, get_botmodule); };
-    //        plugin.delInstance = [](PluginLoadable *me) { delete me; };
-    //        return;
-    //    }
 
     new_botmodule_instance = (new_botmodule_instance_f)pluginLoader->dlsym(plugin.handle, "new_botmodule_instance");
     del_botmodule_instance = (del_botmodule_instance_f)pluginLoader->dlsym(plugin.handle, "del_botmodule_instance");

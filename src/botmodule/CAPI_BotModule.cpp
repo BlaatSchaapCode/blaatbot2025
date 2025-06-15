@@ -34,6 +34,17 @@
 // C API Wrapper for BotModule
 namespace geblaat {
 
+CAPI_BotModule::CAPI_BotModule(new_botmodule_instance_f newInstance, del_botmodule_instance_f delInstance) {
+    newBotmoduleInstance = newInstance;
+    delBotmoduleInstance = delInstance;
+    botModuleInstance = newBotmoduleInstance(&botClient);
+}
+
+CAPI_BotModule::~CAPI_BotModule() {
+    if (delBotmoduleInstance && botModuleInstance)
+        delBotmoduleInstance(botModuleInstance);
+}
+
 int CAPI_BotModule::setConfig(const nlohmann::json &config) {
     if (!botModuleInstance)
         return -1;
@@ -46,12 +57,6 @@ nlohmann::json CAPI_BotModule::getConfig(void) {
     nlohmann::json result;
     // TODO: C api for retrieving config from C botmodule
     return result;
-}
-
-CAPI_BotModule::CAPI_BotModule(new_botmodule_instance_f newInstance, del_botmodule_instance_f delInstance) {
-    newBotmoduleInstance = newInstance;
-    delBotmoduleInstance = delInstance;
-    botModuleInstance = newBotmoduleInstance(&botClient);
 }
 
 void CAPI_BotModule::registerBotCommand(const char *command, on_bot_command_callback_f handler) {

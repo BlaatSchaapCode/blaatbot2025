@@ -36,15 +36,16 @@ namespace geblaat {
 
 class CAPI_BotModule : public BotModule {
   public:
+    CAPI_BotModule(new_botmodule_instance_f, del_botmodule_instance_f);
+    ~CAPI_BotModule();
     int setConfig(const nlohmann::json &) override;
     nlohmann::json getConfig(void) override;
-    CAPI_BotModule(new_botmodule_instance_f, del_botmodule_instance_f);
-    virtual ~CAPI_BotModule() {}
     void registerBotCommand(const char *command, on_bot_command_callback_f handler);
 
   private:
-    std::unordered_map<std::string, on_bot_command_callback_f> botCommands;
     void onBotCommand(std::string command, std::string parameters, std::map<std::string, std::string> recvMessage);
+
+    std::unordered_map<std::string, on_bot_command_callback_f> botCommands;
 
     new_botmodule_instance_f newBotmoduleInstance = nullptr;
     del_botmodule_instance_f delBotmoduleInstance = nullptr;
