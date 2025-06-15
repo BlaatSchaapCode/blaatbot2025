@@ -19,6 +19,7 @@ CXX_SRC += $(SRC_DIR)/utils/threadName.cpp
 CXX_SRC += $(SRC_DIR)/utils/classname.cpp
 CXX_SRC += $(SRC_DIR)/utils/time.cpp
 CXX_SRC += $(SRC_DIR)/utils/timer.cpp
+CXX_SRC += $(SRC_DIR)/logging/InternalLogger.cpp
 CXX_SRC += $(SRC_DIR)/main.cpp
 
 

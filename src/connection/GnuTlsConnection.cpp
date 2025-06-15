@@ -99,7 +99,7 @@ void GnuTlsConnection::onDisconnected() {
 void GnuTlsConnection::send(std::vector<char> data) {
     int bytes_sent = gnutls_record_send(session, data.data(), data.size());
     if (bytes_sent == (int)data.size()) {
-        LOG_DEBUG("Sent %d bytes", sent_bytes);
+        LOG_DEBUG("Sent %d bytes", bytes_sent);
     } else {
         LOG_ERROR("Sent %d of %d bytes", bytes_sent, data.size());
     }

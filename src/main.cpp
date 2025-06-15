@@ -43,8 +43,14 @@
 #include "utils/logger.hpp"
 #include "utils/version.hpp"
 
+#include "logging/InternalLogger.hpp"
+
 #include "PluginLoader.hpp"
 static geblaat::PluginLoader mPluginLoader;
+
+namespace geblaat {
+InternalLogger gLogger(&mPluginLoader);
+}
 
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
@@ -119,6 +125,8 @@ int main(int argc, char *argv[]) {
     int result;
     utils::Version version;
 
+    geblaat::gLogger.test();
+
     geblaat::Client *client = nullptr;
 
     result = parse_options(argc, argv);
@@ -128,6 +136,7 @@ int main(int argc, char *argv[]) {
     if (mConfigdata.size()) {
         LOG_INFO("Config file loaded");
         try {
+
             auto jsonClient = mConfigdata["client"];
             client = dynamic_cast<geblaat::Client *>(mPluginLoader.newInstance(jsonClient["name"], "client"));
             if (client) {

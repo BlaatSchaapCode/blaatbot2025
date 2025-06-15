@@ -29,12 +29,8 @@
 #pragma once
 
 #include <cstdio>
-#include <string_view>
 
-#ifndef __FILENAME__
-#define __FILENAME__ "unknown"
-// Are you using the correct Makefiles????
-#endif
+#include "Logger.hpp"
 
 /*
  * How to use logging:
@@ -44,49 +40,28 @@
  * - LOG:      Anything that is relevant when reading the logs but is not odd.
  * - WARNING:  Something odd but not nessesary a bug.
  * - ERROR:    A runtime detected problem.
- * - DBG_LOG:  A log message relevant when debugging certain subsystems. These
+ * - DEBUG:  A log message relevant when debugging certain subsystems. These
  * are usually disabled but can be enabled on a file basis.
- * - TEST_LOG: A log message specifically for tests. They will not compile in
- * release, forcing the user to remove it.
  */
 
-/*
-#ifdef _MSC_FULL_VER
-#define LOG_INFO(format, ...) utils::logger::log_impl(utils::logger::LogLevel::Info, __FILENAME__, __LINE__, format, __VA_ARGS__)
-#define LOG_WARNING(format, ...)                                                                                                   \
-    utils::logger::log_impl(utils::logger::LogLevel::Warning, __FILENAME__, __LINE__, format, __VA_ARGS__)
-#define LOG_ERROR(format, ...) utils::logger::log_impl(utils::logger::LogLevel::Error, __FILENAME__, __LINE__, format, __VA_ARGS__)
-#else
 #define LOG_INFO(format, ...)                                                                                                      \
-    utils::logger::log_impl(utils::logger::LogLevel::Info, __FILENAME__, __LINE__, format __VA_OPT__(, ) __VA_ARGS__)
+    geblaat::log_impl(geblaat::Logger::LogLevel::Info, MODULE, __FILENAME__, __LINE__, __FUNCTION__,                               \
+                      format __VA_OPT__(, ) __VA_ARGS__)
 #define LOG_WARNING(format, ...)                                                                                                   \
-    utils::logger::log_impl(utils::logger::LogLevel::Warning, __FILENAME__, __LINE__, format __VA_OPT__(, ) __VA_ARGS__)
+    geblaat::log_impl(geblaat::Logger::LogLevel::Warning, MODULE, __FILENAME__, __LINE__, __FUNCTION__,                            \
+                      format __VA_OPT__(, ) __VA_ARGS__)
 #define LOG_ERROR(format, ...)                                                                                                     \
-    utils::logger::log_impl(utils::logger::LogLevel::Error, __FILENAME__, __LINE__, format __VA_OPT__(, ) __VA_ARGS__)
-#endif
-
-#ifdef ENABLE_LOG_DEBUG
+    geblaat::log_impl(geblaat::Logger::LogLevel::Error, MODULE, __FILENAME__, __LINE__, __FUNCTION__,                              \
+                      format __VA_OPT__(, ) __VA_ARGS__)
 #define LOG_DEBUG(format, ...)                                                                                                     \
-    utils::logger::log_impl(utils::logger::LogLevel::DebugLog, __FILENAME__, __LINE__, format __VA_OPT__(, ) __VA_ARGS__)
-#else
-#define LOG_DEBUG(format, ...)
-#endif
+    geblaat::log_impl(geblaat::Logger::LogLevel::Debug, MODULE, __FILENAME__, __LINE__, __FUNCTION__,                              \
+                      format __VA_OPT__(, ) __VA_ARGS__)
 
-#ifdef _DEBUG
-#define LOG_TEST(format, ...)                                                                                                      \
-    utils::logger::log_impl(utils::logger::LogLevel::TestLog, __FILENAME__, __LINE__, format __VA_OPT__(, ) __VA_ARGS__)
-#endif
+namespace geblaat {
 
-namespace utils::logger {
-enum class LogLevel {
-    Info,
-    TestLog,
-    DebugLog,
-    Warning,
-    Error,
-};
-
-void log_impl2(LogLevel level, const char *file, int line, std::string_view msg);
+// void log_impl2(Logger::LogLevel level, const char * module, const char *filename, unsigned line, std::string_view msg);
+void log_impl2(geblaat::Logger::LogLevel level, const char *module, const char *filename, unsigned line, const char *function,
+               const char *message);
 
 #ifdef __clang__
 #pragma clang diagnostic push
@@ -101,17 +76,15 @@ void log_impl2(LogLevel level, const char *file, int line, std::string_view msg)
 // insecure) [-Werror,-Wformat-security]
 // error, even though the format is a literal, it apparently gets confused by
 // the __VA_OPT__
-inline void log_impl(LogLevel level, const char *file, int line, const char *format, auto... args) {
+inline void log_impl(Logger::LogLevel level, const char *module, const char *filename, int line, const char *function,
+                     const char *format, auto... args) {
     const int MAX_BUFFER = 1024;
     char buffer[MAX_BUFFER];
     snprintf(buffer, MAX_BUFFER, format, args...);
-    log_impl2(level, file, line, buffer);
+    log_impl2(level, module, filename, line, function, buffer);
 }
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
-} // namespace utils::logger
-*/
-
-#include "logging/log.hpp"
+} // namespace geblaat

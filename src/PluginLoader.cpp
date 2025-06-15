@@ -121,6 +121,7 @@ PluginLoadable *PluginLoader::newInstance(std::string name, std::string type) {
             LOG_INFO("Got an instance of %s", demangleClassName(typeid(instance).name()).c_str());
             this->plugins[type + "_" + name].refcount++;
             instance->setPluginLoader(this);
+
         } else {
             LOG_ERROR("Failed to get an instance");
         }
