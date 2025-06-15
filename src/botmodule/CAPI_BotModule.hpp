@@ -30,35 +30,40 @@
 
 #include "BotModule.hpp"
 #include "CAPI_BotModule.h"
-#include <map>
 #include <string>
+#include <unordered_map>
 namespace geblaat {
 
 class CAPI_BotModule : public BotModule {
   public:
     int setConfig(const nlohmann::json &) override;
     nlohmann::json getConfig(void) override;
-    CAPI_BotModule(set_botclient_f, get_botmodule_f);
+    CAPI_BotModule(new_botmodule_instance_f, del_botmodule_instance_f);
     virtual ~CAPI_BotModule() {}
     void registerBotCommand(const char *command, on_bot_command_callback_f handler);
 
   private:
-    std::map<std::string, on_bot_command_callback_f> botCommands;
+    std::unordered_map<std::string, on_bot_command_callback_f> botCommands;
     void onBotCommand(std::string command, std::string parameters, std::map<std::string, std::string> recvMessage);
 
-    botmodule_c_api_t *botModule = nullptr;
+    new_botmodule_instance_f newBotmoduleInstance = nullptr;
+    del_botmodule_instance_f delBotmoduleInstance = nullptr;
+    botmodule_c_api_t *botModuleInstance = nullptr;
+
     botclient_c_api_t botClient = {
         .size = sizeof(botclient_c_api_t),
         .client = this,
         .register_bot_command =
-            [](const void *s, const char *command, on_bot_command_callback_f handler) {
-                CAPI_BotModule *self = (CAPI_BotModule *)s;
+            [](const void *cc, const char *command, on_bot_command_callback_f handler) {
+                botclient_c_api_t *c = (botclient_c_api_t *)(cc);
+                CAPI_BotModule *self = (CAPI_BotModule *)(c->client);
                 self->registerBotCommand(command, handler);
                 return 0;
             },
         .send_message =
-            [](const void *s, const key_value_t *kv) {
-                CAPI_BotModule *self = (CAPI_BotModule *)s;
+            [](const void *cc, const key_value_t *kv) {
+                botclient_c_api_t *c = (botclient_c_api_t *)(cc);
+                CAPI_BotModule *self = (CAPI_BotModule *)(c->client);
                 std::map<std::string, std::string> message;
                 while (kv->key) {
                     message[kv->key] = kv->value;

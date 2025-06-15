@@ -32,20 +32,23 @@
 #include <stdlib.h>
 #include <string.h>
 
-static int set_config(const char *config_json);
-static botmodule_c_api_t botmodule_c_api = {.size = sizeof(botmodule_c_api_t), .set_config = set_config};
-botmodule_c_api_t *get_botmodule(void) { return &botmodule_c_api; }
+static int set_config(const void *, const char *);
 
-static botclient_c_api_t *botclient = NULL;
-int set_botclient(botclient_c_api_t *c) {
-    botclient = NULL;
-    if (c)
-        if (c->size == sizeof(botclient_c_api_t))
-            botclient = c;
-    return !c;
+botmodule_c_api_t *new_botmodule_instance(botclient_c_api_t *client) {
+    if (!client)
+        return NULL;
+    botmodule_c_api_t *module = malloc(sizeof(botmodule_c_api_t));
+    if (!module)
+        return NULL;
+    memset(module, 0, sizeof(botmodule_c_api_t));
+    module->size = sizeof(botmodule_c_api_t);
+    module->botclient = client;
+    module->set_config = set_config;
+    return module;
 }
+void del_botmodule_instance(botmodule_c_api_t *module) { free(module); }
 
-const char *get_value(const key_value_t *kv, const char *key) {
+static const char *get_value(const key_value_t *kv, const char *key) {
     while (kv->key) {
         if (!strcmp(key, kv->key))
             return kv->value;
@@ -53,7 +56,13 @@ const char *get_value(const key_value_t *kv, const char *key) {
     }
     return NULL;
 }
-int on_bot_command(const char *command, const char *parameters, const key_value_t *message) {
+int on_bot_command(const void *m, const char *command, const char *parameters, const key_value_t *message) {
+    if (!m)
+        return -1;
+    const botmodule_c_api_t *module = m;
+    if (!module->botclient)
+        return -1;
+
     printf("command    %s\n", command);
     printf("parameters %s\n", parameters);
     const key_value_t *kv = message;
@@ -75,24 +84,26 @@ int on_bot_command(const char *command, const char *parameters, const key_value_
     }
     if (response_target) {
         key_value_t response[] = {{"text/plain", "Hello from C"}, {"target", response_target}, {"type", "message"}, {NULL, NULL}};
-        botclient->send_message(botclient->client, response);
+        module->botclient->send_message(module->botclient, response);
     }
 
     return 0;
 }
 
-static int set_config(const char *config_json) {
-    if (!botclient)
+static int set_config(const void *m, const char *config_json) {
+    if (!m)
         return -1;
-    if (!botclient->client)
+    const botmodule_c_api_t *module = m;
+    if (!module->botclient)
         return -1;
-    if (!botclient->register_bot_command)
+
+    if (!module->botclient->register_bot_command)
         return -1;
-    return botclient->register_bot_command(botclient->client, "see", on_bot_command);
+    return module->botclient->register_bot_command(module->botclient, "see", on_bot_command);
 }
 
 pluginloadable_t plugin_info = {
     .name = "C bot module",
     .description = "Example bot module using C API",
-    .abi = {.abi = pluginloadable_abi_c, .version = 0},
+    .abi = {.abi = pluginloadable_abi_c, .version = 1},
 };

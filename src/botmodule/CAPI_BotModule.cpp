@@ -29,15 +29,17 @@
 #include "CAPI_BotModule.hpp"
 #include "CAPI_BotModule.h"
 
+#include "utils/logger.hpp"
+
 // C API Wrapper for BotModule
 namespace geblaat {
 
 int CAPI_BotModule::setConfig(const nlohmann::json &config) {
-    if (!botModule)
+    if (!botModuleInstance)
         return -1;
-    if (!botModule->set_config)
+    if (!botModuleInstance->set_config)
         return -1;
-    return botModule->set_config(config.dump(4).c_str());
+    return botModuleInstance->set_config(botModuleInstance, config.dump(4).c_str());
 }
 
 nlohmann::json CAPI_BotModule::getConfig(void) {
@@ -46,12 +48,15 @@ nlohmann::json CAPI_BotModule::getConfig(void) {
     return result;
 }
 
-CAPI_BotModule::CAPI_BotModule(set_botclient_f bc, get_botmodule_f bm) {
-    bc(&botClient);
-    botModule = bm();
+CAPI_BotModule::CAPI_BotModule(new_botmodule_instance_f newInstance, del_botmodule_instance_f delInstance) {
+    newBotmoduleInstance = newInstance;
+    delBotmoduleInstance = delInstance;
+    botModuleInstance = newBotmoduleInstance(&botClient);
 }
 
 void CAPI_BotModule::registerBotCommand(const char *command, on_bot_command_callback_f handler) {
+    LOG_INFO("Registering bot command '%s' at %p", command, handler);
+
     botCommands[command] = handler;
     mBotClient->registerBotCommand(this, command,
                                    [this](std::string command, std::string parameters, std::map<std::string, std::string> message) {
@@ -68,7 +73,7 @@ void CAPI_BotModule::onBotCommand(std::string command, std::string parameters, s
             kv->value = m.second.c_str();
             kv++;
         }
-        botCommands[command](command.c_str(), parameters.c_str(), message);
+        botCommands[command](botModuleInstance, command.c_str(), parameters.c_str(), message);
         free(message);
     }
 }

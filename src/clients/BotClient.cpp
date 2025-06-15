@@ -44,8 +44,10 @@ BotClient::BotClient() {}
 
 // PluginLoader::plugin BotClient::getCapiBotModule(void *handle) {
 void BotClient::CapiBotModuleLoader(PluginLoader::Plugin &plugin) {
-    set_botclient_f set_botclient = nullptr;
-    get_botmodule_f get_botmodule = nullptr;
+    //    set_botclient_f set_botclient = nullptr;
+    //    get_botmodule_f get_botmodule = nullptr;
+    new_botmodule_instance_f new_botmodule_instance = nullptr;
+    del_botmodule_instance_f del_botmodule_instance = nullptr;
     const char *customError = nullptr;
     pluginloadable_t *plugin_info = nullptr;
 
@@ -65,15 +67,25 @@ void BotClient::CapiBotModuleLoader(PluginLoader::Plugin &plugin) {
         goto handleError;
     }
 
-    if (plugin_info->abi.version != 0) {
+    if (plugin_info->abi.version != 1) {
         customError = "Incompatible version";
         goto handleError;
     }
 
-    set_botclient = (set_botclient_f)pluginLoader->dlsym(plugin.handle, "set_botclient");
-    get_botmodule = (get_botmodule_f)pluginLoader->dlsym(plugin.handle, "get_botmodule");
-    if (set_botclient && get_botmodule) {
-        plugin.newInstance = [set_botclient, get_botmodule]() { return new CAPI_BotModule(set_botclient, get_botmodule); };
+    //    set_botclient = (set_botclient_f)pluginLoader->dlsym(plugin.handle, "set_botclient");
+    //    get_botmodule = (get_botmodule_f)pluginLoader->dlsym(plugin.handle, "get_botmodule");
+    //    if (set_botclient && get_botmodule) {
+    //        plugin.newInstance = [set_botclient, get_botmodule]() { return new CAPI_BotModule(set_botclient, get_botmodule); };
+    //        plugin.delInstance = [](PluginLoadable *me) { delete me; };
+    //        return;
+    //    }
+
+    new_botmodule_instance = (new_botmodule_instance_f)pluginLoader->dlsym(plugin.handle, "new_botmodule_instance");
+    del_botmodule_instance = (del_botmodule_instance_f)pluginLoader->dlsym(plugin.handle, "del_botmodule_instance");
+    if (new_botmodule_instance && del_botmodule_instance) {
+        plugin.newInstance = [new_botmodule_instance, del_botmodule_instance]() {
+            return new CAPI_BotModule(new_botmodule_instance, del_botmodule_instance);
+        };
         plugin.delInstance = [](PluginLoadable *me) { delete me; };
         return;
     }
